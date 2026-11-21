@@ -16,27 +16,15 @@ namespace MonsterTrainAccessibility.Help.Contexts
 
         public string GetHelpText()
         {
-            return "Map screen. Navigate your path through each ring. " +
-                   "Map browsing with the virtual map cursor: " +
-                   "Ctrl plus Up: Move forward one ring toward the final boss. " +
-                   "Ctrl plus Down: Move back one ring. " +
-                   "Ctrl plus Left/Right: Step through the stops on that ring, " +
-                   "including which path they are on: left, right, or both. " +
-                   "Each ring announces its number, whether it is your current position, " +
-                   "the battle waiting at its end, and how many stops it has. " +
-                   "The cursor is for review only; it does not move your real selection. " +
-                   "Moving and selecting: " +
-                   "Up/Down arrows: Move between rings. " +
-                   "Left/Right arrows: Choose between left path, center battle, or right path. " +
-                   "Enter: Select and go to the focused node. " +
-                   "M: Re-read current map node with coordinates. " +
-                   "C: Re-read current node details. " +
-                   "T: Read all available choices for this ring. " +
-                   "Node types: Battle (required fight), Merchant (buy/sell cards), " +
-                   "Artifact (gain relic), Upgrade (enhance cards), Event (random encounter), " +
-                   "Concealed Caverns (mystery reward), Pyre Remains (restore pyre health), " +
-                   "Hellvent (remove cards). " +
-                   "Escape: Open pause menu.";
+            return
+                "Map screen: each ring has one or two paths with stops such as merchants, events and upgrades, and ends with a battle. " +
+                "When a ring has two paths, Left and Right arrows choose between them and each path lists its stops. Enter picks the path. " +
+                "After choosing, the arrow keys move between map stops. The game moves spatially, so a press can jump to the next ring's battle. Every stop says its name, path, ring and whether you can visit it now. " +
+                "Enter: Visit the focused stop or start the battle. " +
+                "Virtual map cursor, for reading the whole map without moving anything: Ctrl plus Up and Down move between rings, Ctrl plus Left and Right step through a ring's stops. " +
+                "Each ring announces its number, whether you are there, the battle at its end and how many stops it has. " +
+                "F2: Re-read the focused stop. " +
+                "Tab: Train stats. F5: Gold. F6: Pyre health. ";
         }
     }
 }

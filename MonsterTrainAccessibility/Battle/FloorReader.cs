@@ -170,10 +170,10 @@ namespace MonsterTrainAccessibility.Screens
             // Add intent for enemies
             if (isEnemy)
             {
-                string intent = EnemyReader.GetUnitIntent(cache, unit);
+                string intent = EnemyReader.GetUnitIntentLabel(cache, unit);
                 if (!string.IsNullOrEmpty(intent))
                 {
-                    sb.Append($". Intent: {intent}");
+                    sb.Append($". {intent}");
                 }
             }
 

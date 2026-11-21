@@ -18,8 +18,8 @@ namespace MonsterTrainAccessibility.Help.Contexts
         {
             return "Left and Right arrows: Browse clans and champions. " +
                    "Enter: Select highlighted option. " +
-                   "C: Re-read current selection. " +
-                   "T: Read all available options. " +
+                   "F2: Re-read current selection. " +
+                   "F3: Read all available options. " +
                    "Escape: Return to main menu.";
         }
     }

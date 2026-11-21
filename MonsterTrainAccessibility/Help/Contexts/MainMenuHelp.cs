@@ -22,8 +22,8 @@ namespace MonsterTrainAccessibility.Help.Contexts
                    "which enables or disables the DLC for your next run. " +
                    "Enter switches it, and the toggle announces its current state. " +
                    "Left arrow: Return to the menu options. " +
-                   "C: Re-read current option. " +
-                   "T: Read all menu options. " +
+                   "F2: Re-read current option. " +
+                   "F3: Read all menu options. " +
                    "Escape: Exit game or go back.";
         }
     }

@@ -85,57 +85,57 @@ namespace MonsterTrainAccessibility.Battle
             }
 
             // Ctrl+arrows belong to the review buffers (InputInterceptor)
-            bool ctrlHeld = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+            bool ctrlHeld = KeyInput.GetKey(KeyCode.LeftControl) || KeyInput.GetKey(KeyCode.RightControl);
 
             // Arrow keys to cycle targets
             if (ctrlHeld)
             {
                 // Fall through - no targeting input while Ctrl is held
             }
-            else if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.LeftArrow))
+            else if (KeyInput.GetKeyDown(KeyCode.UpArrow) || KeyInput.GetKeyDown(KeyCode.LeftArrow))
             {
                 CycleTarget(-1);
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
-            else if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.RightArrow))
+            else if (KeyInput.GetKeyDown(KeyCode.DownArrow) || KeyInput.GetKeyDown(KeyCode.RightArrow))
             {
                 CycleTarget(1);
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
             // Number keys for direct target selection (1-9)
-            else if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1))
+            else if (KeyInput.GetKeyDown(KeyCode.Alpha1) || KeyInput.GetKeyDown(KeyCode.Keypad1))
             {
                 SelectTarget(0);
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
-            else if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2))
+            else if (KeyInput.GetKeyDown(KeyCode.Alpha2) || KeyInput.GetKeyDown(KeyCode.Keypad2))
             {
                 SelectTarget(1);
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
-            else if (Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3))
+            else if (KeyInput.GetKeyDown(KeyCode.Alpha3) || KeyInput.GetKeyDown(KeyCode.Keypad3))
             {
                 SelectTarget(2);
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
-            else if (Input.GetKeyDown(KeyCode.Alpha4) || Input.GetKeyDown(KeyCode.Keypad4))
+            else if (KeyInput.GetKeyDown(KeyCode.Alpha4) || KeyInput.GetKeyDown(KeyCode.Keypad4))
             {
                 SelectTarget(3);
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
-            else if (Input.GetKeyDown(KeyCode.Alpha5) || Input.GetKeyDown(KeyCode.Keypad5))
+            else if (KeyInput.GetKeyDown(KeyCode.Alpha5) || KeyInput.GetKeyDown(KeyCode.Keypad5))
             {
                 SelectTarget(4);
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
             // Enter to confirm
-            else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+            else if (KeyInput.GetKeyDown(KeyCode.Return) || KeyInput.GetKeyDown(KeyCode.KeypadEnter))
             {
                 ConfirmSelection();
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
             // Escape to cancel
-            else if (Input.GetKeyDown(KeyCode.Escape))
+            else if (KeyInput.GetKeyDown(KeyCode.Escape))
             {
                 CancelTargeting();
                 _inputCooldown = INPUT_COOLDOWN_TIME;

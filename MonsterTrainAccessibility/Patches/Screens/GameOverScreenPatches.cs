@@ -395,7 +395,7 @@ namespace MonsterTrainAccessibility.Patches
                     }
                 }
 
-                sb.Append("Press S for run summary. ");
+                sb.Append("Press F3 for the run summary. ");
 
                 // Announce
                 string announcement = sb.ToString().Trim();
@@ -405,7 +405,7 @@ namespace MonsterTrainAccessibility.Patches
             catch (Exception ex)
             {
                 MonsterTrainAccessibility.LogError($"Error in AutoReadGameOverScreen: {ex.Message}");
-                MonsterTrainAccessibility.ScreenReader?.Speak("Run complete. Press S for run summary.", false);
+                MonsterTrainAccessibility.ScreenReader?.Speak("Run complete. Press F3 for the run summary.", false);
             }
         }
     }
@@ -923,7 +923,7 @@ namespace MonsterTrainAccessibility.Patches
                     string date = getDate?.Invoke(runData, null) as string;
                     if (!string.IsNullOrEmpty(date)) sb.Append($"Date: {date}. ");
                 }
-                sb.Append("Use arrows to navigate buttons. Press T to read all screen text.");
+                sb.Append("Use arrows to navigate buttons. Press F3 to read all screen text.");
 
                 string announcement = sb.ToString().Trim();
                 MonsterTrainAccessibility.LogInfo($"Run summary: {announcement}");

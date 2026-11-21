@@ -131,6 +131,35 @@ namespace MonsterTrainAccessibility.Screens
         /// <summary>
         /// Get text for RunOpeningScreen (Boss Battles screen shown at start of run)
         /// </summary>
+        /// <summary>
+        /// Focus readout for the run opening (Boss Battles) screen. Reading every
+        /// ring's boss with its description on focus was a minute-long speech at
+        /// the start of every run; the focus now says what the screen is and how
+        /// many rings there are, and each boss is one item in the UI buffer
+        /// (Ctrl+Up) - the re-read key still gives the full list.
+        /// </summary>
+        internal static Core.Buffers.FocusReadout GetRunOpeningScreenReadout(GameObject go)
+        {
+            string full = GetRunOpeningScreenText(go);
+            if (string.IsNullOrEmpty(full))
+                return null;
+
+            var details = new List<string>();
+            foreach (var part in System.Text.RegularExpressions.Regex.Split(full, @"(?=Ring \d+: |Final Boss: )"))
+            {
+                string item = part.Trim().TrimEnd('.').Trim();
+                if (item.Length == 0 || item.StartsWith("Boss Battles", StringComparison.Ordinal)) continue;
+                int hint = item.IndexOf(". Press Enter", StringComparison.Ordinal);
+                if (hint >= 0) item = item.Substring(0, hint);
+                details.Add(item);
+            }
+
+            string summary = details.Count > 0
+                ? $"Boss battles for this run, {details.Count} rings. Enter to begin. Ctrl plus Up reads each boss"
+                : "Boss battles for this run. Enter to begin";
+            return new Core.Buffers.FocusReadout { Summary = summary, Details = details, FullText = full };
+        }
+
         internal static string GetRunOpeningScreenText(GameObject go)
         {
             try

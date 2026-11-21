@@ -74,6 +74,18 @@ namespace MonsterTrainAccessibility.Help
 
             _entries.Clear();
             _entries.AddRange(TextUtilities.SplitIntoSpeechItems(helpText));
+            // Screen help comes first; the keys that work everywhere follow, so
+            // every help list is complete on its own
+            if (activeContext != null && activeContext.ContextId != "global")
+            {
+                var global = new Contexts.GlobalHelp();
+                var globalEntries = TextUtilities.SplitIntoSpeechItems(global.GetHelpText());
+                if (globalEntries.Count > 0)
+                {
+                    _entries.Add("Keys available on every screen follow");
+                    _entries.AddRange(globalEntries);
+                }
+            }
             _entryIndex = -1;
             IsBrowsing = _entries.Count > 0;
 
@@ -84,7 +96,7 @@ namespace MonsterTrainAccessibility.Help
             }
 
             Speak($"{contextName} help, {_entries.Count} entries. " +
-                  "Down arrow to read entries. Press F1, Enter, or Escape to close.");
+                  "Down and Up arrows read entries, Home and End jump to the first and last. Press F1, Enter, or Escape to close.");
         }
 
         /// <summary>
@@ -150,7 +162,23 @@ namespace MonsterTrainAccessibility.Help
 
         private void AnnounceEntry()
         {
-            Speak(_entries[_entryIndex]);
+            Speak($"{_entries[_entryIndex]}. {_entryIndex + 1} of {_entries.Count}");
+        }
+
+        /// <summary>Home: first entry.</summary>
+        public void FirstEntry()
+        {
+            if (!IsBrowsing) return;
+            _entryIndex = 0;
+            AnnounceEntry();
+        }
+
+        /// <summary>End: last entry.</summary>
+        public void LastEntry()
+        {
+            if (!IsBrowsing) return;
+            _entryIndex = _entries.Count - 1;
+            AnnounceEntry();
         }
 
         /// <summary>
@@ -159,9 +187,9 @@ namespace MonsterTrainAccessibility.Help
         private string GetFallbackHelp()
         {
             return "F1: Help. " +
-                   "C: Re-read current item. " +
-                   "T: Read all text on screen. " +
-                   "V: Cycle verbosity. " +
+                   "F2: Re-read current item. " +
+                   "F3: Read all text on screen. " +
+                   "F4: Cycle verbosity. " +
                    "Arrow keys: Navigate. " +
                    "Enter or Space: Activate. " +
                    "Escape: Back or cancel.";

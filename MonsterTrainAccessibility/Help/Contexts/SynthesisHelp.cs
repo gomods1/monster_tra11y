@@ -18,8 +18,8 @@ namespace MonsterTrainAccessibility.Help.Contexts
         {
             return "Arrow keys: Browse available units. " +
                    "Enter: Select unit for synthesis. " +
-                   "C: Re-read current unit details. " +
-                   "T: Read all available units. " +
+                   "F2: Re-read current unit details. " +
+                   "F3: Read all available units. " +
                    "Escape: Cancel synthesis.";
         }
     }

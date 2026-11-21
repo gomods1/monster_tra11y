@@ -345,79 +345,61 @@ namespace MonsterTrainAccessibility.Screens
             }
         }
 
+        private static FieldInfo _turnCounterField;
+        private static FieldInfo _totalWavesField;
+        private static FieldInfo _scenarioField;
+
         /// <summary>
-        /// Get wave info from the combat manager (current wave / total waves)
+        /// Wave counter as the HUD shows it (BattleTurnCounter): "N waves remaining"
+        /// while waves are still to come (totalWaves - turnCounter), "Final wave"
+        /// once none remain, or "Wave N" in looping scenarios. turnCounter starts at 1.
         /// </summary>
-        private static string GetWaveInfo(BattleManagerCache cache)
+        internal static string GetWaveText(BattleManagerCache cache)
         {
             try
             {
-                if (cache.CombatManager == null) return null;
-
-                var cmType = cache.CombatManager.GetType();
-                var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-
-                // Try GetCurrentWaveIndex or similar
-                int currentWave = -1;
-                int totalWaves = -1;
-
-                var getCurrentWaveMethod = cmType.GetMethod("GetCurrentWaveIndex", Type.EmptyTypes) ??
-                                           cmType.GetMethod("GetCurrentWave", Type.EmptyTypes);
-                if (getCurrentWaveMethod != null)
+                var cm = cache?.CombatManager;
+                if (cm == null) return null;
+                var t = cm.GetType();
+                var flags = BindingFlags.NonPublic | BindingFlags.Instance;
+                if (_turnCounterField == null)
                 {
-                    var result = getCurrentWaveMethod.Invoke(cache.CombatManager, null);
-                    if (result is int w) currentWave = w;
+                    _turnCounterField = t.GetField("turnCounter", flags);
+                    _totalWavesField = t.GetField("totalWaves", flags);
+                    _scenarioField = t.GetField("currentScenarioData", flags);
                 }
+                if (!(_turnCounterField?.GetValue(cm) is int turn) || !(_totalWavesField?.GetValue(cm) is int total))
+                    return null;
 
-                // Try field access
-                if (currentWave < 0)
+                bool looping = false;
+                try
                 {
-                    var waveField = cmType.GetField("currentWaveIndex", bindingFlags) ??
-                                    cmType.GetField("_currentWaveIndex", bindingFlags) ??
-                                    cmType.GetField("currentWave", bindingFlags);
-                    if (waveField != null)
-                    {
-                        var val = waveField.GetValue(cache.CombatManager);
-                        if (val is int w) currentWave = w;
-                    }
+                    var scenario = _scenarioField?.GetValue(cm);
+                    var pattern = scenario?.GetType().GetMethod("GetSpawnPattern", Type.EmptyTypes)?.Invoke(scenario, null);
+                    looping = pattern?.GetType().GetMethod("GetIsLoopingScenario", Type.EmptyTypes)?.Invoke(pattern, null) is bool b && b;
                 }
+                catch { }
 
-                // Get total waves
-                var getTotalWavesMethod = cmType.GetMethod("GetNumWaves", Type.EmptyTypes) ??
-                                          cmType.GetMethod("GetTotalWaves", Type.EmptyTypes) ??
-                                          cmType.GetMethod("GetWaveCount", Type.EmptyTypes);
-                if (getTotalWavesMethod != null)
-                {
-                    var result = getTotalWavesMethod.Invoke(cache.CombatManager, null);
-                    if (result is int w) totalWaves = w;
-                }
-
-                if (totalWaves < 0)
-                {
-                    var wavesField = cmType.GetField("numWaves", bindingFlags) ??
-                                     cmType.GetField("_numWaves", bindingFlags) ??
-                                     cmType.GetField("totalWaves", bindingFlags);
-                    if (wavesField != null)
-                    {
-                        var val = wavesField.GetValue(cache.CombatManager);
-                        if (val is int w) totalWaves = w;
-                    }
-                }
-
-                if (currentWave >= 0 && totalWaves > 0)
-                {
-                    return $"Wave {currentWave + 1} of {totalWaves}. ";
-                }
-                else if (currentWave >= 0)
-                {
-                    return $"Wave {currentWave + 1}. ";
-                }
+                if (looping)
+                    return $"wave {turn}";
+                if (total <= 0)
+                    return null;
+                int remaining = total - turn;
+                if (remaining <= 0)
+                    return "no more waves";
+                return remaining == 1 ? "1 wave remaining" : $"{remaining} waves remaining";
             }
             catch (Exception ex)
             {
                 MonsterTrainAccessibility.LogError($"Error getting wave info: {ex.Message}");
+                return null;
             }
-            return null;
+        }
+
+        private static string GetWaveInfo(BattleManagerCache cache)
+        {
+            string text = GetWaveText(cache);
+            return string.IsNullOrEmpty(text) ? null : char.ToUpper(text[0]) + text.Substring(1) + ".";
         }
 
         /// <summary>

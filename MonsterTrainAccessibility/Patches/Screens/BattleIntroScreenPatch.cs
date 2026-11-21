@@ -102,7 +102,7 @@ namespace MonsterTrainAccessibility.Patches
                 sb.Append("Battle intro. ");
                 if (!string.IsNullOrEmpty(battleName))
                 {
-                    sb.Append("Boss: ");
+                    sb.Append("Battle: ");
                     sb.Append(battleName);
                     sb.Append(". ");
                 }

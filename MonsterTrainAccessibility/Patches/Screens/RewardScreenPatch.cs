@@ -1,6 +1,8 @@
 using HarmonyLib;
 using MonsterTrainAccessibility.Help;
 using System;
+using MonsterTrainAccessibility.Utilities;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
@@ -27,6 +29,15 @@ namespace MonsterTrainAccessibility.Patches
                         harmony.Patch(method, postfix: postfix);
                         MonsterTrainAccessibility.LogInfo($"Patched RewardScreen.{method.Name}");
                     }
+
+                    // Battle start: HeroManager.ShowOffEnemyRelics reuses the reward
+                    // screen to show the enemy's artifacts - that is not a reward
+                    var showDisplayable = AccessTools.Method(targetType, "ShowDisplayableRewards");
+                    if (showDisplayable != null)
+                    {
+                        harmony.Patch(showDisplayable,
+                            prefix: new HarmonyMethod(typeof(RewardScreenPatch).GetMethod(nameof(ShowDisplayablePrefix))));
+                    }
                 }
             }
             catch (Exception ex)
@@ -35,17 +46,62 @@ namespace MonsterTrainAccessibility.Patches
             }
         }
 
+        private static int _enemyShowcaseFrame = -100;
+
+        public static void ShowDisplayablePrefix(System.Collections.IEnumerable rewards)
+        {
+            try
+            {
+                if (rewards == null) return;
+                var parts = new List<string>();
+                var flags = BindingFlags.NonPublic | BindingFlags.Instance;
+                foreach (var r in rewards)
+                {
+                    if (!(r is RelicDisplayedAsReward shown)) continue;
+                    if (!(typeof(RelicDisplayedAsReward).GetField("relicRewardType", flags)?.GetValue(shown) is RewardType type) ||
+                        type != RewardType.EnemyRelic)
+                        continue;
+                    if (!(typeof(RelicDisplayedAsReward).GetField("relicState", flags)?.GetValue(shown) is RelicState relic))
+                        continue;
+                    string name = relic.GetName();
+                    string desc = TextUtilities.CleanSpriteTagsForSpeech(TextUtilities.StripRichTextTags(relic.GetDescription() ?? "")).Trim().TrimEnd('.');
+                    parts.Add(string.IsNullOrEmpty(desc) ? name : $"{name}: {desc}");
+                }
+                if (parts.Count == 0) return;
+                _enemyShowcaseFrame = UnityEngine.Time.frameCount;
+                string text = (parts.Count == 1 ? "Enemy artifact. " : "Enemy artifacts. ") +
+                              string.Join(". ", parts) + ". Press Enter to continue.";
+                MonsterTrainAccessibility.ScreenReader?.Speak(text, false);
+                MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(text);
+            }
+            catch (Exception ex)
+            {
+                MonsterTrainAccessibility.LogError($"Error reading enemy artifacts: {ex.Message}");
+            }
+        }
+
         public static void Postfix(object __instance)
         {
             try
             {
                 ScreenStateTracker.SetScreen(Help.GameScreen.Rewards);
-                AutoReadRewards(__instance);
+                // Defer a frame: ShowDisplayableRewards runs right after Initialize
+                // and tells us whether this is the enemy artifact showcase
+                MonsterTrainAccessibility.MenuHandler?.StartCoroutine(AutoReadRewardsDeferred(__instance));
             }
             catch (Exception ex)
             {
                 MonsterTrainAccessibility.LogError($"Error in RewardScreen patch: {ex.Message}");
             }
+        }
+
+        private static System.Collections.IEnumerator AutoReadRewardsDeferred(object screen)
+        {
+            yield return null;
+            yield return null;
+            if (UnityEngine.Time.frameCount - _enemyShowcaseFrame <= 3)
+                yield break;
+            AutoReadRewards(screen);
         }
 
         private static void AutoReadRewards(object screen)
@@ -86,7 +142,7 @@ namespace MonsterTrainAccessibility.Patches
 
                 if (rewards != null && rewards.Count > 0)
                 {
-                    sb.Append($"{rewards.Count} rewards: ");
+                    sb.Append(rewards.Count == 1 ? "1 reward: " : $"{rewards.Count} rewards: ");
                     foreach (var reward in rewards)
                     {
                         string rewardName = GetRewardDisplayName(reward);
@@ -107,12 +163,60 @@ namespace MonsterTrainAccessibility.Patches
             }
         }
 
+        /// <summary>
+        /// "100 gold", "+5 pyre health" when the detail is a quantity; otherwise
+        /// "Title, detail".
+        /// </summary>
+        internal static string FormatTitleAndDetail(string title, string detail)
+        {
+            // Stripped icon sprites leave "Gain 50 gold ." behind
+            title = System.Text.RegularExpressions.Regex.Replace(title, @"\s+([.,!?])", "$1").Trim().TrimEnd('.');
+            detail = (detail ?? "").Trim();
+            if (string.IsNullOrEmpty(detail) || title.Contains(detail))
+                return title;
+            bool isQuantity = System.Text.RegularExpressions.Regex.IsMatch(detail, @"^[+\-x×]?[\d,.]+%?$");
+            return isQuantity ? $"{detail} {title.ToLowerInvariant()}" : $"{title}, {detail}";
+        }
+
+        /// <summary>
+        /// Focused reward icon (RewardItemUI on the post-battle victory panel and
+        /// reward screens): "100 gold. Description".
+        /// </summary>
+        internal static string GetRewardItemText(UnityEngine.GameObject go)
+        {
+            try
+            {
+                var item = go.GetComponentInParent<RewardItemUIBase>();
+                var data = item?.rewardState?.RewardData;
+                if (data == null) return null;
+                string name = GetRewardDisplayName(item.rewardState);
+                if (string.IsNullOrEmpty(name)) return null;
+                string desc = TextUtilities.StripRichTextTags(data.RewardDescription ?? "").Trim();
+                return string.IsNullOrEmpty(desc) || desc == name ? name : $"{name}. {desc}";
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         internal static string GetRewardDisplayName(object reward)
         {
             if (reward == null) return null;
 
             try
             {
+                // The game's own localized title and detail ("Gold", "75";
+                // "Pyre Health", "+5") - what the reward icon shows
+                var grantable = (reward as RewardState)?.RewardData ?? reward as GrantableRewardData;
+                if (grantable != null)
+                {
+                    string title = TextUtilities.StripRichTextTags(grantable.RewardTitle ?? "").Trim();
+                    string detail = TextUtilities.StripRichTextTags(grantable.RewardDetail ?? "").Trim();
+                    if (!string.IsNullOrEmpty(title))
+                        return FormatTitleAndDetail(title, detail);
+                }
+
                 var rewardType = reward.GetType();
 
                 // Try to get reward data from RewardState

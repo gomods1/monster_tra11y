@@ -199,10 +199,10 @@ namespace MonsterTrainAccessibility.Screens
                 }
 
                 // Get intent (for bosses or units with visible intent)
-                string intent = GetUnitIntent(cache, unit);
+                string intent = GetUnitIntentLabel(cache, unit);
                 if (!string.IsNullOrEmpty(intent))
                 {
-                    sb.Append($". Intent: {intent}");
+                    sb.Append($". {intent}");
                 }
 
                 // Lore lives in buffer content only, like keyword explanations
@@ -1009,6 +1009,34 @@ namespace MonsterTrainAccessibility.Screens
         /// <summary>
         /// Get the intent/action of an enemy (what they will do)
         /// </summary>
+        /// <summary>
+        /// "Intent: ..." for bosses (their next action), "Ability: ..." for other
+        /// units, whose text comes from their triggers rather than a real intent.
+        /// The generic "Will attack for N" guess is dropped for non-bosses - the
+        /// attack stat is already read.
+        /// </summary>
+        internal static string GetUnitIntentLabel(BattleManagerCache cache, object characterState)
+        {
+            if (characterState == null) return null;
+            // GetBossState is non-null for ordinary enemies too; a unit has a real
+            // intent only when its boss state yields a next action
+            try
+            {
+                var bossState = characterState.GetType().GetMethod("GetBossState", Type.EmptyTypes)?.Invoke(characterState, null);
+                if (bossState != null)
+                {
+                    string bossIntent = GetBossIntent(bossState);
+                    if (!string.IsNullOrEmpty(bossIntent))
+                        return "Intent: " + bossIntent;
+                }
+            }
+            catch { }
+            string text = GetUnitIntent(cache, characterState);
+            if (string.IsNullOrEmpty(text) || text.StartsWith("Will attack for", StringComparison.Ordinal))
+                return null;
+            return "Ability: " + text;
+        }
+
         internal static string GetUnitIntent(BattleManagerCache cache, object characterState)
         {
             try

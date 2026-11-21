@@ -26,25 +26,23 @@ namespace MonsterTrainAccessibility.Help.Contexts
 
         public string GetHelpText()
         {
-            return "Battle screen. Play cards to defeat enemies and protect your Pyre. " +
-                   "H: Read hand (all cards with costs and effects). " +
-                   "K: Read the selected floor. Shift plus K or L: Read all floors. " +
-                   "U: Read all units (your monsters front-to-back, then enemies). " +
-                   "Up arrow: Open floor review, a cursor to walk the floors and their units with the arrow keys. " +
-                   "R: Read ember. " +
-                   "Ctrl plus G: Read gold. " +
-                   "Ctrl plus H: Read pyre health. " +
-                   "Ctrl plus R: Read pact shards. " +
-                   "Enter: Play selected card. Some cards require floor or unit selection. " +
-                   "Left/Right arrows: Select targets when playing spells. " +
-                   "F: End your turn and start combat phase. " +
-                   "C: Re-read current selection; for cards this reads the full details. " +
-                   "V: Cycle verbosity level. " +
-                   "Ctrl plus Left/Right: Switch review buffers: UI, Events, Card, Creature, Artifact, Reward, Hand, Floors, Units, Resources. " +
-                   "Ctrl plus Up: Read the next item in the current buffer, " +
-                   "for example each combat event or each card in hand. " +
-                   "Ctrl plus Down: Move back toward the top of the buffer. " +
-                   "Enemies ascend each turn. Protect your Pyre on top floor!";
+            return
+                "Battle: enemies enter on the bottom floor and climb one floor after each round of combat. The pyre sits above the top floor. If the pyre runs out of health the run ends. " +
+                "Each of your turns starts with one line: your ember, how many cards you drew and how many enemy waves remain. " +
+                "Left and Right arrows: Move through your hand. Each card says its name, cost, stats and position, for example 2 of 5. " +
+                "Number keys 1 to 9 and 0: Jump to a card in your hand. " +
+                "Enter or E: Play the focused card. Units and floor spells then ask for a floor, targeted spells ask for a unit. " +
+                "F2: Full details of the focused card. Ctrl plus Up then steps through them one piece at a time, including keyword explanations. " +
+                "F: End your turn. Combat is then announced as it happens: attacks, deaths, trigger abilities such as Slay or Revenge, healing, enemies moving and pyre damage. " +
+                "J: Read your hand. " +
+                "K: Read the selected floor. L: Read all floors. " +
+                "Shift plus L: Read all units with full detail. " +
+                "G: Read ember. " +
+                "Page Up and Page Down: Change the selected floor and read it. " +
+                "Shift plus K: Open floor review, a cursor that walks the floors and their units without changing anything in the game. " +
+                "N: Change game speed. " +
+                "Game piles: Z deck, X draw pile, B eaten pile. Escape or Q closes a pile view. " +
+                "Ctrl plus Left or Right to the Events buffer, then Ctrl plus Up, replays the combat log. ";
         }
     }
 }

@@ -63,6 +63,7 @@ namespace MonsterTrainAccessibility.Patches
 
                 // Capture the raw phase for EVERY transition, before the dedup return,
                 // so the damage/spawn/death/movement patches can read it this frame.
+                int previousPhase = CurrentPhase;
                 try { CurrentPhase = Convert.ToInt32(__0); } catch { }
 
                 string phaseName = __0.ToString();
@@ -79,6 +80,7 @@ namespace MonsterTrainAccessibility.Patches
                 // removed in both modes.
                 if (phaseName == "MonsterTurn")
                 {
+                    MonsterTrainAccessibility.BattleHandler?.OnMonsterTurnPhaseBegan();
                     if (summaryMode)
                         MonsterTrainAccessibility.BattleHandler?.AnnounceCombatSummary();
                     return;
@@ -91,8 +93,11 @@ namespace MonsterTrainAccessibility.Patches
                 switch (phaseName)
                 {
                     case "HeroTurn":
-                        // Lightweight phase chatter; silenced in summary mode (user wants minimal cues).
-                        if (!summaryMode) announcement = "Enemy turn";
+                        // Ending the turn passes through HeroTurn straight from
+                        // MonsterTurnQueueClear before combat; only the HeroTurn that
+                        // follows Combat is the enemies' move.
+                        // Silenced in summary mode (user wants minimal cues).
+                        if (!summaryMode && previousPhase == Phase_Combat) announcement = "Enemy turn";
                         break;
                     case "EndOfCombat":
                         if (!summaryMode) announcement = "Combat ended";

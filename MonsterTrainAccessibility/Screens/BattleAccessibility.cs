@@ -43,6 +43,8 @@ namespace MonsterTrainAccessibility.Screens
             Patches.PreviewModeDetector.Reset();
             _turnSummary.Reset();
             Patches.CombatPhaseChangePatch.CurrentPhase = -1;
+            _awaitingTurnStart = false;
+            _pendingDraws = 0;
 
             MonsterTrainAccessibility.LogInfo("Battle entered");
             MonsterTrainAccessibility.ScreenReader?.AnnounceScreen("Battle started");
@@ -64,37 +66,54 @@ namespace MonsterTrainAccessibility.Screens
             MonsterTrainAccessibility.LogInfo("Battle exited");
         }
 
-        /// <summary>
-        /// Called at the start of player's turn
-        /// </summary>
-        public void OnTurnStarted(int ember, int maxEmber, int cardsDrawn)
+        // Set when the MonsterTurn phase begins and cleared when the game hands
+        // control to the player; the turn's opening draw is folded into the
+        // single "Your turn" line instead of being spoken separately.
+        private bool _awaitingTurnStart;
+        private int _pendingDraws;
+
+        /// <summary>Called when the MonsterTurn phase begins (before the turn's draw).</summary>
+        internal void OnMonsterTurnPhaseBegan()
         {
-            var output = MonsterTrainAccessibility.ScreenReader;
-            output?.Speak("Your turn", false);
-            output?.LogCombatEvent("Your turn");
-
-            // Read actual ember from game
-            int actualEmber = ResourceReader.GetCurrentEnergy(_cache);
-            if (actualEmber >= 0)
-            {
-                output?.Queue($"{actualEmber} ember");
-                output?.LogCombatEvent($"{actualEmber} ember");
-            }
-
-            if (cardsDrawn > 0)
-            {
-                output?.Queue($"Drew {cardsDrawn} cards");
-                output?.LogCombatEvent($"Drew {cardsDrawn} cards");
-            }
+            _awaitingTurnStart = true;
+            _pendingDraws = 0;
         }
 
         /// <summary>
-        /// Called when player ends their turn
+        /// Called when the game hands control to the player (after the draw and
+        /// start-of-turn effects): "Your turn, 3 ember, drew 5 cards, 2 waves remaining."
         /// </summary>
-        public void OnTurnEnded()
+        public void OnPlayerTurnStarted()
         {
-            MonsterTrainAccessibility.ScreenReader?.Speak("End turn. Combat phase.", false);
-            MonsterTrainAccessibility.ScreenReader?.LogCombatEvent("End turn. Combat phase.");
+            if (!IsInBattle)
+                return;
+
+            bool hadPending = _awaitingTurnStart;
+            _awaitingTurnStart = false;
+            int drawn = _pendingDraws;
+            _pendingDraws = 0;
+
+            // The tracker only sees screens opening, so after an overlay (rewards,
+            // pile view) it can be left on the overlay while the battle continues
+            if (Help.ScreenStateTracker.CurrentScreen != Help.GameScreen.Battle &&
+                Battle.FloorReviewSystem.IsBattleScreenFrontmost())
+            {
+                Help.ScreenStateTracker.SetScreen(Help.GameScreen.Battle);
+            }
+
+            var parts = new List<string> { "Your turn" };
+            int ember = ResourceReader.GetCurrentEnergy(_cache);
+            if (ember >= 0)
+                parts.Add($"{ember} ember");
+            if (hadPending && drawn > 0 && MonsterTrainAccessibility.AccessibilitySettings.AnnounceCardDraws.Value)
+                parts.Add(drawn == 1 ? "drew 1 card" : $"drew {drawn} cards");
+            string wave = ResourceReader.GetWaveText(_cache);
+            if (!string.IsNullOrEmpty(wave))
+                parts.Add(wave);
+
+            string message = string.Join(", ", parts) + ".";
+            MonsterTrainAccessibility.ScreenReader?.Queue(message);
+            MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(message);
         }
 
         /// <summary>
@@ -154,6 +173,13 @@ namespace MonsterTrainAccessibility.Screens
         {
             if (!MonsterTrainAccessibility.AccessibilitySettings.AnnounceCardDraws.Value)
                 return;
+
+            // The turn's opening draw is reported in the "Your turn" line
+            if (_awaitingTurnStart)
+            {
+                _pendingDraws += count;
+                return;
+            }
 
             string message;
             if (count == 1)
@@ -358,6 +384,34 @@ namespace MonsterTrainAccessibility.Screens
             SpeakOrLogAutoEvent(message);
         }
 
+        /// <summary>A unit regained health (actual HP change).</summary>
+        public void OnUnitHealed(string unitName, int amount, int newHP)
+        {
+            if (!IsInBattle || amount <= 0)
+                return;
+            SpeakOrLogAutoEvent($"{unitName} healed for {amount}, {newHP} HP");
+        }
+
+        /// <summary>
+        /// A unit's trigger/ability popup ("Summon", "Slay", "Revenge", "Immune").
+        /// </summary>
+        public void OnUnitNotification(string unitName, string text, bool isEnemy)
+        {
+            if (!IsInBattle || string.IsNullOrEmpty(text))
+                return;
+            string message = string.IsNullOrEmpty(unitName) ? text : $"{unitName}: {text}";
+            SpeakOrLogAutoEvent(message);
+        }
+
+        /// <summary>A card created mid-battle (Scourge from an enemy, "add to hand" effects).</summary>
+        public void OnCardAdded(string cardName, string pileName)
+        {
+            if (!IsInBattle || string.IsNullOrEmpty(cardName))
+                return;
+            string message = $"{cardName} added to {pileName}";
+            SpeakOrLogAutoEvent(message);
+        }
+
         /// <summary>
         /// Announce enemies ascending floors (generic)
         /// </summary>
@@ -387,12 +441,30 @@ namespace MonsterTrainAccessibility.Screens
         /// </summary>
         public void OnPyreDamaged(int damage, int remainingHP)
         {
-            if (!IsInBattle)
+            if (!IsInBattle && !IsRunEventScreen())
                 return;
 
             string message = $"Pyre takes {damage} damage! {remainingHP} health remaining";
             MonsterTrainAccessibility.ScreenReader?.Queue(message);
             MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(message);
+        }
+
+        /// <summary>
+        /// Out-of-battle screens where pyre health changes are real run events
+        /// (story event outcomes, merchant repairs, rewards) - not save loading.
+        /// </summary>
+        private static bool IsRunEventScreen()
+        {
+            switch (Help.ScreenStateTracker.CurrentScreen)
+            {
+                case Help.GameScreen.Event:
+                case Help.GameScreen.Shop:
+                case Help.GameScreen.Rewards:
+                case Help.GameScreen.Map:
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         /// <summary>
@@ -480,7 +552,7 @@ namespace MonsterTrainAccessibility.Screens
         /// </summary>
         public void OnPyreHealed(int amount, int currentHP)
         {
-            if (!IsInBattle)
+            if (!IsInBattle && !IsRunEventScreen())
                 return;
 
             string message = $"Pyre healed for {amount}. {currentHP} health";

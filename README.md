@@ -67,21 +67,37 @@ A comprehensive accessibility mod for Monster Train that enables totally blind p
 
 If you own The Last Divinity DLC, the main menu has a toggle that enables or disables it for your next run. From the menu options, press the **Right arrow**, then **Up**, to reach the toggle. Press **Enter** to switch it - the toggle announces whether the DLC is on or off. Press the **Left arrow** to return to the menu options.
 
-### Information Hotkeys
-| Key | Action |
-|-----|--------|
-| F1 | Open the help list for the current screen (browse with Up/Down, close with F1, Enter, or Escape) |
-| C | Re-read current focused item (for cards, shop items, and artifacts this reads the full details, not just the short focus announcement) |
-| T | Read all text on screen (patch notes, descriptions, etc.) |
-| Tab | Read train stats (pyre health, gold, deck size) |
-| V | Cycle verbosity level (Minimal/Normal/Verbose) |
+### No Game Keys Taken
 
-### Run Information (works on any screen)
+Every mod key is a key the game itself does not use, so pressing a mod key never also triggers a game action (opening a pile, toggling tooltips, sending an emote). The mod only adds announcements after a few game keys: Tab (train stats), N (game speed) and Page Up/Down (floor change).
+
+Keys changed in this version (old installs are migrated automatically; keys you rebound yourself are kept):
+
+| Action | Old key | New key |
+|--------|---------|---------|
+| Re-read focused item | C | F2 |
+| Read all screen text / run summary | T / S | F3 |
+| Cycle verbosity | V | F4 |
+| Gold | Ctrl + G | F5 |
+| Pyre health | Ctrl + H | F6 |
+| Pact shards and threat | Ctrl + R | F7 |
+| Read hand | H | J |
+| Read all units with detail | U | Shift + L |
+| Read ember | R | G |
+| Open floor review | Up arrow | Shift + K |
+| Re-read map node | M | F2 |
+
+### Information Hotkeys (any screen)
 | Key | Action |
 |-----|--------|
-| Ctrl + G | Read current gold |
-| Ctrl + H | Read current Pyre health |
-| Ctrl + R | Read pact shards and threat level (The Last Divinity runs) |
+| F1 | Open the help list for the current screen (Up/Down read entries, Home/End jump, F1, Enter or Escape close). Each list ends with the keys that work everywhere |
+| F2 | Re-read current focused item (for cards, shop items, and artifacts this reads the full details, not just the short focus announcement) |
+| F3 | Read all text on screen (patch notes, descriptions, the run summary after a run) |
+| F4 | Cycle verbosity level (Minimal/Normal/Verbose) |
+| F5 | Read current gold |
+| F6 | Read current Pyre health |
+| F7 | Read pact shards and threat level (The Last Divinity runs) |
+| Tab | Read train stats (pyre health, gold, deck size) - the game's own HUD key, the mod reads the panel it opens |
 
 ### Review Buffers (Ctrl + Arrow Keys)
 
@@ -141,21 +157,20 @@ The mod automatically reads text when:
 ### Battle Hotkeys
 | Key | Action |
 |-----|--------|
-| H | Read all cards in hand |
-| K | Read the selected floor - capacity and units (the MT2 mod uses B, taken here by the game's eaten pile) |
-| Shift + K or L | Read all floors |
-| U | Read all units with detail (U for Units) - your monsters front-to-back, then enemies |
-| R | Read current ember |
-| Up arrow | Open floor review - a cursor to walk the floors and their units (see below) |
-| Ctrl + G | Read gold |
-| Ctrl + H | Read Pyre health |
-| Ctrl + R | Read pact shards (The Last Divinity) |
+| J | Read all cards in hand |
+| K | Read the selected floor - capacity and units |
+| L | Read all floors |
+| Shift + L | Read all units with detail - your monsters front-to-back, then enemies |
+| G | Read current ember |
+| Shift + K | Open floor review - a cursor to walk the floors and their units (see below) |
 | N | Toggle combat speed (game's native key) - announces the new speed |
-| Tab | Read train stats (pyre health, gold, deck size) |
+| Page Up/Down | Change the selected floor (game's native keys) - announces the floor |
 
-### Floor Review (Up arrow in battle)
+Each of your turns starts with one line - "Your turn, 3 ember, drew 5 cards, 2 waves remaining" - and cards in hand announce their position ("2 of 5"). During combat the mod announces attacks, deaths, unit trigger abilities (Summon, Slay, Revenge, Resolve...), healing, status effects, enemies moving, cards added to your deck or hand, and pyre damage. Everything is also kept in the Events buffer.
 
-Monster Train 1 has no keyboard way to inspect units in place - hovering with the mouse is the game's only option. The floor review fills that gap: press the **Up arrow** during battle to open a virtual cursor over the floors. Opening it announces the current floor and reminds you that Escape closes it.
+### Floor Review (Shift+K in battle)
+
+Monster Train 1 has no keyboard way to inspect units in place - hovering with the mouse is the game's only option. The floor review fills that gap: press **Shift+K** during battle to open a virtual cursor over the floors. Opening it announces the current floor and reminds you that Escape closes it.
 
 | Key | Action |
 |-----|--------|
@@ -168,7 +183,7 @@ Each floor first announces an overview: capacity (or pyre health in the Pyre roo
 
 Full details are always waiting in the buffers: the focused floor or unit feeds the **UI** buffer (and units also the **Creature** buffer), so Ctrl+Up/Down can step through status effects with keyword explanations, abilities, enemy intents, and floor corruption or enchantments piece by piece.
 
-The review cursor is review-only - it never moves the game's real selection, and the view is re-read on every keypress so it stays current while units move or die. It closes automatically when a card starts targeting, when a pile view or menu opens, or when the battle ends. Other battle hotkeys (H, K, U, R, F1...) keep working while it is open.
+The review cursor is review-only - it never moves the game's real selection, and the view is re-read on every keypress so it stays current while units move or die. It closes automatically when a card starts targeting, when a pile view or menu opens, or when the battle ends. Other battle hotkeys (J, K, L, G, F1...) keep working while it is open.
 
 ### Unit Targeting (when playing spells that target units)
 | Key | Action |
@@ -227,7 +242,7 @@ These are the game's built-in default key mappings (from the game's own input se
 | Feedback | `F8` |
 | Full Screen Toggle | `Alt + Enter` |
 
-Several mod hotkeys deliberately share letters with game controls that are inert on most screens (for example C also opens the discard pile in battle, and V the exhaust pile). The mod avoids claiming keys whose game action is disruptive - that is why the floor key is K rather than MT2's B (eaten pile), and gold is Ctrl+G.
+None of these game keys is used by the mod (see "No Game Keys Taken" above).
 
 ### Note for Controller Users
 
@@ -254,12 +269,12 @@ You can edit this file to customize:
 
 The battle screen uses the game's native navigation. Use hotkeys for information:
 
-- Press **H** to hear all cards in your hand
-- Press **K** to hear the selected floor, **Shift+K** or **L** for all floors
-- Press **U** to hear all units with detail - your monsters front-to-back, then enemies (U for Units)
-- Press the **Up arrow** to open the floor review and walk the floors and units with the arrow keys (see Floor Review above)
-- Press **R** to hear your current ember
-- Press **Ctrl+G**, **Ctrl+H**, or **Ctrl+R** for gold, pyre health, or pact shards
+- Press **J** to hear all cards in your hand
+- Press **K** to hear the selected floor, **L** for all floors
+- Press **Shift+L** to hear all units with detail - your monsters front-to-back, then enemies
+- Press **Shift+K** to open the floor review and walk the floors and units with the arrow keys (see Floor Review above)
+- Press **G** to hear your current ember
+- Press **F5**, **F6**, or **F7** for gold, pyre health, or pact shards
 - Press **N** to toggle combat speed (announces the new speed)
 - Press **Tab** to hear train stats (pyre health, gold, deck size)
 - Press **F1** for a browsable help list of all available keys
@@ -277,11 +292,11 @@ The battle screen uses the game's native navigation. Use hotkeys for information
 
 1. **Press F1 for Help**: On any screen, press F1 to open the help list, then browse it with Up/Down
 2. **Start Simple**: Begin with the tutorial to learn the game flow
-3. **Read Text**: Press T to read patch notes, event descriptions, or any screen text
-4. **Use Battle Hotkeys**: H, K, U, R provide quick status updates during battle
-5. **Check Ember**: Press R regularly to know how much you can play; Ctrl+G and Ctrl+H cover gold and pyre health
-6. **Enemy Intents**: Press U to hear what enemies plan to do next turn
-7. **Re-read Items**: Press C to re-read the currently focused menu item - for cards, shop items, and artifacts it reads the complete details in one go. Or step through the same details piece by piece with the UI and Card buffers (Ctrl+arrows)
+3. **Read Text**: Press F3 to read patch notes, event descriptions, or any screen text
+4. **Use Battle Hotkeys**: J, K, L, G provide quick status updates during battle
+5. **Check Ember**: Press G to know how much you can play; F5 and F6 cover gold and pyre health
+6. **Enemy Intents**: Press Shift+L to hear what enemies plan to do next turn
+7. **Re-read Items**: Press F2 to re-read the currently focused menu item - for cards, shop items, and artifacts it reads the complete details in one go. Or step through the same details piece by piece with the UI and Card buffers (Ctrl+arrows)
 8. **Combat Speed**: Press N to toggle combat speed - the mod announces the new speed
 
 ## Troubleshooting

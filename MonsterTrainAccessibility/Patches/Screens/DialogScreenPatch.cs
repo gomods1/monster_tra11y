@@ -3,6 +3,7 @@ using MonsterTrainAccessibility.Help;
 using System;
 using System.Reflection;
 using System.Text;
+using MonsterTrainAccessibility.Utilities;
 
 namespace MonsterTrainAccessibility.Patches
 {
@@ -15,6 +16,18 @@ namespace MonsterTrainAccessibility.Patches
         {
             try
             {
+                // Dialog.Show is the funnel every dialog goes through:
+                // DialogScreen.ShowDialog, ShowConfirmationDialog and
+                // ShowNotificationDialog (abandon run, deck/challenge
+                // confirmations, game notices) all end up here.
+                var dialogShow = AccessTools.Method(typeof(Dialog), "Show", new[] { typeof(Dialog.Data) });
+                if (dialogShow != null)
+                {
+                    harmony.Patch(dialogShow, postfix: new HarmonyMethod(typeof(DialogScreenPatch).GetMethod(nameof(DialogShowPostfix))));
+                    MonsterTrainAccessibility.LogInfo("Patched Dialog.Show");
+                    return;
+                }
+
                 var targetType = AccessTools.TypeByName("DialogScreen");
                 if (targetType == null)
                 {
@@ -37,6 +50,46 @@ namespace MonsterTrainAccessibility.Patches
             catch (Exception ex)
             {
                 MonsterTrainAccessibility.LogError($"Failed to patch DialogScreen: {ex.Message}");
+            }
+        }
+
+        private static string _lastContent;
+        private static float _lastContentTime;
+
+        /// <summary>
+        /// True when this dialog text was just spoken on open, so the focus
+        /// reader for its buttons can say only the button label.
+        /// </summary>
+        internal static bool WasJustAnnounced(string dialogText)
+        {
+            if (string.IsNullOrEmpty(_lastContent) || string.IsNullOrEmpty(dialogText))
+                return false;
+            if (UnityEngine.Time.unscaledTime - _lastContentTime > 30f)
+                return false;
+            return Normalize(dialogText) == _lastContent;
+        }
+
+        private static string Normalize(string text)
+        {
+            text = TextUtilities.StripRichTextTags(text ?? "");
+            return System.Text.RegularExpressions.Regex.Replace(text, @"\s+", " ").Trim();
+        }
+
+        public static void DialogShowPostfix(Dialog.Data data)
+        {
+            try
+            {
+                if (data == null || string.IsNullOrEmpty(data.content))
+                    return;
+                ScreenStateTracker.SetScreen(Help.GameScreen.Dialog);
+                string content = Normalize(TextUtilities.CleanSpriteTagsForSpeech(data.content));
+                _lastContent = Normalize(data.content);
+                _lastContentTime = UnityEngine.Time.unscaledTime;
+                MonsterTrainAccessibility.ScreenReader?.Speak($"Dialog: {content}", false);
+            }
+            catch (Exception ex)
+            {
+                MonsterTrainAccessibility.LogError($"Error in Dialog.Show patch: {ex.Message}");
             }
         }
 

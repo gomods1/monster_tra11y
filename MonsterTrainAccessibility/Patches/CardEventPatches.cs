@@ -230,6 +230,14 @@ namespace MonsterTrainAccessibility.Patches
                                paramsType.GetField("card") ??
                                paramsType.GetField("_discardCard");
 
+                // Played spells go to the discard pile through here too, and
+                // the end-of-turn hand discard is expected - announce only
+                // discards caused by effects
+                if (paramsType.GetField("wasPlayed")?.GetValue(discardCardParams) is bool wasPlayed && wasPlayed)
+                    return;
+                if (paramsType.GetField("handDiscarded")?.GetValue(discardCardParams) is bool handDiscarded && handDiscarded)
+                    return;
+
                 if (cardField != null)
                 {
                     var card = cardField.GetValue(discardCardParams);
@@ -465,6 +473,26 @@ namespace MonsterTrainAccessibility.Patches
     /// </summary>
     public static class CardUpgradePatch
     {
+        private static bool IsRealUpgradeTarget(object card)
+        {
+            try
+            {
+                var saveManager = Utilities.ReflectionHelper.FindManager("SaveManager") as SaveManager;
+                if (saveManager == null) return true;
+                if (saveManager.PreviewMode) return false;
+                if (MonsterTrainAccessibility.BattleHandler?.IsInBattle == true) return true;
+                var deck = saveManager.GetDeckState();
+                if (deck == null) return true;
+                foreach (var c in deck)
+                    if (ReferenceEquals(c, card)) return true;
+                return false;
+            }
+            catch
+            {
+                return true;
+            }
+        }
+
         public static void TryPatch(Harmony harmony)
         {
             try
@@ -512,6 +540,11 @@ namespace MonsterTrainAccessibility.Patches
             try
             {
                 if (__instance == null || upgradeState == null) return;
+
+                // Draft, reward and champion-upgrade screens upgrade throwaway
+                // preview copies to render "after" cards; only real upgrades of
+                // deck cards (or battle cards) are announced
+                if (!IsRealUpgradeTarget(__instance)) return;
 
                 // Get card name
                 string cardName = "Card";

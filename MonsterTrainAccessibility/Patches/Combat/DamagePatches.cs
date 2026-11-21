@@ -567,6 +567,20 @@ namespace MonsterTrainAccessibility.Patches
                 if (oldHP == newHP)
                     return;
 
+                // HP increased = heal (the real amount: ApplyHeal's requested amount
+                // ignores the max HP cap and heal immunity). Max HP buffs raise HP
+                // too and are announced as such.
+                if (newHP > oldHP)
+                {
+                    // oldHP 0 = the unit is being set up (spawn), not healed
+                    if (oldHP > 0 && !MaxHPBuffPatch.WasJustBuffed(__instance))
+                    {
+                        string healed = CharacterStateHelper.GetUnitName(__instance);
+                        MonsterTrainAccessibility.BattleHandler?.OnUnitHealed(healed, newHP - oldHP, newHP);
+                    }
+                    return;
+                }
+
                 // HP decreased = damage
                 if (newHP < oldHP)
                 {
@@ -579,7 +593,7 @@ namespace MonsterTrainAccessibility.Patches
 
                     // Dedup check
                     float currentTime = UnityEngine.Time.unscaledTime;
-                    string announceKey = $"{attackerName}_{targetName}_{damage}_{newHP}";
+                    string announceKey = $"{attackerName}_{System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(__instance)}_{damage}_{newHP}";
                     if (announceKey == _lastAnnounceKey && currentTime - _lastAnnounceTime < 0.3f)
                         return;
                     _lastAnnounceKey = announceKey;
@@ -604,6 +618,11 @@ namespace MonsterTrainAccessibility.Patches
                     bool summaryMode = MonsterTrainAccessibility.AccessibilitySettings.CombatSummaryMode.Value;
                     bool announceDamage = MonsterTrainAccessibility.AccessibilitySettings.AnnounceDamage.Value;
 
+                    // Hits on the pyre heart are the pyre's own HP: PyreDamagePatch
+                    // already says "Pyre takes N damage", so only log this one
+                    if (__instance is CharacterState targetState && targetState.IsPyreHeart())
+                        announceDamage = false;
+
                     if (summaryMode && CombatPhaseChangePatch.IsAutoCombatPhase)
                     {
                         // Automated combat (Combat / HeroTurn): don't speak. Log the per-hit
@@ -615,6 +634,11 @@ namespace MonsterTrainAccessibility.Patches
                     {
                         // Live: your spell/card damage during MonsterTurn, boss actions, etc.
                         MonsterTrainAccessibility.ScreenReader?.Queue(announcement);
+                        MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(announcement);
+                    }
+                    else
+                    {
+                        MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(announcement);
                     }
 
                     // Death detection

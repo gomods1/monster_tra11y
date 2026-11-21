@@ -12,6 +12,10 @@ namespace MonsterTrainAccessibility.Core
         public ConfigEntry<VerbosityLevel> VerbosityLevel { get; private set; }
         public ConfigEntry<bool> UseSAPIFallback { get; private set; }
         public ConfigEntry<bool> EnableBraille { get; private set; }
+        public ConfigEntry<bool> DebugBridge { get; private set; }
+        public ConfigEntry<KeyCode> FloorReviewKey { get; private set; }
+        public ConfigEntry<int> KeyLayoutVersion { get; private set; }
+        public ConfigEntry<bool> DebugBridgeMute { get; private set; }
 
         // Navigation keys
         public ConfigEntry<KeyCode> NavigateUpKey { get; private set; }
@@ -78,6 +82,20 @@ namespace MonsterTrainAccessibility.Core
                 "Send text to braille display if available"
             );
 
+            DebugBridge = config.Bind(
+                "Debug",
+                "Bridge",
+                false,
+                "Development only: keep the game running and accepting input in the background, read commands from BepInEx/accessibility_bridge_cmd.txt and log all speech to BepInEx/accessibility_speech_log.txt"
+            );
+
+            DebugBridgeMute = config.Bind(
+                "Debug",
+                "BridgeMute",
+                false,
+                "While the debug bridge is enabled, log speech without sending it to the screen reader, and mute the game's audio"
+            );
+
             // ========== Navigation Keys ==========
             NavigateUpKey = config.Bind(
                 "Keys.Navigation",
@@ -129,81 +147,92 @@ namespace MonsterTrainAccessibility.Core
             );
 
             // ========== Information Hotkeys ==========
+            // None of these share a key with the game's own controls
+            // (UserKeyMappingHelper defaults: E/Enter, R, Q/Backspace, Escape,
+            // WASD/arrows, PageUp/Down, Home/End, Z X V B C M F Tab Shift,
+            // 1-0, Y U I O P, N, T, H, F8). Tab, N and PageUp/Down only add an
+            // announcement after the game's own action.
             ReadCurrentKey = config.Bind(
                 "Keys.Information",
                 "ReadCurrent",
-                KeyCode.C,
-                "Key to re-read the currently focused item"
+                KeyCode.F2,
+                "Key to re-read the currently focused item (cards, shop items and artifacts read their full details)"
             );
 
             ReadTextKey = config.Bind(
                 "Keys.Information",
                 "ReadText",
-                KeyCode.T,
-                "Key to read all text content on screen (patch notes, descriptions, etc.)"
+                KeyCode.F3,
+                "Key to read all text content on screen (patch notes, descriptions, run summary, etc.)"
             );
 
             ReadHandKey = config.Bind(
                 "Keys.Information",
                 "ReadHand",
-                KeyCode.H,
-                "Key to read all cards in hand"
+                KeyCode.J,
+                "Key to read all cards in hand (battle)"
             );
 
             ReadFloorsKey = config.Bind(
                 "Keys.Information",
                 "ReadFloors",
                 KeyCode.L,
-                "Key to read all floor information (L for Levels). Note: F conflicts with game's Toggle Unit Details"
+                "Key to read all floors (battle)"
             );
 
             ReadCurrentFloorKey = config.Bind(
                 "Keys.Information",
                 "ReadCurrentFloor",
                 KeyCode.K,
-                "Key to read the selected floor's capacity and units. With Shift held, reads every floor. " +
-                "The MT2 accessibility mod uses B, but B is this game's eaten pile key"
+                "Key to read the selected floor's capacity and units (battle)"
+            );
+
+            FloorReviewKey = config.Bind(
+                "Keys.Information",
+                "FloorReview",
+                KeyCode.K,
+                "Key to open the floor review cursor (battle), pressed together with Shift"
             );
 
             ReadEnemiesKey = config.Bind(
                 "Keys.Information",
                 "ReadEnemies",
-                KeyCode.U,
-                "Key to read all units with detail (U for Units). Note: N conflicts with game's combat speed toggle"
+                KeyCode.L,
+                "Key to read all units with full detail (battle), pressed together with Shift"
             );
 
             ReadEmberKey = config.Bind(
                 "Keys.Information",
                 "ReadEmber",
-                KeyCode.R,
-                "Key to read current ember"
+                KeyCode.G,
+                "Key to read current ember (battle)"
             );
 
             ReadGoldKey = config.Bind(
                 "Keys.Information",
                 "ReadGold",
-                KeyCode.G,
-                "Key to read current gold, pressed together with Ctrl"
+                KeyCode.F5,
+                "Key to read current gold"
             );
 
             ReadPyreHealthKey = config.Bind(
                 "Keys.Information",
                 "ReadPyreHealth",
-                KeyCode.H,
-                "Key to read current Pyre health, pressed together with Ctrl"
+                KeyCode.F6,
+                "Key to read current Pyre health"
             );
 
             ReadPactShardsKey = config.Bind(
                 "Keys.Information",
                 "ReadPactShards",
-                KeyCode.R,
-                "Key to read pact shards and threat level (The Last Divinity), pressed together with Ctrl"
+                KeyCode.F7,
+                "Key to read pact shards and threat level (The Last Divinity)"
             );
 
             ToggleVerbosityKey = config.Bind(
                 "Keys.Information",
                 "ToggleVerbosity",
-                KeyCode.V,
+                KeyCode.F4,
                 "Key to cycle through verbosity levels"
             );
 
@@ -214,20 +243,23 @@ namespace MonsterTrainAccessibility.Core
                 "Key to show context-sensitive help for current screen"
             );
 
-            // ========== Map Keys ==========
+            // Retired: the read-current key covers map nodes and the read-text
+            // key covers the run summary. Kept so custom bindings still work.
             ReadMapNodeKey = config.Bind(
                 "Keys.Information",
                 "ReadMapNode",
-                KeyCode.M,
-                "Key to re-read current map node with coordinates (on map screen)"
+                KeyCode.None,
+                "Optional extra key to re-read the focused map node (the ReadCurrent key does the same)"
             );
 
             ReadRunSummaryKey = config.Bind(
                 "Keys.Information",
                 "ReadRunSummary",
-                KeyCode.S,
-                "Key to read run summary on the victory/defeat screen"
+                KeyCode.None,
+                "Optional extra key to read the run summary on the victory/defeat screen (the ReadText key does the same)"
             );
+
+            MigrateKeyLayout(config);
 
             // ========== Announcement Preferences ==========
             AnnounceCardDraws = config.Bind(
@@ -254,7 +286,7 @@ namespace MonsterTrainAccessibility.Core
             CombatSummaryMode = config.Bind(
                 "Announcements",
                 "CombatSummaryMode",
-                true,
+                false,
                 "During automated combat, stay silent and speak one per-floor summary (damage exchanged, who survived, pyre damage) at the start of your next turn instead of narrating each hit/spawn/death/move. Suppressed events are still logged to the Events buffer and combat log. Off = live blow-by-blow with no summary."
             );
 
@@ -297,6 +329,42 @@ namespace MonsterTrainAccessibility.Core
         /// <summary>
         /// Cycle to the next verbosity level
         /// </summary>
+        /// <summary>
+        /// Layout 2 moved every mod key off the game's own controls (C opened the
+        /// discard pile, V the consumed pile, H/R/U/T/M/S were game keys too).
+        /// Saved config files keep the old values, so keys still at an old default
+        /// move to the new default; keys the player rebound are left alone.
+        /// </summary>
+        private void MigrateKeyLayout(ConfigFile config)
+        {
+            KeyLayoutVersion = config.Bind("Keys.Information", "KeyLayoutVersion", 0,
+                "Internal: version of the default key layout this file was migrated to");
+            if (KeyLayoutVersion.Value >= 2)
+                return;
+
+            void Move(ConfigEntry<KeyCode> entry, KeyCode oldDefault, KeyCode newDefault)
+            {
+                if (entry.Value == oldDefault)
+                    entry.Value = newDefault;
+            }
+
+            Move(ReadCurrentKey, KeyCode.C, KeyCode.F2);
+            Move(ReadTextKey, KeyCode.T, KeyCode.F3);
+            Move(ReadHandKey, KeyCode.H, KeyCode.J);
+            Move(ReadEnemiesKey, KeyCode.U, KeyCode.L);
+            Move(ReadEmberKey, KeyCode.R, KeyCode.G);
+            Move(ReadGoldKey, KeyCode.G, KeyCode.F5);
+            Move(ReadPyreHealthKey, KeyCode.H, KeyCode.F6);
+            Move(ReadPactShardsKey, KeyCode.R, KeyCode.F7);
+            Move(ToggleVerbosityKey, KeyCode.V, KeyCode.F4);
+            Move(ReadMapNodeKey, KeyCode.M, KeyCode.None);
+            Move(ReadRunSummaryKey, KeyCode.S, KeyCode.None);
+
+            KeyLayoutVersion.Value = 2;
+            config.Save();
+            MonsterTrainAccessibility.LogInfo("Migrated accessibility keys to layout 2 (no game key conflicts)");
+        }
+
         public void CycleVerbosity()
         {
             var current = VerbosityLevel.Value;

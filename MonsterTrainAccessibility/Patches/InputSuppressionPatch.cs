@@ -71,6 +71,39 @@ namespace MonsterTrainAccessibility.Patches
                     MonsterTrainAccessibility.LogWarning("Could not patch ScreenManager.OnInputMappingSignaled - Ctrl+arrows may also move the game selection");
                 }
 
+                // Debug bridge: while the window is unfocused the game still reads the
+                // global cursor position, so hovering moved the UI selection. Report no
+                // mouse to the EventSystem then (StandaloneInputModule skips mouse events).
+                var bridgeInput = AccessTools.TypeByName("ShinyShoe.GameInputModuleBridge");
+                var mousePresent = bridgeInput != null ? AccessTools.PropertyGetter(bridgeInput, "mousePresent") : null;
+                if (mousePresent != null)
+                {
+                    harmony.Patch(mousePresent,
+                        prefix: new HarmonyMethod(typeof(InputSuppressionPatch).GetMethod(nameof(MousePresentPrefix))));
+                }
+
+                var mouseDriverType = AccessTools.TypeByName("ShinyShoe.CoreInputDriverMouse");
+                var mouseLateUpdate = mouseDriverType != null ? AccessTools.Method(mouseDriverType, "OnLateUpdate") : null;
+                if (mouseLateUpdate != null)
+                {
+                    harmony.Patch(mouseLateUpdate,
+                        prefix: new HarmonyMethod(typeof(InputSuppressionPatch).GetMethod(nameof(MouseDriverPrefix))));
+                }
+
+                // Debug bridge: feed virtual keys into the game's keyboard driver
+                var keyboardDriverType = AccessTools.TypeByName("ShinyShoe.CoreInputDriverKeyboard");
+                var driverLateUpdate = keyboardDriverType != null
+                    ? AccessTools.Method(keyboardDriverType, "OnLateUpdate")
+                    : null;
+                if (driverLateUpdate != null)
+                {
+                    _keyDataField = AccessTools.Field(keyboardDriverType, "_keyData");
+                    _lastInputTimeSetter = AccessTools.PropertySetter(AccessTools.TypeByName("ShinyShoe.CoreInputDriver"), "lastInputTime");
+                    _updateButtonParams = AccessTools.Method(AccessTools.TypeByName("ShinyShoe.CoreInputDataButton"), "UpdateButtonParams");
+                    harmony.Patch(driverLateUpdate,
+                        prefix: new HarmonyMethod(typeof(InputSuppressionPatch).GetMethod(nameof(KeyboardDriverPrefix))));
+                }
+
                 MonsterTrainAccessibility.LogInfo("Patched accessibility input suppression");
             }
             catch (Exception ex)
@@ -82,13 +115,21 @@ namespace MonsterTrainAccessibility.Patches
         public static bool AxisPrefix(string __0, ref float __result)
         {
             bool suppress = (IsCtrlHeld() || IsHelpOpen() || IsReviewOpen()) && IsNavigationAxis(__0);
-            // The Up press that opens the floor review must not also move the UI focus
-            suppress |= __0 == "Vertical" && IsBattleUpArrowClaim();
 
             if (suppress)
             {
                 __result = 0f;
                 return false;
+            }
+
+            if (KeyInput.HasVirtualKeys)
+            {
+                float v = VirtualAxis(__0);
+                if (v != 0f)
+                {
+                    __result = v;
+                    return false;
+                }
             }
             return true;
         }
@@ -96,7 +137,6 @@ namespace MonsterTrainAccessibility.Patches
         public static bool ButtonPrefix(string __0, ref bool __result)
         {
             bool suppress = (IsCtrlHeld() || IsHelpOpen() || IsReviewOpen()) && IsNavigationAxis(__0);
-            suppress |= __0 == "Vertical" && IsBattleUpArrowClaim();
             // While help or the floor review is open, Enter and Escape act on
             // the modal instead of the game
             suppress |= (IsHelpOpen() || IsReviewOpen()) && (__0 == "Submit" || __0 == "Cancel");
@@ -106,7 +146,95 @@ namespace MonsterTrainAccessibility.Patches
                 __result = false;
                 return false;
             }
+
+            if (KeyInput.HasVirtualKeys && VirtualButtonDown(__0))
+            {
+                __result = true;
+                return false;
+            }
             return true;
+        }
+
+        /// <summary>Debug bridge: freeze the game's mouse driver while unfocused.</summary>
+        public static bool MouseDriverPrefix()
+        {
+            return !(KeyInput.ForceFocus && !Application.isFocused);
+        }
+
+        public static bool MousePresentPrefix(ref bool __result)
+        {
+            if (KeyInput.ForceFocus && !Application.isFocused)
+            {
+                __result = false;
+                return false;
+            }
+            return true;
+        }
+
+        private static FieldInfo _keyDataField;
+        private static MethodInfo _lastInputTimeSetter;
+        private static MethodInfo _updateButtonParams;
+
+        /// <summary>
+        /// Debug bridge: replaces CoreInputDriverKeyboard.OnLateUpdate while virtual
+        /// keys are scheduled so they count as held for the game's control mappings.
+        /// Same loop as the original, with the virtual state OR'ed in.
+        /// </summary>
+        public static bool KeyboardDriverPrefix(object __instance)
+        {
+            if (!KeyInput.HasVirtualKeys || _keyDataField == null || _updateButtonParams == null)
+                return true;
+            try
+            {
+                if (!(_keyDataField.GetValue(__instance) is System.Collections.IDictionary keyData))
+                    return true;
+                var args = new object[1];
+                foreach (System.Collections.DictionaryEntry entry in keyData)
+                {
+                    var code = (KeyCode)entry.Key;
+                    bool active = Input.GetKey(code) || KeyInput.VirtualHeld(code);
+                    if (active)
+                        _lastInputTimeSetter?.Invoke(__instance, new object[] { Time.time });
+                    args[0] = active;
+                    _updateButtonParams.Invoke(entry.Value, args);
+                }
+                return false;
+            }
+            catch
+            {
+                return true;
+            }
+        }
+
+        private static float VirtualAxis(string axis)
+        {
+            if (axis == "Horizontal")
+            {
+                if (KeyInput.VirtualHeld(KeyCode.RightArrow)) return 1f;
+                if (KeyInput.VirtualHeld(KeyCode.LeftArrow)) return -1f;
+            }
+            else if (axis == "Vertical")
+            {
+                if (KeyInput.VirtualHeld(KeyCode.UpArrow)) return 1f;
+                if (KeyInput.VirtualHeld(KeyCode.DownArrow)) return -1f;
+            }
+            return 0f;
+        }
+
+        private static bool VirtualButtonDown(string button)
+        {
+            switch (button)
+            {
+                case "Horizontal":
+                    return KeyInput.VirtualDown(KeyCode.RightArrow) || KeyInput.VirtualDown(KeyCode.LeftArrow);
+                case "Vertical":
+                    return KeyInput.VirtualDown(KeyCode.UpArrow) || KeyInput.VirtualDown(KeyCode.DownArrow);
+                case "Submit":
+                    return KeyInput.VirtualDown(KeyCode.Return) || KeyInput.VirtualDown(KeyCode.KeypadEnter);
+                case "Cancel":
+                    return KeyInput.VirtualDown(KeyCode.Escape);
+            }
+            return false;
         }
 
         /// <summary>
@@ -117,8 +245,7 @@ namespace MonsterTrainAccessibility.Patches
         {
             bool helpOpen = IsHelpOpen();
             bool reviewOpen = IsReviewOpen();
-            bool upArrowClaim = IsBattleUpArrowClaim();
-            if (__0 == null || (!IsCtrlHeld() && !helpOpen && !reviewOpen && !upArrowClaim))
+            if (__0 == null || (!IsCtrlHeld() && !helpOpen && !reviewOpen))
                 return true;
 
             try
@@ -141,23 +268,10 @@ namespace MonsterTrainAccessibility.Patches
                 if (isArrow && (IsCtrlHeld() || helpOpen || reviewOpen))
                     return false;
 
-                // The plain Up arrow opens the floor review in battle, so the
-                // game must never see it there (it would move navigation to
-                // the tower). Other arrows stay with the game until the
-                // review is actually open.
-                if (keyCode == KeyCode.UpArrow && upArrowClaim)
-                    return false;
-
-                // The game's mappings ignore modifiers, so Ctrl+H/R/G would
-                // also fire e.g. ToggleSynthesisTooltips (H) or
-                // LivePresenceToggle (R). While Ctrl is held those keys belong
-                // to the mod's run info hotkeys.
-                if (IsCtrlHeld() && IsRunInfoKey(keyCode))
-                    return false;
-
                 if (helpOpen &&
                     (keyCode == KeyCode.Return || keyCode == KeyCode.KeypadEnter ||
-                     keyCode == KeyCode.Escape || keyCode == KeyCode.Space))
+                     keyCode == KeyCode.Escape || keyCode == KeyCode.Space ||
+                     keyCode == KeyCode.Home || keyCode == KeyCode.End))
                 {
                     return false;
                 }
@@ -184,18 +298,7 @@ namespace MonsterTrainAccessibility.Patches
 
         private static bool IsCtrlHeld()
         {
-            return Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-        }
-
-        private static bool IsRunInfoKey(KeyCode keyCode)
-        {
-            var config = MonsterTrainAccessibility.AccessibilitySettings;
-            if (config == null)
-                return false;
-
-            return keyCode == config.ReadGoldKey.Value ||
-                   keyCode == config.ReadPyreHealthKey.Value ||
-                   keyCode == config.ReadPactShardsKey.Value;
+            return KeyInput.GetKey(KeyCode.LeftControl) || KeyInput.GetKey(KeyCode.RightControl);
         }
 
         /// <summary>
@@ -218,23 +321,5 @@ namespace MonsterTrainAccessibility.Patches
             return review != null && (review.IsActive || review.ClosedThisFrame);
         }
 
-        /// <summary>
-        /// In battle the plain Up arrow belongs to the floor review (it opens
-        /// it). Checked from physical key state, not mod state, so the press
-        /// that opens the review is claimed regardless of script order.
-        /// </summary>
-        private static bool IsBattleUpArrowClaim()
-        {
-            if (MonsterTrainAccessibility.FloorReview == null)
-                return false;
-            if (!Input.GetKey(KeyCode.UpArrow))
-                return false;
-            // Only when the battle screen itself has focus - pile views,
-            // dialogs, and other overlays keep their arrow navigation
-            if (!Battle.FloorReviewSystem.IsBattleScreenFrontmost())
-                return false;
-            return Battle.FloorTargetingSystem.Instance?.IsTargeting != true &&
-                   Battle.UnitTargetingSystem.Instance?.IsTargeting != true;
-        }
     }
 }

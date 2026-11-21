@@ -63,6 +63,7 @@ namespace MonsterTrainAccessibility
                 // Initialize screen reader output (Tolk)
                 ScreenReader = new ScreenReaderOutput();
                 ScreenReader.Initialize();
+                Application.quitting += () => ScreenReader?.Shutdown();
 
                 // Initialize focus management
                 FocusManager = new VirtualFocusManager();
@@ -124,6 +125,7 @@ namespace MonsterTrainAccessibility
             ChecklistPageTogglePatch.TryPatch(_harmony);
             StatsPageTogglePatch.TryPatch(_harmony);
             ScreenManagerPatch.TryPatch(_harmony);
+            ScreenFocusSyncPatch.TryPatch(_harmony);
 
             // New screen patches
             RewardScreenPatch.TryPatch(_harmony);
@@ -144,7 +146,6 @@ namespace MonsterTrainAccessibility
 
             // Combat event patches
             PlayerTurnStartPatch.TryPatch(_harmony);
-            PlayerTurnEndPatch.TryPatch(_harmony);
             DamageAppliedPatch.TryPatch(_harmony);
             CharacterDamagePatch.TryPatch(_harmony);
             UnitDeathPatch.TryPatch(_harmony);
@@ -164,6 +165,7 @@ namespace MonsterTrainAccessibility
             MaxHPBuffPatch.TryPatch(_harmony);
             MorselEatenPatch.TryPatch(_harmony);
             RoomDisabledPatch.TryPatch(_harmony);
+            BattleNotificationPatches.TryPatch(_harmony);
 
             // Input patches
             InputSuppressionPatch.TryPatch(_harmony);
@@ -192,6 +194,7 @@ namespace MonsterTrainAccessibility
             MenuHandler = handlerGO.AddComponent<MenuAccessibility>();
             FloorTargeting = handlerGO.AddComponent<FloorTargetingSystem>();
             UnitTargeting = handlerGO.AddComponent<UnitTargetingSystem>();
+            handlerGO.AddComponent<DebugBridge>();
         }
 
         /// <summary>
@@ -226,15 +229,14 @@ namespace MonsterTrainAccessibility
 
         private void OnDestroy()
         {
-            // Clean up
-            ScreenReader?.Shutdown();
-            _harmony?.UnpatchSelf();
-
-            // Destroy the handler GameObject (contains both InputHandler and MenuHandler)
-            if (InputHandler != null && InputHandler.gameObject != null)
-            {
-                Destroy(InputHandler.gameObject);
-            }
+            // The plugin component can be destroyed while the game keeps running
+            // (seen when the game starts without window focus: the BepInEx manager
+            // object goes away right after the chainloader finishes). The patches
+            // and the DontDestroyOnLoad handler object must survive that, so only
+            // release Tolk when the application is really quitting.
+            // release Tolk when the application is really quitting
+            // (Application.quitting, registered in Awake).
+            Log?.LogInfo("Plugin component destroyed; patches and handlers stay alive");
         }
 
         // Utility method for other classes to log

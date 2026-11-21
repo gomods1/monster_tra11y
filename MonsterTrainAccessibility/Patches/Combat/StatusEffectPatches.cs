@@ -52,8 +52,9 @@ namespace MonsterTrainAccessibility.Patches
 
                     if (method != null)
                     {
+                        var prefix = new HarmonyMethod(typeof(StatusEffectPatch).GetMethod(nameof(Prefix)));
                         var postfix = new HarmonyMethod(typeof(StatusEffectPatch).GetMethod(nameof(Postfix)));
-                        harmony.Patch(method, postfix: postfix);
+                        harmony.Patch(method, prefix: prefix, postfix: postfix);
                         MonsterTrainAccessibility.LogInfo($"Patched CharacterState.AddStatusEffect (params: {method.GetParameters().Length})");
                     }
                     else
@@ -69,10 +70,31 @@ namespace MonsterTrainAccessibility.Patches
             }
         }
 
-        public static void Postfix(object __instance, string statusId, int numStacks)
+        // Stacks before the call: immunity, Dazed/Rooted refresh and similar make the
+        // requested amount differ from what the unit actually gained
+        public static void Prefix(object __instance, string statusId, out int __state)
+        {
+            __state = -1;
+            try
+            {
+                if (__instance is CharacterState cs && !string.IsNullOrEmpty(statusId))
+                    __state = cs.GetStatusEffectStacks(statusId);
+            }
+            catch { }
+        }
+
+        public static void Postfix(object __instance, string statusId, int numStacks, int __state)
         {
             try
             {
+                if (__state >= 0 && __instance is CharacterState cs)
+                {
+                    int gained = cs.GetStatusEffectStacks(statusId) - __state;
+                    if (gained <= 0)
+                        return; // immune, or nothing changed
+                    numStacks = gained;
+                }
+
                 if (!MonsterTrainAccessibility.AccessibilitySettings.AnnounceStatusEffects.Value)
                     return;
 
@@ -87,7 +109,7 @@ namespace MonsterTrainAccessibility.Patches
                 string unitName = GetUnitName(__instance);
 
                 // Create a key to detect duplicate announcements
-                string effectKey = $"{unitName}_{statusId}_{numStacks}";
+                string effectKey = $"{System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(__instance)}_{statusId}_{numStacks}";
                 float currentTime = UnityEngine.Time.unscaledTime;
 
                 // Avoid duplicate announcements within 0.5 seconds
@@ -181,8 +203,9 @@ namespace MonsterTrainAccessibility.Patches
                 var method = AccessTools.Method(characterType, "RemoveStatusEffect");
                 if (method != null)
                 {
+                    var prefix = new HarmonyMethod(typeof(StatusEffectRemovedPatch).GetMethod(nameof(Prefix)));
                     var postfix = new HarmonyMethod(typeof(StatusEffectRemovedPatch).GetMethod(nameof(Postfix)));
-                    harmony.Patch(method, postfix: postfix);
+                    harmony.Patch(method, prefix: prefix, postfix: postfix);
                     MonsterTrainAccessibility.LogInfo($"Patched CharacterState.RemoveStatusEffect");
                 }
             }
@@ -193,14 +216,32 @@ namespace MonsterTrainAccessibility.Patches
         }
 
         // __instance = CharacterState, __0 = statusId, __1 = removeAtEndOfTurn, __2 = numStacks
-        public static void Postfix(object __instance, string __0, bool __1, int __2)
+        public static void Prefix(object __instance, string __0, out int __state)
+        {
+            __state = -1;
+            try
+            {
+                if (__instance is CharacterState cs && !string.IsNullOrEmpty(__0))
+                    __state = cs.GetStatusEffectStacks(__0);
+            }
+            catch { }
+        }
+
+        // Announces the stacks actually removed: numStacks -1 means "all", a
+        // removeAtEndOfTurn call only schedules the removal, and removing a
+        // status the unit doesn't have is a no-op
+        public static void Postfix(object __instance, string __0, bool __1, int __2, int __state)
         {
             try
             {
                 if (!MonsterTrainAccessibility.AccessibilitySettings.AnnounceStatusEffects.Value)
                     return;
 
-                if (string.IsNullOrEmpty(__0) || __2 <= 0)
+                if (string.IsNullOrEmpty(__0) || __state <= 0 || !(__instance is CharacterState cs))
+                    return;
+
+                __2 = __state - cs.GetStatusEffectStacks(__0);
+                if (__2 <= 0)
                     return;
 
                 if (PreviewModeDetector.ShouldSuppressAnnouncement(__instance))
@@ -210,7 +251,7 @@ namespace MonsterTrainAccessibility.Patches
                 string effectName = CharacterStateHelper.CleanStatusName(__0);
 
                 // Deduplicate
-                string effectKey = $"{unitName}_{__0}_{__2}_remove";
+                string effectKey = $"{System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(__instance)}_{__0}_{__2}_remove";
                 float currentTime = UnityEngine.Time.unscaledTime;
                 if (effectKey == _lastRemovedEffect && currentTime - _lastRemovedTime < 0.5f)
                     return;
@@ -234,6 +275,17 @@ namespace MonsterTrainAccessibility.Patches
     /// </summary>
     public static class MaxHPBuffPatch
     {
+        private static readonly System.Collections.Generic.Dictionary<int, float> _recentBuffs =
+            new System.Collections.Generic.Dictionary<int, float>();
+
+        /// <summary>True if this unit's max HP was buffed in the last moment (its HP rise is not a heal).</summary>
+        internal static bool WasJustBuffed(object unit)
+        {
+            if (unit == null) return false;
+            int id = System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(unit);
+            return _recentBuffs.TryGetValue(id, out float t) && UnityEngine.Time.unscaledTime - t < 1.5f;
+        }
+
         private static float _lastBuffTime = 0f;
         private static string _lastBuffKey = "";
 
@@ -265,6 +317,8 @@ namespace MonsterTrainAccessibility.Patches
             {
                 if (__0 <= 0 || __instance == null) return;
 
+                _recentBuffs[System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(__instance)] = UnityEngine.Time.unscaledTime;
+
                 if (PreviewModeDetector.ShouldSuppressAnnouncement(__instance))
                     return;
 
@@ -272,7 +326,7 @@ namespace MonsterTrainAccessibility.Patches
 
                 // Deduplicate
                 float currentTime = UnityEngine.Time.unscaledTime;
-                string buffKey = $"{unitName}_{__0}";
+                string buffKey = $"{System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(__instance)}_{__0}";
                 if (buffKey == _lastBuffKey && currentTime - _lastBuffTime < 0.3f)
                     return;
 

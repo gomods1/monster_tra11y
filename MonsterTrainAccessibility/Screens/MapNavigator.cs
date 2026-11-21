@@ -437,6 +437,94 @@ namespace MonsterTrainAccessibility.Screens
             }
         }
 
+        /// <summary>
+        /// Focus text for a real map node selected with the arrow keys: the same
+        /// description as the virtual cursor (path, visited, available, body)
+        /// plus its ring, since the game's spatial navigation jumps between rings.
+        /// A section's battle node is the battle that ends the previous ring
+        /// (MapSection.previousBattleNode). Returns null for anything else.
+        /// </summary>
+        internal string DescribeFocusedMapNode(UnityEngine.GameObject go)
+        {
+            try
+            {
+                var section = go.GetComponentInParent<MapSection>();
+                if (section == null) return null;
+                if (_mapSectionDistanceField == null)
+                {
+                    var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+                    _mapSectionType = typeof(MapSection);
+                    _mapSectionDistanceField = _mapSectionType.GetField("mapDistance", flags);
+                    _mapSectionNodesByBranchField = _mapSectionType.GetField("mapNodesByBranch", flags);
+                }
+                if (!(_mapSectionDistanceField?.GetValue(section) is int distance)) return null;
+
+                var saveManager = GetSaveManager();
+                if (saveManager == null) return null;
+                int currentDistance = InvokeInt(saveManager, "GetCurrentDistance");
+
+                var battleNode = go.GetComponentInParent<MapBattleNodeUI>();
+                if (battleNode != null)
+                {
+                    int battleDistance = distance - 1;
+                    string battle = GetBattleDescription(saveManager, battleDistance) ?? "Battle";
+                    string state = battleDistance < currentDistance ? ", won" : "";
+                    return $"{battle}{state}, end of ring {battleDistance + 1}";
+                }
+
+                var nodeUI = go.GetComponentInParent<MapNodeUI>();
+                if (nodeUI == null || !(_mapSectionNodesByBranchField?.GetValue(section) is IDictionary nodesByBranch))
+                    return null;
+
+                var runState = Invoke(saveManager, "GetRunState");
+                int branches = runState != null ? InvokeInt(runState, "GetNumBranchesAtDistance", distance) : 1;
+                int chosen = branches > 1 && runState != null ? InvokeInt(runState, "GetChosenBranchAtDistance", distance) : -1;
+                bool futureRing = distance > currentDistance;
+                bool currentRing = distance == currentDistance;
+
+                foreach (DictionaryEntry entry in nodesByBranch)
+                {
+                    if (!(entry.Value is IList nodes) || !nodes.Contains(nodeUI)) continue;
+                    int branch = Convert.ToInt32(entry.Key);
+                    string label = branch switch
+                    {
+                        0 => branches > 1 ? "left path" : null,
+                        1 => "right path",
+                        _ => branches > 1 ? "both paths" : null
+                    };
+                    bool available = currentRing && branch switch
+                    {
+                        0 => chosen != 1,
+                        1 => chosen != 0,
+                        _ => true
+                    };
+                    if (_mapNodeUIDataField == null || _mapNodeUILocationField == null)
+                    {
+                        var uiFlags = BindingFlags.Instance | BindingFlags.NonPublic;
+                        _mapNodeUIDataField = nodeUI.GetType().GetField("data", uiFlags);
+                        _mapNodeUILocationField = nodeUI.GetType().GetField("location", uiFlags);
+                    }
+                    var data = _mapNodeUIDataField?.GetValue(nodeUI);
+                    var location = _mapNodeUILocationField?.GetValue(nodeUI);
+                    if (data == null || location == null) return null;
+
+                    string description = DescribeNode(saveManager, data, location, label,
+                        announceVisited: !futureRing, announceAvailable: available);
+                    // "Title, path, state, ring N. Body"
+                    int bodyStart = description.IndexOf(". ", StringComparison.Ordinal);
+                    string ring = $", ring {distance + 1}";
+                    return bodyStart >= 0
+                        ? description.Substring(0, bodyStart) + ring + description.Substring(bodyStart)
+                        : description + ring;
+                }
+            }
+            catch (Exception ex)
+            {
+                MonsterTrainAccessibility.LogInfo($"Map node focus read failed: {ex.Message}");
+            }
+            return null;
+        }
+
         private static bool IsHellforgedNode(object data)
         {
             try

@@ -84,13 +84,13 @@ namespace MonsterTrainAccessibility.Battle
             }
 
             // Enter to confirm
-            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+            if (KeyInput.GetKeyDown(KeyCode.Return) || KeyInput.GetKeyDown(KeyCode.KeypadEnter))
             {
                 ConfirmSelection();
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
             // Escape to cancel
-            else if (Input.GetKeyDown(KeyCode.Escape))
+            else if (KeyInput.GetKeyDown(KeyCode.Escape))
             {
                 CancelTargeting();
                 _inputCooldown = INPUT_COOLDOWN_TIME;

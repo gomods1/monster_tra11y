@@ -19,8 +19,8 @@ namespace MonsterTrainAccessibility.Help.Contexts
             return "Battle Intro screen. Preview enemies before fighting. " +
                    "Left/Right arrows: Navigate between enemy previews and Fight button. " +
                    "Enter: On Fight button, start the battle. On enemy, hear details. " +
-                   "C: Re-read current selection. " +
-                   "T: Read all screen text including battle name and enemies. " +
+                   "F2: Re-read current selection. " +
+                   "F3: Read all screen text including battle name and enemies. " +
                    "This screen shows which enemies will appear on each floor. " +
                    "Boss battles display a larger boss preview. " +
                    "Escape: Return to map without fighting.";

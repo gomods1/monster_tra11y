@@ -111,6 +111,9 @@ namespace MonsterTrainAccessibility.Core
                 if (string.IsNullOrEmpty(text))
                     return;
 
+                DebugBridge.LogSpeech(text);
+                if (DebugBridge.Muted)
+                    return;
                 Tolk.Speak(text, interrupt);
 
                 // Also output to braille if available and enabled
@@ -147,6 +150,9 @@ namespace MonsterTrainAccessibility.Core
                 if (string.IsNullOrEmpty(text))
                     return;
 
+                DebugBridge.LogSpeech(text);
+                if (DebugBridge.Muted)
+                    return;
                 Tolk.Output(text, interrupt);
             }
             catch (Exception ex)
@@ -245,8 +251,35 @@ namespace MonsterTrainAccessibility.Core
         /// <summary>
         /// Apply verbosity filtering based on user settings
         /// </summary>
+        private static readonly System.Text.RegularExpressions.Regex SpaceBeforePunct =
+            new System.Text.RegularExpressions.Regex(@"[ \t]+([.,!?;:)])");
+        private static readonly System.Text.RegularExpressions.Regex SpaceAfterParen =
+            new System.Text.RegularExpressions.Regex(@"\([ \t]+");
+        private static readonly System.Text.RegularExpressions.Regex MissingSpaceAfterPeriod =
+            new System.Text.RegularExpressions.Regex(@"([a-z)])\.([A-Z])");
+        private static readonly System.Text.RegularExpressions.Regex DoublePeriod =
+            new System.Text.RegularExpressions.Regex(@"(?<!\.)\.\.(?!\.)");
+        private static readonly System.Text.RegularExpressions.Regex MultiSpace =
+            new System.Text.RegularExpressions.Regex(@"[ \t]{2,}");
+
+        /// <summary>
+        /// Tidy text assembled from game strings: icon sprites stripped out of
+        /// "Gain 50 gold [icon]." leave "gold .", "(+10 gold )", "stack.Decreases".
+        /// </summary>
+        internal static string NormalizeSpeech(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return text;
+            text = SpaceBeforePunct.Replace(text, "$1");
+            text = SpaceAfterParen.Replace(text, "(");
+            text = MissingSpaceAfterPeriod.Replace(text, "$1. $2");
+            text = DoublePeriod.Replace(text, ".");
+            text = MultiSpace.Replace(text, " ");
+            return text.Trim();
+        }
+
         private string ApplyVerbosityFilter(string text)
         {
+            text = NormalizeSpeech(text);
             // For now, return text as-is
             // In the future, we can filter based on verbosity level
             var verbosity = MonsterTrainAccessibility.AccessibilitySettings.VerbosityLevel.Value;

@@ -18,10 +18,10 @@ namespace MonsterTrainAccessibility.Help.Contexts
         {
             return "Left and Right arrows: Browse upgrade paths. " +
                    "Enter: Select upgrade. " +
-                   "C: Read the focused upgrade's full details. " +
+                   "F2: Read the focused upgrade's full details. " +
                    "Ctrl plus Up: Step through the upgrade's details in the review buffer. " +
                    "Ctrl plus Left/Right: Switch review buffers. " +
-                   "T: Read all upgrade options.";
+                   "F3: Read all upgrade options.";
         }
     }
 }

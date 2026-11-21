@@ -33,8 +33,15 @@ namespace MonsterTrainAccessibility.Core
             if (!IsEnabled)
                 return;
 
+            if (Input.anyKeyDown)
+                KeyInput.MarkKeyPressed();
+            if (KeyInput.GetKeyDown(KeyCode.UpArrow) || KeyInput.GetKeyDown(KeyCode.DownArrow) ||
+                KeyInput.GetKeyDown(KeyCode.LeftArrow) || KeyInput.GetKeyDown(KeyCode.RightArrow) ||
+                KeyInput.GetKeyDown(KeyCode.Tab))
+                KeyInput.MarkNavKeyPressed();
+
             // Check if game has focus
-            if (!Application.isFocused)
+            if (!KeyInput.AppFocused)
                 return;
 
             // Update cooldown
@@ -59,10 +66,10 @@ namespace MonsterTrainAccessibility.Core
             }
 
             // Ctrl combos: review buffers (map cursor on the map screen) on the
-            // arrows, run info on Ctrl+G/H/R. Handled before the targeting check
+            // arrows. Handled before the targeting check
             // so they stay available while targeting. While Ctrl is held no
             // plain hotkeys fire (so Ctrl+C etc. don't trigger letter hotkeys).
-            if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+            if (KeyInput.GetKey(KeyCode.LeftControl) || KeyInput.GetKey(KeyCode.RightControl))
             {
                 HandleCtrlHotkeys(config);
                 return;
@@ -74,7 +81,7 @@ namespace MonsterTrainAccessibility.Core
                 UnitTargetingSystem.Instance?.IsTargeting == true)
             {
                 // Only allow help key during targeting
-                if (Input.GetKeyDown(config.HelpKey.Value))
+                if (KeyInput.GetKeyDown(config.HelpKey.Value))
                 {
                     MonsterTrainAccessibility.HelpSystem?.ShowHelp();
                     _inputCooldown = INPUT_COOLDOWN_TIME;
@@ -82,11 +89,12 @@ namespace MonsterTrainAccessibility.Core
                 return;
             }
 
-            // Floor review: in battle the plain Up arrow opens a virtual
-            // cursor over the floors; while it is open the arrows, Enter,
-            // and Escape belong to it (InputSuppressionPatch keeps them from
-            // the game). Unclaimed keys fall through so F1 and the letter
-            // hotkeys keep working.
+            bool shiftHeld = KeyInput.GetKey(KeyCode.LeftShift) || KeyInput.GetKey(KeyCode.RightShift);
+
+            // Floor review: Shift+K in battle opens a virtual cursor over the
+            // floors; while it is open the arrows, Enter, and Escape belong to it
+            // (InputSuppressionPatch keeps them from the game). Unclaimed keys
+            // fall through so F1 and the other hotkeys keep working.
             var review = MonsterTrainAccessibility.FloorReview;
             if (review != null && review.IsActive)
             {
@@ -96,7 +104,7 @@ namespace MonsterTrainAccessibility.Core
                     return;
                 }
             }
-            else if (review != null && Input.GetKeyDown(KeyCode.UpArrow) &&
+            else if (review != null && shiftHeld && KeyInput.GetKeyDown(config.FloorReviewKey.Value) &&
                      FloorReviewSystem.IsBattleScreenFrontmost())
             {
                 review.Open();
@@ -104,56 +112,81 @@ namespace MonsterTrainAccessibility.Core
                 return;
             }
 
+            // Submit on a toggle/flip button changes its text without moving the
+            // selection; re-read it once the game has processed the press
+            if ((KeyInput.GetKeyDown(KeyCode.Return) || KeyInput.GetKeyDown(KeyCode.KeypadEnter) ||
+                 KeyInput.GetKeyDown(KeyCode.Space) || KeyInput.GetKeyDown(KeyCode.E)) &&
+                MonsterTrainAccessibility.MenuHandler != null)
+            {
+                MonsterTrainAccessibility.MenuHandler.StartCoroutine(MonsterTrainAccessibility.MenuHandler.RecheckFocusAfterSubmit());
+            }
+
             // Help key (F1) - always available
-            if (Input.GetKeyDown(config.HelpKey.Value))
+            if (KeyInput.GetKeyDown(config.HelpKey.Value))
             {
                 MonsterTrainAccessibility.HelpSystem?.ShowHelp();
                 _inputCooldown = INPUT_COOLDOWN_TIME;
                 return;
             }
 
-            // Information hotkeys - these don't interfere with game navigation
-            if (Input.GetKeyDown(config.ReadCurrentKey.Value))
+            // Information hotkeys. None of them is a game control (see
+            // AccessibilityConfig); Shift variants are checked first.
+            if (KeyInput.GetKeyDown(config.ReadCurrentKey.Value))
             {
                 RereadCurrentSelection();
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
-            else if (Input.GetKeyDown(config.ReadTextKey.Value))
+            else if (KeyInput.GetKeyDown(config.ReadTextKey.Value))
             {
                 ReadAllScreenText();
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
-            else if (Input.GetKeyDown(config.ReadHandKey.Value))
+            else if (KeyInput.GetKeyDown(config.ToggleVerbosityKey.Value))
             {
-                ReadHand();
-            }
-            else if (Input.GetKeyDown(config.ReadFloorsKey.Value))
-            {
-                ReadFloors();
-            }
-            else if (Input.GetKeyDown(config.ReadCurrentFloorKey.Value))
-            {
-                // B reads the selected floor; Shift+B reads every floor
-                if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
-                    ReadFloors();
-                else
-                    ReadCurrentFloor();
+                config.CycleVerbosity();
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
-            else if (Input.GetKeyDown(config.ReadEnemiesKey.Value))
+            else if (KeyInput.GetKeyDown(config.ReadGoldKey.Value))
+            {
+                ReadGold();
+                _inputCooldown = INPUT_COOLDOWN_TIME;
+            }
+            else if (KeyInput.GetKeyDown(config.ReadPyreHealthKey.Value))
+            {
+                ReadPyreHealth();
+                _inputCooldown = INPUT_COOLDOWN_TIME;
+            }
+            else if (KeyInput.GetKeyDown(config.ReadPactShardsKey.Value))
+            {
+                ReadPactShards();
+                _inputCooldown = INPUT_COOLDOWN_TIME;
+            }
+            else if (shiftHeld && KeyInput.GetKeyDown(config.ReadEnemiesKey.Value))
             {
                 ReadEnemies();
+                _inputCooldown = INPUT_COOLDOWN_TIME;
             }
-            else if (Input.GetKeyDown(config.ReadEmberKey.Value))
+            else if (KeyInput.GetKeyDown(config.ReadHandKey.Value))
+            {
+                ReadHand();
+                _inputCooldown = INPUT_COOLDOWN_TIME;
+            }
+            else if (!shiftHeld && KeyInput.GetKeyDown(config.ReadFloorsKey.Value))
+            {
+                ReadFloors();
+                _inputCooldown = INPUT_COOLDOWN_TIME;
+            }
+            else if (!shiftHeld && KeyInput.GetKeyDown(config.ReadCurrentFloorKey.Value))
+            {
+                ReadCurrentFloor();
+                _inputCooldown = INPUT_COOLDOWN_TIME;
+            }
+            else if (KeyInput.GetKeyDown(config.ReadEmberKey.Value))
             {
                 ReadEmber();
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
-            else if (Input.GetKeyDown(config.ToggleVerbosityKey.Value))
-            {
-                config.CycleVerbosity();
-            }
-            else if (Input.GetKeyDown(KeyCode.Tab))
+            else if (KeyInput.GetKeyDown(KeyCode.Tab))
             {
                 // Skip train stats read when in Settings screen - Tab is used for tab navigation there
                 if (Help.ScreenStateTracker.CurrentScreen != Help.GameScreen.Settings)
@@ -165,7 +198,7 @@ namespace MonsterTrainAccessibility.Core
                     _inputCooldown = INPUT_COOLDOWN_TIME;
                 }
             }
-            else if (Input.GetKeyDown(KeyCode.N))
+            else if (KeyInput.GetKeyDown(KeyCode.N))
             {
                 // N is the game's native combat speed toggle
                 // We don't block it - just announce the new speed after a short delay
@@ -173,7 +206,7 @@ namespace MonsterTrainAccessibility.Core
                 StartCoroutine(AnnounceSpeedChangeDelayed());
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
-            else if (Input.GetKeyDown(config.ReadRunSummaryKey.Value))
+            else if (config.ReadRunSummaryKey.Value != KeyCode.None && KeyInput.GetKeyDown(config.ReadRunSummaryKey.Value))
             {
                 if (Help.ScreenStateTracker.CurrentScreen == Help.GameScreen.Victory ||
                     Help.ScreenStateTracker.CurrentScreen == Help.GameScreen.Defeat)
@@ -183,17 +216,17 @@ namespace MonsterTrainAccessibility.Core
                     _inputCooldown = INPUT_COOLDOWN_TIME;
                 }
             }
-            else if (Input.GetKeyDown(config.ReadMapNodeKey.Value))
+            else if (config.ReadMapNodeKey.Value != KeyCode.None && KeyInput.GetKeyDown(config.ReadMapNodeKey.Value))
             {
                 ReadMapNode();
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
-            else if (Input.GetKeyDown(KeyCode.PageUp) || Input.GetKeyDown(KeyCode.PageDown))
+            else if (KeyInput.GetKeyDown(KeyCode.PageUp) || KeyInput.GetKeyDown(KeyCode.PageDown))
             {
                 var battle = MonsterTrainAccessibility.BattleHandler;
                 if (battle != null && battle.IsInBattle)
                 {
-                    BrowseFloor(Input.GetKeyDown(KeyCode.PageUp));
+                    BrowseFloor(KeyInput.GetKeyDown(KeyCode.PageUp));
                     _inputCooldown = INPUT_COOLDOWN_TIME;
                 }
             }
@@ -204,43 +237,28 @@ namespace MonsterTrainAccessibility.Core
 
         /// <summary>
         /// Handle hotkeys while Ctrl is held: arrows drive the review buffers
-        /// (or the map cursor), Ctrl+G/H/R read gold, pyre health, and pact shards.
+        /// (or the map cursor).
         /// </summary>
         private void HandleCtrlHotkeys(AccessibilityConfig config)
         {
-            if (Input.GetKeyDown(KeyCode.UpArrow))
+            if (KeyInput.GetKeyDown(KeyCode.UpArrow))
             {
                 HandleCtrlArrow(CtrlArrow.Up);
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
-            else if (Input.GetKeyDown(KeyCode.DownArrow))
+            else if (KeyInput.GetKeyDown(KeyCode.DownArrow))
             {
                 HandleCtrlArrow(CtrlArrow.Down);
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
-            else if (Input.GetKeyDown(KeyCode.LeftArrow))
+            else if (KeyInput.GetKeyDown(KeyCode.LeftArrow))
             {
                 HandleCtrlArrow(CtrlArrow.Left);
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
-            else if (Input.GetKeyDown(KeyCode.RightArrow))
+            else if (KeyInput.GetKeyDown(KeyCode.RightArrow))
             {
                 HandleCtrlArrow(CtrlArrow.Right);
-                _inputCooldown = INPUT_COOLDOWN_TIME;
-            }
-            else if (Input.GetKeyDown(config.ReadGoldKey.Value))
-            {
-                ReadGold();
-                _inputCooldown = INPUT_COOLDOWN_TIME;
-            }
-            else if (Input.GetKeyDown(config.ReadPyreHealthKey.Value))
-            {
-                ReadPyreHealth();
-                _inputCooldown = INPUT_COOLDOWN_TIME;
-            }
-            else if (Input.GetKeyDown(config.ReadPactShardsKey.Value))
-            {
-                ReadPactShards();
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
         }
@@ -251,23 +269,33 @@ namespace MonsterTrainAccessibility.Core
         /// </summary>
         private void HandleHelpBrowseInput(AccessibilityConfig config, Help.HelpSystem help)
         {
-            if (Input.GetKeyDown(config.HelpKey.Value) ||
-                Input.GetKeyDown(KeyCode.Escape) ||
-                Input.GetKeyDown(KeyCode.Return) ||
-                Input.GetKeyDown(KeyCode.KeypadEnter) ||
-                Input.GetKeyDown(KeyCode.Space))
+            if (KeyInput.GetKeyDown(config.HelpKey.Value) ||
+                KeyInput.GetKeyDown(KeyCode.Escape) ||
+                KeyInput.GetKeyDown(KeyCode.Return) ||
+                KeyInput.GetKeyDown(KeyCode.KeypadEnter) ||
+                KeyInput.GetKeyDown(KeyCode.Space))
             {
                 help.CloseHelp();
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
-            else if (Input.GetKeyDown(KeyCode.UpArrow))
+            else if (KeyInput.GetKeyDown(KeyCode.UpArrow))
             {
                 help.PreviousEntry();
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
-            else if (Input.GetKeyDown(KeyCode.DownArrow))
+            else if (KeyInput.GetKeyDown(KeyCode.DownArrow))
             {
                 help.NextEntry();
+                _inputCooldown = INPUT_COOLDOWN_TIME;
+            }
+            else if (KeyInput.GetKeyDown(KeyCode.Home))
+            {
+                help.FirstEntry();
+                _inputCooldown = INPUT_COOLDOWN_TIME;
+            }
+            else if (KeyInput.GetKeyDown(KeyCode.End))
+            {
+                help.LastEntry();
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
         }
@@ -507,7 +535,7 @@ namespace MonsterTrainAccessibility.Core
         }
 
         /// <summary>
-        /// Read current ember (R, battle only)
+        /// Read current ember (G, battle only)
         /// </summary>
         private void ReadEmber()
         {
@@ -524,7 +552,7 @@ namespace MonsterTrainAccessibility.Core
         }
 
         /// <summary>
-        /// Read current gold (Ctrl+G, works on any screen)
+        /// Read current gold (F5, works on any screen)
         /// </summary>
         private void ReadGold()
         {
@@ -540,7 +568,7 @@ namespace MonsterTrainAccessibility.Core
         }
 
         /// <summary>
-        /// Read current pyre health (Ctrl+H, works on any screen)
+        /// Read current pyre health (F6, works on any screen)
         /// </summary>
         private void ReadPyreHealth()
         {
@@ -557,7 +585,7 @@ namespace MonsterTrainAccessibility.Core
         }
 
         /// <summary>
-        /// Read pact shards and threat level (Ctrl+R, The Last Divinity runs)
+        /// Read pact shards and threat level (F7, The Last Divinity runs)
         /// </summary>
         private void ReadPactShards()
         {
@@ -567,7 +595,7 @@ namespace MonsterTrainAccessibility.Core
         }
 
         /// <summary>
-        /// Read the currently selected floor's capacity and units (B, battle only)
+        /// Read the currently selected floor's capacity and units (K, battle only)
         /// </summary>
         private void ReadCurrentFloor()
         {

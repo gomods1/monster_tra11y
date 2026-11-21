@@ -23,8 +23,9 @@ namespace MonsterTrainAccessibility.Patches
 
                     if (method != null)
                     {
+                        var prefix = new HarmonyMethod(typeof(PyreDamagePatch).GetMethod(nameof(Prefix)));
                         var postfix = new HarmonyMethod(typeof(PyreDamagePatch).GetMethod(nameof(Postfix)));
-                        harmony.Patch(method, postfix: postfix);
+                        harmony.Patch(method, prefix: prefix, postfix: postfix);
                         MonsterTrainAccessibility.LogInfo($"Patched pyre damage: {method.Name}");
                     }
                 }
@@ -35,10 +36,23 @@ namespace MonsterTrainAccessibility.Patches
             }
         }
 
-        private static int _lastPyreHP = -1;
-
-        public static void Postfix(object __instance)
+        // The HP before each SetTowerHP call, captured in the prefix. A static
+        // "last seen" value missed the first change after launch and compared a
+        // new run's first hit against the previous run's pyre.
+        public static void Prefix(object __instance, out int __state)
         {
+            __state = -1;
+            try
+            {
+                if (__instance is SaveManager sm && !sm.PreviewMode)
+                    __state = sm.GetTowerHP();
+            }
+            catch { }
+        }
+
+        public static void Postfix(object __instance, int __state)
+        {
+            int _lastPyreHP = __state;
             try
             {
                 // Get current pyre HP
@@ -73,7 +87,6 @@ namespace MonsterTrainAccessibility.Patches
                             int healing = currentHP - _lastPyreHP;
                             MonsterTrainAccessibility.BattleHandler?.OnPyreHealed(healing, currentHP);
                         }
-                        _lastPyreHP = currentHP;
                     }
                 }
             }
@@ -293,14 +306,15 @@ namespace MonsterTrainAccessibility.Patches
 
                 // Deduplicate
                 float currentTime = UnityEngine.Time.unscaledTime;
-                string healKey = $"{targetName}_{amount}";
+                string healKey = $"{System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(__instance)}_{amount}";
                 if (healKey == _lastHealKey && currentTime - _lastHealTime < 0.3f)
                     return;
 
                 _lastHealKey = healKey;
                 _lastHealTime = currentTime;
 
-                MonsterTrainAccessibility.ScreenReader?.Queue($"{targetName} healed for {amount}");
+                // Announced from the actual HP change in UpdateHpPatch instead
+                MonsterTrainAccessibility.LogInfo($"ApplyHeal requested: {targetName} {amount}");
             }
             catch (Exception ex)
             {

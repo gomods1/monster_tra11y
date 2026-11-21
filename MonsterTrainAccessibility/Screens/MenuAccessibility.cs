@@ -19,6 +19,9 @@ namespace MonsterTrainAccessibility.Screens
     public class MenuAccessibility : MonoBehaviour
     {
         private GameObject _lastSelectedObject;
+        private string _lastSelectedText;
+        private GameObject _pendingInvisible;
+        private float _pendingInvisibleSince;
         private float _pollInterval = 0.1f;
         private float _pollTimer = 0f;
         private bool _isActive = true;
@@ -671,10 +674,11 @@ namespace MonsterTrainAccessibility.Screens
             try
             {
                 // Check if this looks like a dialog button
-                string goName = go.name.ToLower();
+                // Whole-word match on the camelCase-split name: substring checks
+                // matched "Patch notes button" ("no") and "Bookmark button" ("ok")
+                string goName = System.Text.RegularExpressions.Regex.Replace(go.name, "([a-z])([A-Z])", "$1 $2").ToLower();
                 bool isDialogButton = goName.Contains("button") &&
-                    (goName.Contains("yes") || goName.Contains("no") || goName.Contains("ok") ||
-                     goName.Contains("cancel") || goName.Contains("confirm"));
+                    System.Text.RegularExpressions.Regex.IsMatch(goName, @"\b(yes|no|ok|cancel|confirm)\b");
 
                 if (!isDialogButton)
                     return null;
@@ -710,7 +714,7 @@ namespace MonsterTrainAccessibility.Screens
                 }
 
                 // Check if this is the same dialog we already announced
-                if (_lastAnnouncedDialogText == dialogText)
+                if (_lastAnnouncedDialogText == dialogText || Patches.DialogScreenPatch.WasJustAnnounced(dialogText))
                 {
                     MonsterTrainAccessibility.LogInfo($"Dialog button (same dialog): '{buttonLabel}'");
                     return buttonLabel;
@@ -926,6 +930,22 @@ namespace MonsterTrainAccessibility.Screens
             // Selection changed?
             if (currentSelected != _lastSelectedObject)
             {
+                // A dialog's default button is selected while the dialog is still
+                // fading in; don't consume the change until it is visible, or the
+                // first focus on every new dialog/screen goes unannounced
+                if (currentSelected != null && !IsActuallyVisible(currentSelected))
+                {
+                    if (currentSelected != _pendingInvisible)
+                    {
+                        _pendingInvisible = currentSelected;
+                        _pendingInvisibleSince = Time.unscaledTime;
+                    }
+                    // Give up after a few seconds (selection inside a hidden panel)
+                    if (Time.unscaledTime - _pendingInvisibleSince < 3f)
+                        return;
+                }
+                _pendingInvisible = null;
+
                 _lastSelectedObject = currentSelected;
 
                 // Reset scroll content tracking when selection changes
@@ -955,11 +975,22 @@ namespace MonsterTrainAccessibility.Screens
                         _lastAnnouncedDialogText = null;
                     }
 
+                    // During automated combat the game moves the selection around
+                    // on its own (hand hidden, HUD elements selected); stay quiet
+                    // unless the player is actually navigating
+                    if (IsAutomatedCombatFocusChange())
+                    {
+                        _lastSelectedText = null;
+                        return;
+                    }
+
                     string text = GetTextFromGameObject(currentSelected);
+                    _lastSelectedText = null;
                     if (!string.IsNullOrEmpty(text))
                     {
                         // Clean sprite tags before announcing
                         text = TextUtilities.CleanSpriteTagsForSpeech(text);
+                        _lastSelectedText = text;
                         MonsterTrainAccessibility.ScreenReader?.AnnounceFocus(text);
 
                         // Feed the contextual review buffers (UI, Card, Artifact, Reward)
@@ -1237,6 +1268,74 @@ namespace MonsterTrainAccessibility.Screens
         /// Extract readable text from a UI GameObject.
         /// Tries multiple approaches to find text.
         /// </summary>
+        /// <summary>
+        /// ", 2 of 5" for a card in the battle hand (HandArea/Hand/CardsRoot), so
+        /// moving between identical cards is audible. Order is left to right.
+        /// </summary>
+        private static string GetHandPositionSuffix(GameObject go)
+        {
+            try
+            {
+                // CardsRoot also holds pooled CardUIs, so position comes from the
+                // game's hand list (left to right), not the transform children
+                var cardUI = go.GetComponentInParent<CardUI>();
+                if (cardUI == null || cardUI.transform.parent == null || cardUI.transform.parent.name != "CardsRoot")
+                    return "";
+                var cardManager = Utilities.ReflectionHelper.FindManager("CardManager") as CardManager;
+                var hand = cardManager?.GetHand();
+                var state = cardUI.GetCardState();
+                if (hand == null || state == null || hand.Count < 2)
+                    return "";
+                int index = hand.IndexOf(state);
+                return index >= 0 ? $", {index + 1} of {hand.Count}" : "";
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+        private static bool IsAutomatedCombatFocusChange()
+        {
+            if (MonsterTrainAccessibility.BattleHandler?.IsInBattle != true)
+                return false;
+            int phase = Patches.CombatPhaseChangePatch.CurrentPhase;
+            // -1 = unknown, 3 = MonsterTurn (player in control)
+            if (phase < 0 || phase == 3)
+                return false;
+            // Only navigation counts: the F that ends the turn also makes the
+            // game move the selection, and that jump is not the player's doing
+            return !KeyInput.NavKeyPressedWithin(1f);
+        }
+
+        /// <summary>
+        /// After a Submit press: if the selection stayed on the same object and its
+        /// text changed in place (checkbox toggled, button label flipped), speak the
+        /// new text. Selection changes are handled by the normal poll.
+        /// </summary>
+        internal System.Collections.IEnumerator RecheckFocusAfterSubmit()
+        {
+            var selected = EventSystem.current?.currentSelectedGameObject;
+            if (selected == null || selected != _lastSelectedObject)
+                yield break;
+            yield return new WaitForSecondsRealtime(0.2f);
+            var now = EventSystem.current?.currentSelectedGameObject;
+            if (now != selected || now == null || !now.activeInHierarchy)
+                yield break;
+            string text = GetTextFromGameObject(now);
+            if (string.IsNullOrEmpty(text))
+                yield break;
+            text = TextUtilities.CleanSpriteTagsForSpeech(text);
+            if (text != _lastSelectedText)
+            {
+                _lastSelectedText = text;
+                MonsterTrainAccessibility.ScreenReader?.AnnounceFocus(text);
+            }
+        }
+
+        /// <summary>Debug bridge access to the focus text chain.</summary>
+        internal string DebugGetText(GameObject go) => GetTextFromGameObject(go);
+
         private string GetTextFromGameObject(GameObject go)
         {
             _lastFocusDomain = Core.Buffers.FocusDomain.None;
@@ -1257,21 +1356,37 @@ namespace MonsterTrainAccessibility.Screens
                     // Truncate very long text for the focus announcement
                     if (text.Length > 300)
                     {
-                        text = text.Substring(0, 300) + "... Press T to read full text.";
+                        text = text.Substring(0, 300) + "... Press F3 to read full text.";
                     }
                     return text;
                 }
             }
 
             // Check for RunOpeningScreen (Boss Battles screen at start of run) - before dialog check
-            text = BattleIntroTextReader.GetRunOpeningScreenText(go);
+            var openingReadout = BattleIntroTextReader.GetRunOpeningScreenReadout(go);
+            if (openingReadout != null)
+            {
+                _lastFocusDetails = openingReadout.Details;
+                _lastFocusFullText = openingReadout.FullText;
+                return openingReadout.Summary;
+            }
+
+            // Check for dialog buttons (Yes/No buttons inside Dialog popups)
+            text = GetDialogButtonText(go);
             if (!string.IsNullOrEmpty(text))
             {
                 return text;
             }
 
-            // Check for dialog buttons (Yes/No buttons inside Dialog popups)
-            text = GetDialogButtonText(go);
+            // Reward icons (victory panel, reward screens): "100 gold"
+            text = Patches.RewardScreenPatch.GetRewardItemText(go);
+            if (!string.IsNullOrEmpty(text))
+            {
+                return text;
+            }
+
+            // Main menu run dialog: "Active run" (saved run details) / "New run" panels
+            text = GameModeOptionTextReader.GetGameModeOptionText(go);
             if (!string.IsNullOrEmpty(text))
             {
                 return text;
@@ -1285,7 +1400,7 @@ namespace MonsterTrainAccessibility.Screens
                 _lastFocusDomain = Core.Buffers.FocusDomain.Card;
                 _lastFocusDetails = cardReadout.Details;
                 _lastFocusFullText = cardReadout.FullText;
-                return cardReadout.Summary;
+                return cardReadout.Summary + GetHandPositionSuffix(go);
             }
 
             // Check for shop items (MerchantGoodDetailsUI, MerchantServiceUI) -
@@ -1320,7 +1435,18 @@ namespace MonsterTrainAccessibility.Screens
                 return relicReadout.Summary;
             }
 
-            // 2. Check for map node (battle/event/shop nodes on the map)
+            // 2. Check for map node (battle/event/shop nodes on the map) - the
+            // navigator's run-state description first (path, visited, available, ring)
+            // Keyed off the node's MapSection, not the screen tracker: the tracker
+            // only sees screens opening, so after leaving a shop or event it still
+            // says Shop/Event while the map has focus again
+            text = MonsterTrainAccessibility.MapNav?.DescribeFocusedMapNode(go);
+            if (!string.IsNullOrEmpty(text))
+            {
+                if (Help.ScreenStateTracker.CurrentScreen != Help.GameScreen.Map)
+                    Help.ScreenStateTracker.SetScreen(Help.GameScreen.Map);
+                return text;
+            }
             text = MapTextReader.GetMapNodeText(go);
             if (!string.IsNullOrEmpty(text))
             {
@@ -1540,6 +1666,11 @@ namespace MonsterTrainAccessibility.Screens
                         if (isOn.HasValue)
                         {
                             string label = GetToggleLabelFromHierarchy(go);
+                            // The battle intro's only toggle is the trial switch, whose
+                            // hierarchy just says "Button"
+                            if (Help.ScreenStateTracker.CurrentScreen == Help.GameScreen.BattleIntro &&
+                                (string.IsNullOrEmpty(label) || label.Equals("Button", StringComparison.OrdinalIgnoreCase)))
+                                label = "Trial";
                             string state = isOn.Value ? "on" : "off";
                             return string.IsNullOrEmpty(label) ? state : $"{label}: {state}";
                         }
@@ -1632,6 +1763,13 @@ namespace MonsterTrainAccessibility.Screens
         /// <summary>
         /// Get text with additional context for buttons with short labels
         /// </summary>
+        private static readonly HashSet<string> SelfDescribingLabels = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Quit", "Back", "Done", "Exit", "Play", "Skip", "Next", "Prev", "Menu", "Help",
+            "Yes", "No", "OK", "Okay", "Buy", "Sell", "Close", "Save", "Load", "Undo", "Redo",
+            "Go", "Retry", "Leave", "Start", "Reset", "Apply", "Clear", "Edit", "View", "Hide", "Show"
+        };
+
         private string GetTextWithContext(GameObject go)
         {
             string directText = GetDirectText(go);
@@ -1646,8 +1784,10 @@ namespace MonsterTrainAccessibility.Screens
                 }
             }
 
-            // If text is short (3-4 chars) or empty, look for context
-            if (string.IsNullOrEmpty(directText) || directText.Length <= 4)
+            // If text is short (3-4 chars) or empty, look for context -
+            // unless it is a self-describing button word ("Quit", "Back")
+            if (string.IsNullOrEmpty(directText) ||
+                (directText.Length <= 4 && !SelfDescribingLabels.Contains(directText)))
             {
                 // Check parent for label
                 string contextLabel = GetContextLabelFromHierarchy(go);
@@ -2272,7 +2412,7 @@ namespace MonsterTrainAccessibility.Screens
                 else
                 {
                     // Fallback: just announce we're on the game over screen
-                    MonsterTrainAccessibility.ScreenReader?.Speak("Run complete. Press T to read stats.", false);
+                    MonsterTrainAccessibility.ScreenReader?.Speak("Run complete. Press F3 to read stats.", false);
                 }
             }
             catch (Exception ex)
