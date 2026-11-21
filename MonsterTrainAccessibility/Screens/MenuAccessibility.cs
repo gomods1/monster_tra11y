@@ -980,7 +980,7 @@ namespace MonsterTrainAccessibility.Screens
                     // During automated combat the game moves the selection around
                     // on its own (hand hidden, HUD elements selected); stay quiet
                     // unless the player is actually navigating
-                    if (IsAutomatedCombatFocusChange())
+                    if (IsAutomatedCombatFocusChange() || IsUnrequestedBattleHudFocus(currentSelected))
                     {
                         _lastSelectedText = null;
                         return;
@@ -1303,6 +1303,19 @@ namespace MonsterTrainAccessibility.Screens
             }
         }
 
+        /// <summary>
+        /// The game parks the selection on the battle HUD's ember counter while a
+        /// battle loads and after it ends; players only reach the HUD on purpose
+        /// (Tab or arrows), so HUD focus without recent navigation stays quiet.
+        /// </summary>
+        private static bool IsUnrequestedBattleHudFocus(GameObject go)
+        {
+            if (go == null || KeyInput.NavKeyPressedWithin(1f)) return false;
+            for (var t = go.transform; t != null; t = t.parent)
+                if (t.name == "Battle Hud") return true;
+            return false;
+        }
+
         private static bool IsAutomatedCombatFocusChange()
         {
             // Also while the battle screen loads, before combat is flagged as started
@@ -1469,6 +1482,13 @@ namespace MonsterTrainAccessibility.Screens
 
             // 2. Check for map node (battle/event/shop nodes on the map) - the
             // navigator's run-state description first (path, visited, available, ring)
+            // Minimap (M): node markers and battle nodes
+            text = MinimapTextReader.GetText(go);
+            if (!string.IsNullOrEmpty(text))
+            {
+                return text;
+            }
+
             // Keyed off the node's MapSection, not the screen tracker: the tracker
             // only sees screens opening, so after leaving a shop or event it still
             // says Shop/Event while the map has focus again

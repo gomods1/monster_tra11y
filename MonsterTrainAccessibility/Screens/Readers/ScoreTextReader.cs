@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 using MonsterTrainAccessibility.Utilities;
@@ -142,6 +143,73 @@ namespace MonsterTrainAccessibility.Screens
             catch (System.Exception ex)
             {
                 MonsterTrainAccessibility.LogError($"Error reading run widget: {ex.Message}");
+            }
+            return null;
+        }
+    }
+}
+
+namespace MonsterTrainAccessibility.Screens
+{
+    /// <summary>
+    /// Minimap (M on the map): node markers carry their MapNodeData, battle
+    /// nodes their ScenarioData; the section has the ring number and name.
+    /// "Merchant of Steel, left path, ring 2, The Cliffs of Fallen Souls. Forge..."
+    /// </summary>
+    internal static class MinimapTextReader
+    {
+        private static readonly System.Reflection.BindingFlags Flags =
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+
+        internal static string GetText(UnityEngine.GameObject go)
+        {
+            try
+            {
+                var section = go.GetComponentInParent<MinimapSection>();
+                string ring = null;
+                if (section != null)
+                {
+                    string Label(string f) => Utilities.TextUtilities.StripRichTextTags(
+                        Utilities.UITextHelper.GetRenderedTMPLabelText(typeof(MinimapSection).GetField(f, Flags)?.GetValue(section)) ?? "").Trim();
+                    string number = Label("sectionNumberLabel");
+                    string name = Label("sectionNameLabel");
+                    ring = string.Join(" ", new[] { number, name }.Where(x => !string.IsNullOrEmpty(x)));
+                }
+
+                var marker = go.GetComponentInParent<MinimapNodeMarker>();
+                if (marker != null)
+                {
+                    var data = typeof(MinimapNodeMarker).GetField("data", Flags)?.GetValue(marker) as MapNodeData;
+                    if (data == null) return null;
+                    string title = Utilities.TextUtilities.StripRichTextTags(data.GetTooltipTitle() ?? "").Trim();
+                    string body = Utilities.TextUtilities.StripRichTextTags(data.GetTooltipBody() ?? "").Trim();
+                    string path = null;
+                    for (var t = marker.transform.parent; t != null && t != section?.transform; t = t.parent)
+                    {
+                        string n = t.name.ToLowerInvariant();
+                        if (n.Contains("left")) { path = "left path"; break; }
+                        if (n.Contains("right")) { path = "right path"; break; }
+                    }
+                    var head = new System.Collections.Generic.List<string> { title };
+                    if (path != null) head.Add(path);
+                    if (!string.IsNullOrEmpty(ring)) head.Add(ring);
+                    string text = string.Join(", ", head.Where(x => !string.IsNullOrEmpty(x)));
+                    return string.IsNullOrEmpty(body) ? text : $"{text}. {body}";
+                }
+
+                var battle = go.GetComponentInParent<MinimapBattleNode>();
+                if (battle != null)
+                {
+                    var scenario = typeof(MinimapBattleNode).GetField("data", Flags)?.GetValue(battle) as ScenarioData;
+                    if (scenario == null) return null;
+                    bool boss = scenario.GetDifficulty() == ScenarioDifficulty.Boss;
+                    string text = $"{(boss ? "Boss battle" : "Battle")}: {Utilities.TextUtilities.StripRichTextTags(scenario.GetBattleName() ?? "")}";
+                    return string.IsNullOrEmpty(ring) ? text : $"{text}, {ring}";
+                }
+            }
+            catch (System.Exception ex)
+            {
+                MonsterTrainAccessibility.LogError($"Error reading minimap node: {ex.Message}");
             }
             return null;
         }

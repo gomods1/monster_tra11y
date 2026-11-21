@@ -250,7 +250,9 @@ If you are playing on a PC with a controller, the game has a "Keyboard Mode" tha
 
 ## Configuration
 
-After first launch, a configuration file is created at:
+Press **F9** on any screen to open the accessibility settings: a spoken list of every option - what gets announced (damage, deaths, units entering, status effects, card draws, artifact triggers, chatter), the combat summary, verbosity, braille, and every mod key. Up and Down choose a setting, Left, Right or Enter change it, F2 reads its description, Escape closes. To rebind a key, press Enter on it and then the new key; keys the game itself uses are refused, so a mod key never triggers a game action. Changes are saved immediately. There is no language option: the mod reads the game's own text, so it follows the game's language.
+
+The same settings live in a configuration file, created after first launch at:
 `BepInEx/config/com.accessibility.monstertrain.cfg`
 
 You can edit this file to customize:
@@ -259,6 +261,10 @@ You can edit this file to customize:
 - Which events to announce (card draws, damage, status effects)
 - SAPI fallback settings
 - Braille display options
+
+### Combat Summary
+
+By default combat is narrated as it happens. Turn on **Combat summary instead of live combat narration** (F9) to keep automated combat quiet and hear one summary right before each of your turns: for every floor, the damage your units dealt and took, kills, losses and the health left on every unit that was hit, then enemy moves, pyre damage and new arrivals. Everything is still in the Events buffer either way.
 
 ### Verbosity Levels
 - **Minimal**: Card names and numbers only

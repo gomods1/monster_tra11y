@@ -32,6 +32,7 @@ namespace MonsterTrainAccessibility.Patches
             TryPatchOne(harmony, typeof(HandSelectionUI), "Open", postfix: nameof(HandSelectionOpenPostfix));
             TryPatchOne(harmony, typeof(SaveManager), "AddCardToDeck", postfix: nameof(AddCardToDeckPostfix));
             TryPatchOne(harmony, typeof(SaveManager), "AddRelic", postfix: nameof(AddRelicPostfix));
+            TryPatchOne(harmony, typeof(RoomState), "AdjustCapacity", prefix: nameof(AdjustCapacityPrefix));
             TryPatchOne(harmony, typeof(HellforgedSaveData), "AddCrystals", postfix: nameof(AddCrystalsPostfix));
             TryPatchOne(harmony, typeof(HellforgedSaveData), "RemoveCrystals", postfix: nameof(RemoveCrystalsPostfix));
             TryPatchOne(harmony, typeof(HellforgedSaveData), "ConsumeCrystalsIfPossible", postfix: nameof(ConsumeCrystalsPostfix));
@@ -209,6 +210,30 @@ namespace MonsterTrainAccessibility.Patches
             catch (Exception ex)
             {
                 MonsterTrainAccessibility.LogError($"Error in add relic patch: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// A floor's capacity for your units changed (Pressure Release, capacity
+        /// artifacts). AdjustCapacity is a coroutine: the prefix runs when it is
+        /// started, which is when the change applies.
+        /// </summary>
+        public static void AdjustCapacityPrefix(RoomState __instance, Team.Type team, int amount)
+        {
+            try
+            {
+                if (__instance == null || amount == 0 || team != Team.Type.Monsters || IsPreview()) return;
+                if (MonsterTrainAccessibility.BattleHandler?.IsInBattle != true) return;
+                int room = __instance.GetRoomIndex();
+                if (room < 0 || room > 2) return;
+                string floor = Screens.BattleAccessibility.RoomIndexToFloorName(room);
+                string text = amount > 0 ? $"{floor} capacity +{amount}" : $"{floor} capacity {amount}";
+                MonsterTrainAccessibility.ScreenReader?.QueueBatched(text);
+                MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(text);
+            }
+            catch (Exception ex)
+            {
+                MonsterTrainAccessibility.LogError($"Error in capacity patch: {ex.Message}");
             }
         }
 
