@@ -1,0 +1,12 @@
+Monster Train Accessibility 8.1.0
+
+A small follow-up to 8.0.0. The scene descriptions are now written from the game's real artwork instead of its text alone.
+
+- The description at game launch now follows what the intro video actually shows.
+- Each boss's entrance describes what the boss looks like, and bosses with a different Relentless form describe that change too.
+- Arriving at each ring of Hell describes what that ring looks like on the map.
+- The train setting out at the start of a run, and the victory and defeat scenes, are described from their artwork.
+
+The texts are in BepInEx\plugins\SceneDescriptions.txt if you want to edit them, and you can switch them off in the F9 settings menu.
+
+Feedback welcome, especially if a description doesn't match what's happening.
