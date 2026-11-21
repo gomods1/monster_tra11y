@@ -75,6 +75,8 @@ Fixes
 
 There was a rare problem where the mod could switch itself off right after the game started. That's fixed, along with many small reading glitches.
 
+Download: the GitHub release has both the zip and the installer, MonsterTrainAccessibilityInstaller.exe. The installer is now attached to every release.
+
 As always, feedback is very welcome, especially about the new keys and the scene descriptions. If something is silent, wrong, or too chatty, let me know which screen it was and what you were doing.
 
 Enjoy, and keep that Pyre burning.
