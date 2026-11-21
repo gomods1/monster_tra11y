@@ -89,7 +89,8 @@ namespace MonsterTrainAccessibility.Patches
             {
                 // The pyre heart's fixed traits (Relentless, Sweep, Immobile, Immunity
                 // on The Last Divinity's pyre) are applied at every battle start
-                if (__instance is CharacterState pyre && pyre.IsPyreHeart() && CombatPhaseChangePatch.CurrentPhase < 0)
+                if (__instance is CharacterState pyre && pyre.IsPyreHeart() &&
+                    (CombatPhaseChangePatch.CurrentPhase < 0 || MonsterTrainAccessibility.BattleHandler?.IsInBattle != true))
                     return;
 
                 // A boss turning Relentless is a scene (described at the next turn)

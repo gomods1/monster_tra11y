@@ -41,88 +41,88 @@ ring_10: With one hundred pact shards aboard, the train pushes past the end of t
 # ---------------------------------------------------------------------------
 
 boss_intro_Level3BattleDaedalus: Daedalus, the Professor, hovers on huge mechanical wings of rusted copper plates, a twin tank jet pack on his back. He wears a welding visor, a red handlebar mustache and a steel chestplate set with a glowing blue crystal, and swings a red pipe wrench. The engineer who armed the Disciples now guards Seraph.
-relentless_Level3BattleDaedalus: With his creations destroyed, Daedalus turns Relentless. Wrench in hand, he boards the train and climbs floor by floor toward the Pyre, freezing each floor he leaves behind.
+relentless_Level3BattleDaedalus: With his creations destroyed, Daedalus turns Relentless. Wrench in hand, he drops to the bottom floor and climbs toward the Pyre, freezing each floor after he fights on it.
 boss_defeated_Level3BattleDaedalus: Daedalus, the Professor, falls. The man who helped break the Rail will build no more weapons for Heaven.
-outer_boss_action_Level3BattleDaedalus: From outside the train, Daedalus turns one of his devices on one of your floors.
+outer_boss_action_Level3BattleDaedalus: Daedalus readies one of his devices and picks the floor he means to strike.
 
 # ---------------------------------------------------------------------------
 # Talos, the Architect
 # ---------------------------------------------------------------------------
 
 boss_intro_Level3BattleTalos: Talos, the Architect, hovers on vast wings of violet and blue crystal that shimmer like a starry sky. She wears a golden laurel crown and a flowing white robe, with crystal guards on her arms and shins, and holds a golden spear tipped with crystal.
-relentless_Level3BattleTalos: Her escorts gone, Talos turns Relentless, now wielding a crystal spear in each hand. She storms aboard and climbs floor by floor toward the Pyre, freezing each floor behind her.
+relentless_Level3BattleTalos: Her escorts gone, Talos turns Relentless, now wielding a crystal spear in each hand. She drops to the bottom floor and climbs toward the Pyre, freezing each floor after she fights on it.
 boss_defeated_Level3BattleTalos: Talos, the Architect, falls, and the secrets of the Exodus fall silent with her.
-outer_boss_action_Level3BattleTalos: From outside the train, Talos takes aim at one of your floors.
+outer_boss_action_Level3BattleTalos: Talos spreads her crystal wings and picks the floor she means to strike.
 
 # ---------------------------------------------------------------------------
 # Fel, the Wings of Light
 # ---------------------------------------------------------------------------
 
 boss_intro_Level6BattleFel: Fel, the Wings of Light, hovers on jagged wings of glowing yellow light. She wears a sleek white bodysuit striped in red, a red visor and a spiky blue crest, with a long white glaive in each hand. Once Hell's trusted ally, this Clipped legend now stands against the Pyre.
-relentless_Level6BattleFel: With her guard broken, Fel turns Relentless, her blue crest flaring blazing gold. She boards the train, climbing floor by floor toward the Pyre and freezing each floor behind her.
+relentless_Level6BattleFel: With her guard broken, Fel turns Relentless, her blue crest flaring blazing gold. She drops to the bottom floor and climbs toward the Pyre, freezing each floor after she fights on it.
 boss_defeated_Level6BattleFel: Fel, the Wings of Light, falls, and the train rolls on past the ally who abandoned Hell.
-outer_boss_action_Level6BattleFel: From outside the train, Fel turns her power on one of your floors.
+outer_boss_action_Level6BattleFel: Fel gathers her Light and picks the floor she means to strike.
 
 # ---------------------------------------------------------------------------
 # Archus, Darkness Incarnate
 # ---------------------------------------------------------------------------
 
 boss_intro_Level6BattleArchus: Archus, Darkness Incarnate, appears beyond the train: a gaunt, clawed figure in jagged dark teal armor, with two pairs of black feathered wings and a pale horned mask. A broken shackle trails chain from one wrist, and he holds a long sword. The forsaken brother wields ancient powers.
-relentless_Level6BattleArchus: His escorts gone, Archus turns Relentless. The dark winged brother boards the train, climbing floor by floor toward the Pyre and freezing each floor behind him.
+relentless_Level6BattleArchus: His escorts gone, Archus turns Relentless. The dark winged brother drops to the bottom floor and climbs toward the Pyre, freezing each floor after he fights on it.
 boss_defeated_Level6BattleArchus: Archus, Darkness Incarnate, falls. Whatever ancient power the forsaken brother held fades from the rails.
-outer_boss_action_Level6BattleArchus: Beyond the train, Archus calls on his ancient powers and turns them on one of your floors.
+outer_boss_action_Level6BattleArchus: Archus calls on his ancient powers and picks the floor he means to strike.
 
 # ---------------------------------------------------------------------------
 # The Pyrewing (older boss battle, led by Fel)
 # ---------------------------------------------------------------------------
 
 boss_intro_Level8BattleBossOld: The Pyrewing gather ahead, hulking Winged in black plate armor veined with glowing red, with heavy black wings and pale taloned feet. Disgraced Winged seeking redemption through their knowledge of Hell, they follow Fel, the Wings of Light, on her wings of yellow light.
-relentless_Level8BattleBossOld: With the Pyrewing scattered, Fel turns Relentless, her blue crest flaring blazing gold. She boards the train, climbing floor by floor toward the Pyre and freezing each floor behind her.
+relentless_Level8BattleBossOld: With the Pyrewing scattered, Fel turns Relentless, her blue crest flaring blazing gold. She drops to the bottom floor and climbs toward the Pyre, freezing each floor after she fights on it.
 boss_defeated_Level8BattleBossOld: Fel falls, and the disgraced Pyrewing lose their chance at redemption.
-outer_boss_action_Level8BattleBossOld: From outside the train, Fel turns her power on one of your floors.
+outer_boss_action_Level8BattleBossOld: Fel gathers her Light and picks the floor she means to strike.
 
 # ---------------------------------------------------------------------------
 # Seraph the Patient
 # ---------------------------------------------------------------------------
 
 boss_intro_Level8FinalBossAttacker: The end is near. Seraph the Patient hovers with arms folded, six black feathered wings flecked with gold spread behind him, navy armor trimmed in gold, crescent horns rising from his head. The Traitor joins the fight at once, and every move you make feeds his strength.
-relentless_Level8FinalBossAttacker: The last of his forces fall, and Seraph turns Relentless. His folded arms open, clawed hands reaching out, as he climbs the train floor by floor toward the Pyre, freezing each floor behind him.
+relentless_Level8FinalBossAttacker: The last of his forces fall, and Seraph turns Relentless. His folded arms open, clawed hands reaching out, as he drops to the bottom floor and climbs toward the Pyre, freezing each floor after he fights on it.
 boss_defeated_Level8FinalBossAttacker: Seraph the Patient falls. The Breaker of the Covenant, who once helped build the Rail, is cast down, and the Pyre burns on.
-outer_boss_action_Level8FinalBossAttacker: From outside the train, Seraph the Patient strikes at one of your occupied floors.
+outer_boss_action_Level8FinalBossAttacker: Seraph the Patient picks one of your occupied floors to strike.
 
 # ---------------------------------------------------------------------------
 # Seraph the Temperant
 # ---------------------------------------------------------------------------
 
 boss_intro_Level8FinalBossDebuffUnits: The end is near. Seraph the Temperant hovers with arms folded, six white feathered wings flecked with red spread behind him, armor of crimson and gold etched with runes, crescent horns rising from his head. This incarnation tempers the strength of your units.
-relentless_Level8FinalBossDebuffUnits: The last of his forces fall, and Seraph turns Relentless. His folded arms open, clawed hands reaching out, as he climbs the train floor by floor toward the Pyre, freezing each floor behind him.
+relentless_Level8FinalBossDebuffUnits: The last of his forces fall, and Seraph turns Relentless. His folded arms open, clawed hands reaching out, as he drops to the bottom floor and climbs toward the Pyre, freezing each floor after he fights on it.
 boss_defeated_Level8FinalBossDebuffUnits: Seraph the Temperant falls. The Breaker of the Covenant, once a savior of Hell and Guardian of Heaven, is cast down, and the Pyre burns on.
-outer_boss_action_Level8FinalBossDebuffUnits: From outside the train, Seraph the Temperant reaches into one of your occupied floors to temper the strength of your units.
+outer_boss_action_Level8FinalBossDebuffUnits: Seraph the Temperant reaches into one of your occupied floors to temper the strength of your units.
 
 # ---------------------------------------------------------------------------
 # Seraph the Chaste (also covers the tutorial variant)
 # ---------------------------------------------------------------------------
 
 boss_intro_Level8FinalBossPurify: The end is near. Seraph the Chaste hovers with arms folded, six white feathered wings flecked with gold spread behind him, black armor edged in gold and etched with glowing runes, golden crescent horns rising from his head. He cleanses every unit of effects that do not serve him.
-relentless_Level8FinalBossPurify: The last of his forces fall, and Seraph turns Relentless. His folded arms open, clawed hands reaching out, as he climbs the train floor by floor toward the Pyre, freezing each floor behind him.
+relentless_Level8FinalBossPurify: The last of his forces fall, and Seraph turns Relentless. His folded arms open, clawed hands reaching out, as he drops to the bottom floor and climbs toward the Pyre, freezing each floor after he fights on it.
 boss_defeated_Level8FinalBossPurify: Seraph the Chaste falls. The Breaker of the Covenant, who once helped build the Rail, is cast down, and the Pyre burns on.
-outer_boss_action_Level8FinalBossPurify: From outside the train, Seraph the Chaste turns his cleansing Light on one of your occupied floors.
+outer_boss_action_Level8FinalBossPurify: Seraph the Chaste turns his cleansing Light on one of your occupied floors.
 
 # ---------------------------------------------------------------------------
 # Seraph the Diligent
 # ---------------------------------------------------------------------------
 
 boss_intro_Level8FinalBossSpellConsume: The end is near. Seraph the Diligent hovers with arms folded, six white feathered wings flecked with violet spread behind him, armor of magenta and deep blue, crimson crescent horns rising from his head. The Great Traitor devours your spells, so bring many.
-relentless_Level8FinalBossSpellConsume: The last of his forces fall, and Seraph turns Relentless. His folded arms open, clawed hands reaching out, as he climbs the train floor by floor toward the Pyre, freezing each floor behind him.
+relentless_Level8FinalBossSpellConsume: The last of his forces fall, and Seraph turns Relentless. His folded arms open, clawed hands reaching out, as he drops to the bottom floor and climbs toward the Pyre, freezing each floor after he fights on it.
 boss_defeated_Level8FinalBossSpellConsume: Seraph the Diligent falls. The Breaker of the Covenant, once a savior of Hell and Guardian of Heaven, is cast down, and the Pyre burns on.
-outer_boss_action_Level8FinalBossSpellConsume: From outside the train, Seraph the Diligent acts, summoning another enemy unit to join the fight.
+outer_boss_action_Level8FinalBossSpellConsume: Seraph the Diligent summons another enemy unit to join the fight.
 
 # ---------------------------------------------------------------------------
 # The Last Divinity (The Last Divinity DLC)
 # ---------------------------------------------------------------------------
 
 boss_intro_Level9TrueFinalBoss: Beyond the end of the line towers The Last Divinity, a giant built of floating crystal shards, green at its faceless head and shading through orange and pink to violet at its feet. Light bursts from its crystal hands in a violet haze. Its destruction never ends.
-relentless_Level9TrueFinalBoss: Its escorts gone, The Last Divinity turns Relentless, climbing the train floor by floor toward the Pyre and freezing each floor behind it.
+relentless_Level9TrueFinalBoss: Its escorts gone, The Last Divinity turns Relentless, dropping to the bottom floor and climbing toward the Pyre, freezing each floor after it fights there.
 boss_defeated_Level9TrueFinalBoss: The Last Divinity falls before the Pyre. Even in defeat, its endless destruction echoes through Hell.
 
 # ---------------------------------------------------------------------------

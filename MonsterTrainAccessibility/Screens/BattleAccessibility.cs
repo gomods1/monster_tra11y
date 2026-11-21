@@ -144,6 +144,7 @@ namespace MonsterTrainAccessibility.Screens
         public void OnBattleWon()
         {
             IsInBattle = false;
+            Patches.CombatPhaseChangePatch.CurrentPhase = -1;
             _turnSummary.Reset();
             MonsterTrainAccessibility.FloorReview?.Close(announce: false);
             MonsterTrainAccessibility.ScreenReader?.Speak("Victory! Battle won.", false);
@@ -156,6 +157,7 @@ namespace MonsterTrainAccessibility.Screens
         public void OnBattleLost()
         {
             IsInBattle = false;
+            Patches.CombatPhaseChangePatch.CurrentPhase = -1;
             _turnSummary.Reset();
             MonsterTrainAccessibility.FloorReview?.Close(announce: false);
             MonsterTrainAccessibility.ScreenReader?.Speak("Defeat. The pyre has been destroyed.", false);
