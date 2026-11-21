@@ -743,6 +743,7 @@ namespace MonsterTrainAccessibility.Patches
             try
             {
                 MonsterTrainAccessibility.ScreenReader?.Speak("Intro video playing. Press any key to skip.", false);
+                Core.SceneDescriptions.PlayLaunch();
             }
             catch (Exception ex)
             {

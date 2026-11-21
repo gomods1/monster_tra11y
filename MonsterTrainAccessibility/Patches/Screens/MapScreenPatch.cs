@@ -58,6 +58,16 @@ namespace MonsterTrainAccessibility.Patches
                 {
                     MonsterTrainAccessibility.ScreenReader?.AnnounceScreen("Map. Ctrl plus arrows to browse the map. Press F1 for help.");
                 }
+
+                // First arrival at this ring this run: describe it
+                try
+                {
+                    var sm = Utilities.ReflectionHelper.FindManager("SaveManager") as SaveManager;
+                    if (sm != null)
+                        Core.SceneDescriptions.PlayRing(sm.GetCurrentDistance() + 1);
+                }
+                catch { }
+
             }
             catch (Exception ex)
             {

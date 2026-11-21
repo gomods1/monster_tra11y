@@ -92,6 +92,13 @@ namespace MonsterTrainAccessibility.Patches
                 if (__instance is CharacterState pyre && pyre.IsPyreHeart() && CombatPhaseChangePatch.CurrentPhase < 0)
                     return;
 
+                // A boss turning Relentless is a scene (described at the next turn)
+                if (__instance is CharacterState relentlessUnit && !relentlessUnit.IsPyreHeart() &&
+                    relentlessUnit.GetTeamType() == Team.Type.Heroes && !relentlessUnit.PreviewMode &&
+                    statusId.IndexOf("relentless", StringComparison.OrdinalIgnoreCase) >= 0 &&
+                    CombatPhaseChangePatch.CurrentPhase >= 0)
+                    Core.SceneDescriptions.QueueRelentless();
+
                 if (__state >= 0 && __instance is CharacterState cs)
                 {
                     int gained = cs.GetStatusEffectStacks(statusId) - __state;

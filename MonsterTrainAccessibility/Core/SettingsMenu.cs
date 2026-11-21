@@ -77,6 +77,7 @@ namespace MonsterTrainAccessibility.Core
             Add("Announce card draws", c.AnnounceCardDraws);
             Add("Announce artifact triggers", c.AnnounceRelicTriggers);
             Add("Announce unit and merchant chatter", c.AnnounceDialogue);
+            Add("Scene descriptions: game launch, run start, rings, bosses, run end", c.SceneDescriptions);
             // Speech
             Add("Verbosity", c.VerbosityLevel);
             Add("Braille output", c.EnableBraille);

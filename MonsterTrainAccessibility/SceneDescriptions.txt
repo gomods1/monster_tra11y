@@ -1,0 +1,134 @@
+# Monster Train Accessibility: scene descriptions
+#
+# Short audio descriptions spoken once at moments a sighted player only watches:
+# the game launching, a run starting, arriving at a ring of Hell, a boss entrance,
+# a boss turning Relentless, a boss falling, an outer-train boss acting, and the
+# end of a run. They are never spoken during automated combat.
+#
+# Format: one entry per line as   key: text
+# The text must stay on a single line. Lines starting with # are comments and
+# blank lines are ignored. Boss keys use a scenario asset name prefix: an entry
+# applies to every battle whose asset name starts with that prefix.
+#
+# You can edit these descriptions. Place a copy of this file next to the mod DLL
+# in BepInEx/plugins and it overrides the built-in one. Delete a line to silence
+# that moment.
+
+# ---------------------------------------------------------------------------
+# Game and run
+# ---------------------------------------------------------------------------
+
+launch: Hell has frozen over. Heaven's armies, led by the traitor Seraph, have broken the Covenant and invaded the underworld, and its fires have gone cold. One flame remains, the Pyre, the last spark of Hell, carried aboard a train crewed by monsters, racing down through the frozen rings to take Hell back.
+run_start: The train pulls away with the Pyre burning in its top car. Below it, three floors stand ready for your defenders. The rails stretch down into the frozen depths of Hell, and Heaven's forces will board from the bottom and climb toward the flame.
+
+# ---------------------------------------------------------------------------
+# Rings of Hell
+# ---------------------------------------------------------------------------
+
+ring_1: The train enters Limbo, the outermost ring of Hell. Ice grips everything that once burned, and the long descent toward the heart of Hell begins here.
+ring_2: The tracks wind along the Cliffs of Fallen Souls, a ring of sheer drops named for the souls lost to them. Cold wind howls past the train as it hugs the edge.
+ring_3: The train crosses Bogwurm's Remains, the vast frozen remains of the Bogwurm stretched across the ring. The rails run straight through what is left of it.
+ring_4: The train passes into the Waxen Arches, where great arches loom over the tracks, as if shaped from wax and frozen hard. They pass overhead one after another.
+ring_5: The rails cross the Frozen Styx Sea, the waters of the dead locked in ice. Nothing stirs beneath the surface as the train races across it.
+ring_6: The train plunges into the Wildwood, a tangled forest of Hell gone still and cold. Branches crowd the tracks on every side.
+ring_7: The train runs out across the Scorched Plains, wide open land burned by the old fires of Hell, now dead beneath the frost.
+ring_8: The train descends into the Crucible, the deep mines where Hellborne and Clipped once dug crystals together under the Covenant. Now its tunnels echo with the enemy.
+ring_9: The train reaches the Frozen Heart, the very core of Hell, locked in ice. The end of the line is close, and Heaven's mightiest wait ahead.
+ring_10: With one hundred pact shards gathered aboard, the train pushes past the end of the line into the domain of The Last Divinity. Something ancient and endlessly destructive stirs ahead.
+
+# ---------------------------------------------------------------------------
+# Daedalus, the Professor
+# ---------------------------------------------------------------------------
+
+boss_intro_Level3BattleDaedalus: Daedalus, the Professor, arrives outside the train, surrounded by his inventions. The disgraced engineer who armed the Disciples and helped break the Rail has come to Hell to safeguard Seraph and the Winged.
+relentless_Level3BattleDaedalus: With his creations destroyed, Daedalus turns Relentless. He boards the train himself and climbs floor by floor toward the Pyre, freezing each floor he leaves behind.
+boss_defeated_Level3BattleDaedalus: Daedalus, the Professor, falls. The man who helped break the Rail will build no more weapons for Heaven.
+outer_boss_action_Level3BattleDaedalus: From outside the train, Daedalus turns one of his devices on one of your floors.
+
+# ---------------------------------------------------------------------------
+# Talos, the Architect
+# ---------------------------------------------------------------------------
+
+boss_intro_Level3BattleTalos: Talos, the Architect of the Exodus, waits outside the train, ready to strike swiftly and decisively at whatever stands on your floors.
+relentless_Level3BattleTalos: Her escorts gone, Talos turns Relentless and storms aboard, striking hard as she climbs floor by floor toward the Pyre, freezing each floor behind her.
+boss_defeated_Level3BattleTalos: Talos, the Architect, falls, and the secrets of the Exodus fall silent with her.
+outer_boss_action_Level3BattleTalos: From outside the train, Talos takes aim at one of your floors.
+
+# ---------------------------------------------------------------------------
+# Fel, the Wings of Light
+# ---------------------------------------------------------------------------
+
+boss_intro_Level6BattleFel: Fel, the Wings of Light, arrives on new wings made from the Light of Heaven. Once a trusted ally of Hell, this Clipped legend has become Winged once more and now stands against the Pyre.
+relentless_Level6BattleFel: With her guard broken, Fel turns Relentless. She carries the fight onto the train herself, climbing floor by floor toward the Pyre and freezing each floor behind her.
+boss_defeated_Level6BattleFel: Fel, the Wings of Light, falls, and the train rolls on past the ally who abandoned Hell.
+outer_boss_action_Level6BattleFel: From outside the train, Fel turns her power on one of your floors.
+
+# ---------------------------------------------------------------------------
+# Archus, Darkness Incarnate
+# ---------------------------------------------------------------------------
+
+boss_intro_Level6BattleArchus: Archus, Darkness Incarnate, appears beyond the train. The forsaken brother, dark of wing and of mind, long imprisoned, wields unknown ancient powers and summons shards of the Divinities to halt your advance.
+relentless_Level6BattleArchus: His escorts gone, Archus turns Relentless. Darkness boards the train, climbing floor by floor toward the Pyre and freezing each floor behind it.
+boss_defeated_Level6BattleArchus: Archus, Darkness Incarnate, falls. Whatever ancient power the forsaken brother held fades from the rails.
+outer_boss_action_Level6BattleArchus: Beyond the train, Archus calls on his ancient powers and turns them on one of your floors.
+
+# ---------------------------------------------------------------------------
+# The Pyrewing (older boss battle, led by Fel)
+# ---------------------------------------------------------------------------
+
+boss_intro_Level8BattleBossOld: The Pyrewing gather ahead, disgraced Winged given a chance to redeem themselves through their knowledge of Hell. Fel, the Wings of Light, leads them against the train.
+relentless_Level8BattleBossOld: With the Pyrewing scattered, Fel turns Relentless and boards the train, climbing floor by floor toward the Pyre and freezing each floor behind her.
+boss_defeated_Level8BattleBossOld: Fel falls, and the disgraced Pyrewing lose their chance at redemption.
+outer_boss_action_Level8BattleBossOld: From outside the train, Fel turns her power on one of your floors.
+
+# ---------------------------------------------------------------------------
+# Seraph the Patient
+# ---------------------------------------------------------------------------
+
+boss_intro_Level8FinalBossAttacker: The end is near. Seraph the Patient, Breaker of the Covenant and Invader of Hell, has grown impatient. The Traitor joins the fight at once, and every move you make only feeds his strength.
+relentless_Level8FinalBossAttacker: The last of his forces fall, and Seraph turns Relentless. Hell's greatest foe climbs the train floor by floor toward the Pyre, freezing each floor behind him.
+boss_defeated_Level8FinalBossAttacker: Seraph the Patient falls. The Breaker of the Covenant, who once helped build the Rail, is cast down, and the Pyre burns on.
+outer_boss_action_Level8FinalBossAttacker: From outside the train, Seraph the Patient strikes at one of your occupied floors.
+
+# ---------------------------------------------------------------------------
+# Seraph the Temperant
+# ---------------------------------------------------------------------------
+
+boss_intro_Level8FinalBossDebuffUnits: The end is near. Seraph the Temperant, Breaker of the Covenant and Invader of Hell, awaits. This incarnation of Hell's greatest foe tempers the strength of your units, and only the truly determined will survive.
+relentless_Level8FinalBossDebuffUnits: The last of his forces fall, and Seraph turns Relentless. Hell's greatest foe climbs the train floor by floor toward the Pyre, freezing each floor behind him.
+boss_defeated_Level8FinalBossDebuffUnits: Seraph the Temperant falls. The Breaker of the Covenant, once a savior of Hell and Guardian of Heaven, is cast down, and the Pyre burns on.
+outer_boss_action_Level8FinalBossDebuffUnits: From outside the train, Seraph the Temperant reaches into one of your occupied floors to temper the strength of your units.
+
+# ---------------------------------------------------------------------------
+# Seraph the Chaste (also covers the tutorial variant)
+# ---------------------------------------------------------------------------
+
+boss_intro_Level8FinalBossPurify: The end is near. Seraph the Chaste, Breaker of the Covenant and Invader of Hell, awaits. He cleanses every unit of effects that do not benefit him, and this fight will take more than sheer strength.
+relentless_Level8FinalBossPurify: The last of his forces fall, and Seraph turns Relentless. Hell's greatest foe climbs the train floor by floor toward the Pyre, freezing each floor behind him.
+boss_defeated_Level8FinalBossPurify: Seraph the Chaste falls. The Breaker of the Covenant, who once helped build the Rail, is cast down, and the Pyre burns on.
+outer_boss_action_Level8FinalBossPurify: From outside the train, Seraph the Chaste turns his cleansing Light on one of your occupied floors.
+
+# ---------------------------------------------------------------------------
+# Seraph the Diligent
+# ---------------------------------------------------------------------------
+
+boss_intro_Level8FinalBossSpellConsume: The end is near. Seraph the Diligent, the Great Traitor, Breaker of the Covenant and Invader of Hell, awaits, ready to devour your spells. You will need many of them to prevail.
+relentless_Level8FinalBossSpellConsume: The last of his forces fall, and Seraph turns Relentless. Hell's greatest foe climbs the train floor by floor toward the Pyre, freezing each floor behind him.
+boss_defeated_Level8FinalBossSpellConsume: Seraph the Diligent falls. The Breaker of the Covenant, once a savior of Hell and Guardian of Heaven, is cast down, and the Pyre burns on.
+outer_boss_action_Level8FinalBossSpellConsume: From outside the train, Seraph the Diligent acts, summoning another enemy unit to join the fight.
+
+# ---------------------------------------------------------------------------
+# The Last Divinity (The Last Divinity DLC)
+# ---------------------------------------------------------------------------
+
+boss_intro_Level9TrueFinalBoss: Beyond the end of the line waits The Last Divinity, an ancient power of endless destruction. Either in victory or defeat, its rampage rages on, and now it turns toward the train and its Pyre.
+relentless_Level9TrueFinalBoss: Its escorts gone, The Last Divinity turns Relentless, climbing the train floor by floor toward the Pyre and freezing each floor behind it.
+boss_defeated_Level9TrueFinalBoss: The Last Divinity falls before the Pyre. Even in defeat, its endless destruction echoes through Hell.
+
+# ---------------------------------------------------------------------------
+# End of run
+# ---------------------------------------------------------------------------
+
+victory: Seraph falls, and Heaven's invasion is broken. The train reaches the end of the line with the Pyre still burning, its flame ready to rekindle Hell.
+victory_last_divinity: The Last Divinity is beaten. The train stands beyond the end of the line, the Pyre still burning, and the flame of Hell endures against even the oldest destruction.
+defeat: The Pyre gutters and goes out. Hell's last flame is extinguished, the train falls silent and cold, and the ice closes over the rails.

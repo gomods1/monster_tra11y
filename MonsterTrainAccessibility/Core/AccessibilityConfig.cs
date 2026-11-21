@@ -15,6 +15,7 @@ namespace MonsterTrainAccessibility.Core
         public ConfigEntry<bool> DebugBridge { get; private set; }
         public ConfigEntry<KeyCode> FloorReviewKey { get; private set; }
         public ConfigEntry<KeyCode> SettingsKey { get; private set; }
+        public ConfigEntry<bool> SceneDescriptions { get; private set; }
         public ConfigEntry<int> KeyLayoutVersion { get; private set; }
         public ConfigEntry<bool> DebugBridgeMute { get; private set; }
 
@@ -296,6 +297,13 @@ namespace MonsterTrainAccessibility.Core
                 "CombatSummaryMode",
                 false,
                 "During automated combat, stay silent and speak one summary right before your next turn instead of narrating each hit, death, move and arrival: per floor the damage your units dealt and took, kills, losses and the health left on every unit that was hit, then enemy moves, pyre damage and new arrivals. Everything is still logged to the Events buffer and combat log. Off = live blow-by-blow narration."
+            );
+
+            SceneDescriptions = config.Bind(
+                "Announcements",
+                "SceneDescriptions",
+                true,
+                "Describe static scenes a sighted player watches: the game launching, a run starting, arriving at a new ring, a boss's entrance, a boss turning Relentless or falling, the outer-train boss acting, and the run's end. Never during automated combat. Texts are in SceneDescriptions.txt (a copy next to the mod DLL overrides the built-in one)"
             );
 
             AnnounceDeaths = config.Bind(

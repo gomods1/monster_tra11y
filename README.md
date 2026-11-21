@@ -262,6 +262,12 @@ You can edit this file to customize:
 - SAPI fallback settings
 - Braille display options
 
+### Scene Descriptions
+
+The mod describes the moments a sighted player only watches: the game launching, a run starting, arriving at each ring of Hell, a boss's entrance before its battle, a boss turning Relentless, a boss falling, a boss acting from outside the train, and the end of a run. They are never spoken during automated combat: a boss turning Relentless is described when your next turn starts. Turn them off in F9 ("Scene descriptions").
+
+The texts are in `BepInEx/plugins/SceneDescriptions.txt`, one `key: text` per line. Edit it to change them, or delete a line to silence that moment; the mod keeps a built-in copy in case the file is missing.
+
 ### Combat Summary
 
 By default combat is narrated as it happens. Turn on **Combat summary instead of live combat narration** (F9) to keep automated combat quiet and hear one summary right before each of your turns: for every floor, the damage your units dealt and took, kills, losses and the health left on every unit that was hit, then enemy moves, pyre damage and new arrivals. Everything is still in the Events buffer either way.

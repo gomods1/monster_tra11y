@@ -403,6 +403,7 @@ namespace MonsterTrainAccessibility.Patches
                 string announcement = sb.ToString().Trim();
                 MonsterTrainAccessibility.LogInfo($"Game over auto-read: {announcement}");
                 MonsterTrainAccessibility.ScreenReader?.Speak(announcement, false);
+                Core.SceneDescriptions.PlayRunEnd(isVictory, victoryTypeStr == "Hellforged");
             }
             catch (Exception ex)
             {

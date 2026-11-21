@@ -120,7 +120,12 @@ namespace MonsterTrainAccessibility.Patches
                     }
 
                     if (ScreenStateTracker.CurrentScreen != target)
+                    {
                         ScreenStateTracker.SetScreen(target);
+                        // The run opening (boss list) only appears when a new run starts
+                        if (target == Help.GameScreen.RunOpening)
+                            Core.SceneDescriptions.PlayRunStart();
+                    }
                     return;
                 }
             }

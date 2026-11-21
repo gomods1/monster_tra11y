@@ -1,0 +1,80 @@
+Monster Train Accessibility 8.0.0 is out
+
+Hi all,
+
+A new version of the Monster Train accessibility mod is out, and it's a big one. The short version: the mod no longer steals the game's keys, combat narration is back and says a lot more, there's a settings menu inside the game, bosses and rings get spoken scene descriptions, and a long list of screens that were silent or confusing now read properly.
+
+Important: some keys changed
+
+Several mod keys were also game keys. For example, pressing C to re-read a card also opened your discard pile, and V cycled verbosity while opening the consumed pile. Now every mod key is one the game doesn't use. If you're updating, your config is moved to the new keys automatically. Any key you changed yourself stays as you set it.
+
+The new keys:
+- F1: help for the current screen (unchanged)
+- F2: re-read the focused item with full details (was C)
+- F3: read all text on the screen, including the run summary after a run (was T and S)
+- F4: cycle verbosity (was V)
+- F5: gold (was Control G)
+- F6: pyre health (was Control H)
+- F7: pact shards and threat (was Control R)
+- F9: the new accessibility settings menu
+
+In battle:
+- J: read your hand (was H)
+- K: read the selected floor (unchanged)
+- L: read all floors (unchanged)
+- Shift L: read all units in detail (was U)
+- G: read ember (was R)
+- Shift K: open the floor review (was the Up arrow, which is a game key)
+
+Control plus the arrow keys still drive the review buffers, and the map cursor on the map.
+
+The settings menu
+
+Press F9 on any screen. It's a spoken list of every option: what gets announced (damage, deaths, units entering, status effects, card draws, artifact triggers, unit chatter), the combat summary, scene descriptions, verbosity, braille, and every key. Up and Down move, Left, Right or Enter change a setting, F2 reads its description, and Escape closes it. To change a key, press Enter on it and then press the new key. If you pick a key the game uses, it tells you and asks for another. Everything saves right away. There's no language option because the mod reads the game's own text, so it follows the game's language.
+
+Scene descriptions
+
+Sighted players get little scenes the mod used to skip: the intro, the train setting out, each ring of Hell, a boss making its entrance, a boss going Relentless, a boss falling, the Last Divinity acting from outside the train, and how the run ends. Now you get a short spoken description at those moments. They never interrupt combat. If a boss turns Relentless mid-fight, you hear about it when your next turn starts. You can switch them off in F9. The texts are in a file called SceneDescriptions.txt. If you want to rewrite them, put your own copy next to the mod DLL in BepInEx\plugins.
+
+Combat
+
+- Live narration is back by default. The combat summary from the last version is now a setting, off by default. It's also much better: before your turn it tells you, floor by floor, how much damage your units dealt and took, what died on each side, and how much health is left on everything that got hit. Then it covers enemy moves, pyre damage and new arrivals.
+- Every turn starts with one line, for example: Your turn, 3 ember, 5 cards in hand, 2 waves remaining. The old version didn't announce your turn at all, and the wave counter never worked.
+- New things you'll hear:
+  - your own units being summoned
+  - unit abilities going off (Summon, Slay, Revenge, Resolve, Extinguish, Immune, No attack)
+  - cards being shoved into your hand or deck mid-fight, like Scourges or Sinner's Burden
+  - choose-a-card prompts
+  - real healing amounts
+  - ember you gain mid-turn
+  - gold gained and spent
+  - pact shards
+  - attack buffs and debuffs
+  - your units being moved between floors
+  - floor capacity changes
+- Pyre hits say who hit it, for example: Reconciler hits the pyre for 1, 43 left.
+- When several identical things happen at once, you hear them once with a count, like: Clergyman gains Rage 2, 3 times.
+- Cards in your hand say where they are, like 2 of 5, so you can tell two copies apart.
+- The enemy's battle artifact is read at the start of each fight. It used to be announced as a reward.
+- Lots of noise is gone: focus jumps the game does on its own during combat, the ember counter being read at battle start, duplicate lines, buffs on freshly summoned units, and so on.
+
+Screens
+
+- The map now tells you each stop's path, ring and whether you can visit it right now, and the battle nodes name the battle. The minimap, M, reads properly too.
+- Leaving a shop, event or reward used to confuse the mod about which screen you were on. That's fixed, and it was behind a lot of odd map behaviour.
+- Confirmation dialogs are read when they pop up.
+- The Standard Run dialog tells you about your saved run: clans, champion, covenant, ring, pyre and gold.
+- Rewards read as Gain 50 gold, Clan Pack and so on. Picking a card says it was added to your deck, and getting an artifact says so.
+- Deck and upgrade screens give the right card position.
+- Champion upgrades say which path you took.
+- At the end of a run, losing no longer says VICTORY, and the score rows say what they are instead of just a number.
+- Run History used to read the same fake date on every row. It now reads the result, clans, battles won, score and date for each run.
+- Help, F1, was rewritten for battle and the map. It tells you where you are in the list, and Home and End jump to the start and end.
+
+Fixes
+
+There was a rare problem where the mod could switch itself off right after the game started. That's fixed, along with many small reading glitches.
+
+As always, feedback is very welcome, especially about the new keys and the scene descriptions. If something is silent, wrong, or too chatty, let me know which screen it was and what you were doing.
+
+Enjoy, and keep that Pyre burning.

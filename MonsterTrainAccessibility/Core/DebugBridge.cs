@@ -264,6 +264,16 @@ namespace MonsterTrainAccessibility.Core
                     }
                     else Write("> submit: nothing selected");
                     break;
+                case "scenetest":
+                    {
+                        var sm = ReflectionHelper.FindManager("SaveManager") as SaveManager;
+                        var sc = sm?.GetAllGameData()?.FindScenarioDataByName(arg);
+                        Write(sc == null ? $"> scenetest {arg}: no such scenario" : $"> scenetest {arg}\n" + SceneDescriptions.Describe(sc));
+                    }
+                    break;
+                case "dumpscenes":
+                    Write("> dumpscenes " + DumpSceneData());
+                    break;
                 case "navinfo":
                     {
                         var cur = EventSystem.current?.currentSelectedGameObject;
@@ -409,6 +419,93 @@ namespace MonsterTrainAccessibility.Core
             }
             catch (Exception ex) { sb.AppendLine("  error " + ex.Message); }
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Write the game text that scene descriptions are written from (ring
+        /// names, every battle with its bosses, their lore and boss actions) to
+        /// BepInEx/accessibility_scene_dump.txt. Localization lives in asset
+        /// bundles, so this is the only way to read it from outside the game.
+        /// </summary>
+        private static string DumpSceneData()
+        {
+            string Loc(string key)
+            {
+                if (string.IsNullOrEmpty(key)) return null;
+                string v = LocalizationHelper.LocalizeOrNull(key);
+                return string.IsNullOrEmpty(v) || v == key || v.Contains("KEY>>") ? null : TextUtilities.StripRichTextTags(v).Replace("\n", " ");
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine("# Scene dump: game text for writing scene descriptions");
+            sb.AppendLine("## Rings (MapRegion_Name{distance})");
+            for (int d = 0; d <= 10; d++)
+            {
+                string name = Loc($"MapRegion_Name{d}");
+                if (name != null) sb.AppendLine($"ring_{d}: {name}");
+            }
+
+            var saveManager = ReflectionHelper.FindManager("SaveManager") as SaveManager;
+            var allGameData = saveManager?.GetAllGameData();
+            if (allGameData == null) return "no AllGameData";
+            var scenarios = typeof(AllGameData).GetField("scenarioDatas", BindingFlags.NonPublic | BindingFlags.Instance)
+                ?.GetValue(allGameData) as IList;
+            sb.AppendLine("## Battles (ScenarioData asset name | difficulty | battle name | description)");
+            int count = 0;
+            if (scenarios != null)
+            {
+                foreach (var o in scenarios)
+                {
+                    if (!(o is ScenarioData sc)) continue;
+                    count++;
+                    sb.AppendLine($"battle {sc.name} | {sc.GetDifficulty()} | {TextUtilities.StripRichTextTags(sc.GetBattleName() ?? "")} | {TextUtilities.StripRichTextTags(sc.GetBattleDescription() ?? "").Replace("\n", " ")}");
+                    var bosses = new List<CharacterData>();
+                    for (int i = 0; i < 6; i++)
+                    {
+                        CharacterData b = null;
+                        try { b = sc.GetBossAtIndex(i); } catch { }
+                        if (b != null && !bosses.Contains(b)) bosses.Add(b);
+                    }
+                    try
+                    {
+                        var outer = sc.GetOuterTrainBoss(false);
+                        if (outer != null && !bosses.Contains(outer)) bosses.Add(outer);
+                        var outerHard = sc.GetOuterTrainBoss(true);
+                        if (outerHard != null && !bosses.Contains(outerHard)) bosses.Add(outerHard);
+                    }
+                    catch { }
+                    foreach (var b in bosses)
+                    {
+                        var lore = new List<string>();
+                        try
+                        {
+                            foreach (var key in b.GetCharacterLoreTooltipKeys() ?? new List<string>())
+                            {
+                                string l = Loc(key);
+                                if (l != null) lore.Add(l);
+                            }
+                        }
+                        catch { }
+                        sb.AppendLine($"  boss {b.name} | {b.GetName()} | attack {b.GetAttackDamage()} health {b.GetHealth()} | outer train boss {b.IsOuterTrainBoss()} | lore: {string.Join(" / ", lore.ToArray())}");
+                        try
+                        {
+                            foreach (var group in b.GetBossActionData() ?? new List<ActionGroupData>())
+                            {
+                                foreach (var action in group.GetActions() ?? new List<BossActionData>())
+                                {
+                                    string tip = Loc(action.GetTooltipOverrideKey());
+                                    sb.AppendLine($"    action {action.GetActionBehaviorName()} | {tip}");
+                                }
+                            }
+                        }
+                        catch { }
+                    }
+                }
+            }
+
+            string path = Path.Combine(Paths.BepInExRootPath, "accessibility_scene_dump.txt");
+            File.WriteAllText(path, sb.ToString());
+            return $"{count} battles -> {path}";
         }
 
         private static string GetPath(GameObject go)

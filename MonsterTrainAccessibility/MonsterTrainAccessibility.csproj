@@ -19,9 +19,16 @@
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="SceneDescriptions.txt" Condition="Exists('SceneDescriptions.txt')" LogicalName="MonsterTrainAccessibility.SceneDescriptions.txt" />
+  </ItemGroup>
+
   <!-- Also copy to game plugins folder after build -->
   <Target Name="CopyToPlugins" AfterTargets="Build">
     <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll" DestinationFiles="$(MonsterTrainPath)\BepInEx\plugins\$(AssemblyName).dll" />
+    <!-- Editable scene descriptions ship next to the DLL (they override the embedded copy) -->
+    <Copy SourceFiles="SceneDescriptions.txt" DestinationFolder="$(OutputPath)" Condition="Exists('SceneDescriptions.txt')" />
+    <Copy SourceFiles="SceneDescriptions.txt" DestinationFolder="$(MonsterTrainPath)\BepInEx\plugins" Condition="Exists('SceneDescriptions.txt')" />
   </Target>
 
   <!-- BepInEx References (from game folder) -->

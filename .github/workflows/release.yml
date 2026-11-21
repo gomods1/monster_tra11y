@@ -28,9 +28,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: gh release download --repo ${{ github.repository }} --pattern 'MonsterTrainAccessibilityInstaller.exe' --dir .
 
+      - name: Pick release notes
+        id: notes
+        run: |
+          if [ -f "release-notes/${{ github.ref_name }}.md" ]; then
+            echo "path=release-notes/${{ github.ref_name }}.md" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
+          body_path: ${{ steps.notes.outputs.path }}
           files: |
             MonsterTrainAccessibility-${{ github.ref_name }}.zip
             MonsterTrainAccessibilityInstaller.exe

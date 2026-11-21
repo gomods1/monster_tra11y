@@ -106,6 +106,7 @@ namespace MonsterTrainAccessibility.Patches
                         break;
                     case "BossActionPreCombat":
                     case "BossActionPostCombat":
+                        Core.SceneDescriptions.PlayOuterBossAction();
                         // Boss actions are "powers" - kept live in both modes.
                         announcement = GetBossActionAnnouncement(__instance);
                         break;

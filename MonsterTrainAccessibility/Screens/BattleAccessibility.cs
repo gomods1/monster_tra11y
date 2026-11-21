@@ -45,6 +45,7 @@ namespace MonsterTrainAccessibility.Screens
             Patches.CombatPhaseChangePatch.CurrentPhase = -1;
             _awaitingTurnStart = false;
             _pendingDraws = 0;
+            Core.SceneDescriptions.OnBattleStarted();
 
             MonsterTrainAccessibility.LogInfo("Battle entered");
             // Short opener; the full resource list is on the Resources buffer and
@@ -114,6 +115,9 @@ namespace MonsterTrainAccessibility.Screens
             if (MonsterTrainAccessibility.AccessibilitySettings.CombatSummaryMode.Value)
                 AnnounceCombatSummary();
 
+            // Scene description held back from combat (a boss turning Relentless)
+            Core.SceneDescriptions.FlushTurnStart();
+
             var parts = new List<string> { "Your turn" };
             int ember = ResourceReader.GetCurrentEnergy(_cache);
             if (ember >= 0)
@@ -143,6 +147,7 @@ namespace MonsterTrainAccessibility.Screens
             _turnSummary.Reset();
             MonsterTrainAccessibility.FloorReview?.Close(announce: false);
             MonsterTrainAccessibility.ScreenReader?.Speak("Victory! Battle won.", false);
+            Core.SceneDescriptions.PlayBossDefeated();
         }
 
         /// <summary>

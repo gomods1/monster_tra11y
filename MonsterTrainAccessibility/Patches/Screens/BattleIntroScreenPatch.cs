@@ -224,6 +224,7 @@ namespace MonsterTrainAccessibility.Patches
                 sb.Append("Press Enter to fight. Press F1 for help.");
 
                 MonsterTrainAccessibility.ScreenReader?.Speak(sb.ToString(), false);
+                Core.SceneDescriptions.PlayBossIntro();
             }
             catch (Exception ex)
             {
