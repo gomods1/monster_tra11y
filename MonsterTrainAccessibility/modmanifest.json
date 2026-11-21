@@ -2,7 +2,7 @@
   "Title": "Monster Train Accessibility",
   "Description": "Full accessibility mod for totally blind players. Provides screen reader support via NVDA, JAWS, or Windows Narrator, and complete keyboard navigation for all game elements including menus, battles, card drafts, and map navigation.",
   "CosmeticOnly": false,
-  "ChangeLog": "8.1.1: Relentless and boss action descriptions fixed. 8.1.0: scene descriptions rewritten from the game art and intro video. 8.0.0: mod keys moved off game keys (F2-F7, F9 settings, J, K, L, G), live combat narration with many new events, scene descriptions, map, reward, run history and run summary readers. See release-notes/v8.0.0.md",
+  "ChangeLog": "8.2.0: boss intent changes, artifact trigger effects, merchant, skip gold, text cleanups. 8.1.1: Relentless and boss action descriptions fixed. 8.1.0: scene descriptions rewritten from the game art and intro video. 8.0.0: mod keys moved off game keys (F2-F7, F9 settings, J, K, L, G), live combat narration with many new events, scene descriptions, map, reward, run history and run summary readers. See release-notes/v8.0.0.md",
   "Tags": [
     "Accessibility",
     "Screen Reader",

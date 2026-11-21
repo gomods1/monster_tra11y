@@ -305,6 +305,10 @@ namespace MonsterTrainAccessibility.Core
             new System.Text.RegularExpressions.Regex(@"([a-z0-9)])\.([A-Z])");
         private static readonly System.Text.RegularExpressions.Regex DoublePeriod =
             new System.Text.RegularExpressions.Regex(@"(?<!\.)\.\.(?!\.)");
+        private static readonly System.Text.RegularExpressions.Regex SkipWithoutCurrency =
+            new System.Text.RegularExpressions.Regex(@"Skip \(\+(\d+)\)");
+        private static readonly System.Text.RegularExpressions.Regex StrayXBeforeCurrency =
+            new System.Text.RegularExpressions.Regex(@"(\d+) X (gold|ember|pact shards?)");
         private static readonly System.Text.RegularExpressions.Regex MultiSpace =
             new System.Text.RegularExpressions.Regex(@"[ \t]{2,}");
 
@@ -319,7 +323,12 @@ namespace MonsterTrainAccessibility.Core
             text = SpaceAfterParen.Replace(text, "(");
             text = MissingSpaceAfterPeriod.Replace(text, "$1. $2");
             text = DoublePeriod.Replace(text, ".");
-            text = text.Replace("!.", "!").Replace("?.", "?");
+            text = text.Replace("!.", "!").Replace("?.", "?").Replace(".,", ",").Replace(".:", ":");
+            // Draft skip buttons: "Skip (+25)" when the gold icon didn't come
+            // through - skipping a draft always pays gold (GetGoldForSkipping)
+            text = SkipWithoutCurrency.Replace(text, "Skip (+$1 gold)");
+            // A cost-X icon ahead of the gold icon leaves "Gain 40 X gold"
+            text = StrayXBeforeCurrency.Replace(text, "$1 $2");
             text = MultiSpace.Replace(text, " ");
             return text.Trim();
         }

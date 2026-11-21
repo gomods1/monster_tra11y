@@ -370,7 +370,20 @@ namespace MonsterTrainAccessibility.Patches
                 _lastTriggerKey = relicName;
                 _lastTriggerTime = currentTime;
 
-                MonsterTrainAccessibility.BattleHandler?.OnRelicTriggered(relicName);
+                // The game's own popup text for this activation ("+1 ember", "Spikes 3")
+                string activated = null;
+                try
+                {
+                    if (__1 is RelicEffectBase effect)
+                    {
+                        activated = Utilities.TextUtilities.StripRichTextTags(effect.GetActivatedDescription() ?? "").Trim();
+                        if (activated.Length == 0 || activated.Contains("KEY>>") || activated.Contains("_"))
+                            activated = null;
+                    }
+                }
+                catch { }
+
+                MonsterTrainAccessibility.BattleHandler?.OnRelicTriggered(relicName, activated);
             }
             catch (Exception ex)
             {

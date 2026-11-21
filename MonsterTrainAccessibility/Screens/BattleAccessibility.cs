@@ -46,6 +46,7 @@ namespace MonsterTrainAccessibility.Screens
             _awaitingTurnStart = false;
             _pendingDraws = 0;
             Core.SceneDescriptions.OnBattleStarted();
+            _bossIntents.Clear();
 
             MonsterTrainAccessibility.LogInfo("Battle entered");
             // Short opener; the full resource list is on the Resources buffer and
@@ -136,6 +137,46 @@ namespace MonsterTrainAccessibility.Screens
             string message = string.Join(", ", parts) + ".";
             MonsterTrainAccessibility.ScreenReader?.Queue(message);
             MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(message);
+
+            AnnounceChangedBossIntents();
+        }
+
+        // Last intent announced per boss (by instance), so only changes are spoken
+        private readonly Dictionary<int, string> _bossIntents = new Dictionary<int, string>();
+
+        /// <summary>
+        /// At the start of each turn, speak a boss's intent when it is new or has
+        /// changed since the last turn ("Talos, the Architect intent: destroy the
+        /// room after combat, targeting bottom floor"). Sighted players see the
+        /// intent icon change; before, it was only available with K or Shift+L.
+        /// </summary>
+        private void AnnounceChangedBossIntents()
+        {
+            try
+            {
+                for (int room = 0; room <= 3; room++)
+                {
+                    var roomObj = FloorReader.GetRoom(_cache, room);
+                    if (roomObj == null) continue;
+                    foreach (var unit in FloorReader.GetUnitsInRoom(roomObj))
+                    {
+                        if (unit == null || !FloorReader.IsEnemyUnit(_cache, unit)) continue;
+                        string label = EnemyReader.GetUnitIntentLabel(_cache, unit);
+                        if (string.IsNullOrEmpty(label) || !label.StartsWith("Intent: ", StringComparison.Ordinal)) continue;
+                        string intent = label.Substring("Intent: ".Length).Trim().TrimEnd('.');
+                        int id = System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(unit);
+                        if (_bossIntents.TryGetValue(id, out var last) && last == intent) continue;
+                        _bossIntents[id] = intent;
+                        string text = $"{FloorReader.GetUnitName(_cache, unit)} intent: {intent}";
+                        MonsterTrainAccessibility.ScreenReader?.Queue(text);
+                        MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(text);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MonsterTrainAccessibility.LogError($"Error announcing boss intents: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -564,7 +605,7 @@ namespace MonsterTrainAccessibility.Screens
         /// <summary>
         /// Announce when an artifact/relic triggers during combat
         /// </summary>
-        public void OnRelicTriggered(string relicName)
+        public void OnRelicTriggered(string relicName, string activatedText = null)
         {
             if (!IsInBattle)
                 return;
@@ -572,7 +613,9 @@ namespace MonsterTrainAccessibility.Screens
             if (!MonsterTrainAccessibility.AccessibilitySettings.AnnounceRelicTriggers.Value)
                 return;
 
-            string message = $"{relicName} triggered";
+            string message = string.IsNullOrEmpty(activatedText)
+                ? $"{relicName} triggered"
+                : $"{relicName}: {activatedText}";
             MonsterTrainAccessibility.ScreenReader?.QueueBatched(message);
             MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(message);
         }

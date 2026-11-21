@@ -1409,6 +1409,13 @@ namespace MonsterTrainAccessibility.Screens
                 return text;
             }
 
+            // Shop merchant character ("Merchant of Steel. Press Enter to talk")
+            text = MerchantCharacterTextReader.GetText(go);
+            if (!string.IsNullOrEmpty(text))
+            {
+                return text;
+            }
+
             // Currency score rows and covenant icons (run summary, run history)
             text = RunWidgetTextReader.GetText(go);
             if (!string.IsNullOrEmpty(text))

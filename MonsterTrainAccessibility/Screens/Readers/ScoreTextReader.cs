@@ -215,3 +215,33 @@ namespace MonsterTrainAccessibility.Screens
         }
     }
 }
+
+namespace MonsterTrainAccessibility.Screens
+{
+    /// <summary>
+    /// The merchant character in shops (MerchantCharacterUI): selectable, and
+    /// Enter makes them talk. Was read as "Merchant Screen".
+    /// </summary>
+    internal static class MerchantCharacterTextReader
+    {
+        internal static string GetText(UnityEngine.GameObject go)
+        {
+            try
+            {
+                if (go.GetComponentInParent<MerchantCharacterUI>() == null) return null;
+                string name = null;
+                var screen = UnityEngine.Object.FindObjectOfType<MerchantScreen>();
+                var data = typeof(MerchantScreen).GetField("sourceMerchantData",
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(screen) as MerchantData;
+                if (data != null)
+                    name = Utilities.TextUtilities.StripRichTextTags(data.GetTooltipTitle() ?? "").Trim();
+                if (string.IsNullOrEmpty(name)) name = "Merchant";
+                return $"{name}. Press Enter to talk";
+            }
+            catch
+            {
+                return null;
+            }
+        }
+    }
+}
