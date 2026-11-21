@@ -114,6 +114,11 @@ namespace MonsterTrainAccessibility.Patches
 
         public static bool AxisPrefix(string __0, ref float __result)
         {
+            if (IsSettingsOpen())
+            {
+                __result = 0f;
+                return false;
+            }
             bool suppress = (IsCtrlHeld() || IsHelpOpen() || IsReviewOpen()) && IsNavigationAxis(__0);
 
             if (suppress)
@@ -136,6 +141,11 @@ namespace MonsterTrainAccessibility.Patches
 
         public static bool ButtonPrefix(string __0, ref bool __result)
         {
+            if (IsSettingsOpen())
+            {
+                __result = false;
+                return false;
+            }
             bool suppress = (IsCtrlHeld() || IsHelpOpen() || IsReviewOpen()) && IsNavigationAxis(__0);
             // While help or the floor review is open, Enter and Escape act on
             // the modal instead of the game
@@ -245,7 +255,8 @@ namespace MonsterTrainAccessibility.Patches
         {
             bool helpOpen = IsHelpOpen();
             bool reviewOpen = IsReviewOpen();
-            if (__0 == null || (!IsCtrlHeld() && !helpOpen && !reviewOpen))
+            bool settingsOpen = IsSettingsOpen();
+            if (__0 == null || (!IsCtrlHeld() && !helpOpen && !reviewOpen && !settingsOpen))
                 return true;
 
             try
@@ -262,6 +273,11 @@ namespace MonsterTrainAccessibility.Patches
 
                 if (!(_keyCodeField?.GetValue(__0) is KeyCode keyCode))
                     return true;
+
+                // The settings list is modal (and captures arbitrary keys when
+                // rebinding), so no keyboard control reaches the game
+                if (settingsOpen)
+                    return false;
 
                 bool isArrow = keyCode == KeyCode.UpArrow || keyCode == KeyCode.DownArrow ||
                                keyCode == KeyCode.LeftArrow || keyCode == KeyCode.RightArrow;
@@ -289,6 +305,13 @@ namespace MonsterTrainAccessibility.Patches
             }
 
             return true;
+        }
+
+        /// <summary>Includes the frame the settings list closed.</summary>
+        private static bool IsSettingsOpen()
+        {
+            var settings = MonsterTrainAccessibility.Settings;
+            return settings != null && (settings.IsOpen || settings.ClosedThisFrame);
         }
 
         private static bool IsNavigationAxis(string name)

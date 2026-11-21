@@ -52,6 +52,7 @@ namespace MonsterTrainAccessibility.Patches
             { ScreenName.Credits, Help.GameScreen.Credits },
             { ScreenName.KeyMapping, Help.GameScreen.KeyMapping },
             { ScreenName.RunHistory, Help.GameScreen.RunHistory },
+            { ScreenName.RunOpening, Help.GameScreen.RunOpening },
         };
 
         public static void TryPatch(Harmony harmony)
@@ -107,7 +108,7 @@ namespace MonsterTrainAccessibility.Patches
                     }
                     else if (!Map.TryGetValue(name, out target))
                     {
-                        return; // GameOver, RunOpening, ... keep their own patch's state
+                        return; // GameOver, ... keep their own patch's state
                     }
 
                     if (ScreenStateTracker.CurrentScreen != target)

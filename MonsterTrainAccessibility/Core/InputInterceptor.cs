@@ -56,6 +56,22 @@ namespace MonsterTrainAccessibility.Core
             if (config == null)
                 return;
 
+            // The settings list is modal: every key goes to it while it is open
+            var settings = MonsterTrainAccessibility.Settings;
+            if (settings != null && settings.IsOpen)
+            {
+                if (settings.HandleInput())
+                    _inputCooldown = INPUT_COOLDOWN_TIME;
+                return;
+            }
+            if (settings != null && KeyInput.GetKeyDown(config.SettingsKey.Value) &&
+                MonsterTrainAccessibility.HelpSystem?.IsBrowsing != true)
+            {
+                settings.Open();
+                _inputCooldown = INPUT_COOLDOWN_TIME;
+                return;
+            }
+
             // While the help list is open it captures Up/Down/F1/Enter/Escape
             // until closed (InputSuppressionPatch keeps those keys from the game)
             var help = MonsterTrainAccessibility.HelpSystem;

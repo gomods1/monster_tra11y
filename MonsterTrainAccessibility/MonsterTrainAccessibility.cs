@@ -39,6 +39,7 @@ namespace MonsterTrainAccessibility
         public static FloorTargetingSystem FloorTargeting { get; private set; }
         public static UnitTargetingSystem UnitTargeting { get; private set; }
         public static FloorReviewSystem FloorReview { get; private set; }
+        public static SettingsMenu Settings { get; private set; }
 
         // Screen-specific handlers
         public static MenuAccessibility MenuHandler { get; private set; }
@@ -78,6 +79,7 @@ namespace MonsterTrainAccessibility
                 MapHandler = new MapAccessibility();
                 MapNav = new MapNavigator();
                 FloorReview = new FloorReviewSystem();
+                Settings = new SettingsMenu();
 
                 // Review buffers (Ctrl+arrows), cycled in MT2 order:
                 // UI, Events, Card, Creature, Artifact, Reward, then battle info

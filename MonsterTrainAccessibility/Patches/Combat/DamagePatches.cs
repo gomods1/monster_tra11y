@@ -629,6 +629,13 @@ namespace MonsterTrainAccessibility.Patches
                         // line for buffer review. Damage totals are no longer summarized -
                         // the summary reports deaths and survivors, not damage numbers.
                         MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(announcement);
+                        if (!(__instance is CharacterState pyreCheck && pyreCheck.IsPyreHeart()))
+                        {
+                            int hitRoom = CharacterStateHelper.GetRoomIndex(__instance);
+                            if (hitRoom < 0 && _preRoomTracker.TryGetValue(hash, out int preHitRoom))
+                                hitRoom = preHitRoom;
+                            MonsterTrainAccessibility.BattleHandler?.AccumulateDamage(__instance, targetName, isEnemy, hitRoom, damage);
+                        }
                     }
                     else if (announceDamage)
                     {

@@ -20,6 +20,7 @@ namespace MonsterTrainAccessibility.Help.Contexts
         {
             return
                 "F1: Open help for the current screen. " +
+                "F9: Accessibility settings: what gets announced, combat summary, verbosity, braille and every mod key. Up and Down choose, Left, Right or Enter change, Escape closes. " +
                 "Arrow keys move the game's focus, Enter selects, Escape goes back or opens the pause menu. " +
                 "F2: Re-read the focused item. Cards, shop items and artifacts read their full details. " +
                 "F3: Read all text on the screen. " +

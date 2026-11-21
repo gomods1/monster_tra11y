@@ -14,6 +14,7 @@ namespace MonsterTrainAccessibility.Core
         public ConfigEntry<bool> EnableBraille { get; private set; }
         public ConfigEntry<bool> DebugBridge { get; private set; }
         public ConfigEntry<KeyCode> FloorReviewKey { get; private set; }
+        public ConfigEntry<KeyCode> SettingsKey { get; private set; }
         public ConfigEntry<int> KeyLayoutVersion { get; private set; }
         public ConfigEntry<bool> DebugBridgeMute { get; private set; }
 
@@ -243,6 +244,13 @@ namespace MonsterTrainAccessibility.Core
                 "Key to show context-sensitive help for current screen"
             );
 
+            SettingsKey = config.Bind(
+                "Keys.Information",
+                "Settings",
+                KeyCode.F9,
+                "Key to open the accessibility settings list (works on any screen)"
+            );
+
             // Retired: the read-current key covers map nodes and the read-text
             // key covers the run summary. Kept so custom bindings still work.
             ReadMapNodeKey = config.Bind(
@@ -287,7 +295,7 @@ namespace MonsterTrainAccessibility.Core
                 "Announcements",
                 "CombatSummaryMode",
                 false,
-                "During automated combat, stay silent and speak one per-floor summary (damage exchanged, who survived, pyre damage) at the start of your next turn instead of narrating each hit/spawn/death/move. Suppressed events are still logged to the Events buffer and combat log. Off = live blow-by-blow with no summary."
+                "During automated combat, stay silent and speak one summary right before your next turn instead of narrating each hit, death, move and arrival: per floor the damage your units dealt and took, kills, losses and the health left on every unit that was hit, then enemy moves, pyre damage and new arrivals. Everything is still logged to the Events buffer and combat log. Off = live blow-by-blow narration."
             );
 
             AnnounceDeaths = config.Bind(

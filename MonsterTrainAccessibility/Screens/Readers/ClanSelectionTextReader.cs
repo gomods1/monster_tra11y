@@ -691,6 +691,76 @@ namespace MonsterTrainAccessibility.Screens
         /// Get text for covenant selector buttons (difficulty selection).
         /// Reads from game state fields, not UI labels (which may contain placeholder text).
         /// </summary>
+        /// <summary>
+        /// Clan covenant rank (ClanCovenantRankUI on clan selection): the game
+        /// splits its label around the two clan icons ("Rank: [icons] 5"), so the
+        /// focus fallback only found "Rank:". Reads both label halves with the
+        /// selected clans' names in place of the icons, the covenant level, and
+        /// the tooltip.
+        /// </summary>
+        internal static string GetClanCovenantRankText(GameObject go)
+        {
+            try
+            {
+                var rankUI = go.GetComponentInParent<ClanCovenantRankUI>();
+                if (rankUI == null) return null;
+                var flags = BindingFlags.NonPublic | BindingFlags.Instance;
+                var t = typeof(ClanCovenantRankUI);
+                string Label(string field)
+                {
+                    var tmp = t.GetField(field, flags)?.GetValue(rankUI);
+                    if (tmp is Component c && !c.gameObject.activeInHierarchy) return null;
+                    return TextUtilities.StripRichTextTags(UITextHelper.GetRenderedTMPLabelText(tmp) ?? "").Trim();
+                }
+
+                var screen = UnityEngine.Object.FindObjectOfType<ClassSelectionScreen>();
+                string clans = screen != null ? GetSelectedClanNames(screen) : null;
+
+                var parts = new List<string>();
+                string pre = Label("preIconLabel");
+                string post = Label("postIconLabel");
+                string level = Label("covenantLevelLabel");
+                if (!string.IsNullOrEmpty(pre)) parts.Add(pre);
+                if (!string.IsNullOrEmpty(clans)) parts.Add(clans);
+                if (!string.IsNullOrEmpty(post)) parts.Add(post);
+                if (!string.IsNullOrEmpty(level)) parts.Add($"covenant {level}");
+                string text = string.Join(" ", parts);
+
+                TooltipTextReader.GetTooltipTitleAndBody(go, out _, out string body);
+                if (!string.IsNullOrEmpty(body))
+                    text = string.IsNullOrEmpty(text) ? body : $"{text}. {TextUtilities.StripRichTextTags(body)}";
+                return string.IsNullOrEmpty(text) ? null : text;
+            }
+            catch (Exception ex)
+            {
+                MonsterTrainAccessibility.LogError($"Error reading clan covenant rank: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>"Hellhorned and Stygian Guard" from the clan selection screen's current choice.</summary>
+        private static string GetSelectedClanNames(ClassSelectionScreen screen)
+        {
+            try
+            {
+                var flags = BindingFlags.NonPublic | BindingFlags.Instance;
+                string Title(string field)
+                {
+                    var ui = typeof(ClassSelectionScreen).GetField(field, flags)?.GetValue(screen);
+                    var cls = ui?.GetType().GetField("classData", flags)?.GetValue(ui) as ClassData;
+                    return cls?.GetTitle();
+                }
+                string main = Title("mainChampionSelectionUI");
+                string sub = Title("subChampionSelectionUI");
+                if (string.IsNullOrEmpty(main)) return null;
+                return string.IsNullOrEmpty(sub) ? main : $"{main} and {sub}";
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         internal static string GetCovenantSelectorText(GameObject go)
         {
             try

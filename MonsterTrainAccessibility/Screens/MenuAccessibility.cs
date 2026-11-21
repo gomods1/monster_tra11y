@@ -1564,6 +1564,13 @@ namespace MonsterTrainAccessibility.Screens
                 return text;
             }
 
+            // 3.65 Clan covenant rank ("Rank: Hellhorned and Stygian Guard covenant 5")
+            text = ClanSelectionTextReader.GetClanCovenantRankText(go);
+            if (!string.IsNullOrEmpty(text))
+            {
+                return text;
+            }
+
             // 3.7 Check for covenant selector UI
             text = ClanSelectionTextReader.GetCovenantSelectorText(go);
             if (!string.IsNullOrEmpty(text))
@@ -2308,7 +2315,8 @@ namespace MonsterTrainAccessibility.Screens
             _lastSelectedObject = null;
 
             // Announce that we're at the main menu
-            MonsterTrainAccessibility.ScreenReader?.AnnounceScreen("Main Menu");
+            MonsterTrainAccessibility.ScreenReader?.AnnounceScreen(
+                $"Main Menu. {Core.SettingsMenu.KeyName(MonsterTrainAccessibility.AccessibilitySettings.SettingsKey.Value)} for accessibility settings, F1 for help");
 
             // Read the currently selected item if any
             if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject != null)

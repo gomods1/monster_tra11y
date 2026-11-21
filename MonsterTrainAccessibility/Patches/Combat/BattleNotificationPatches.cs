@@ -31,6 +31,11 @@ namespace MonsterTrainAccessibility.Patches
             TryPatchOne(harmony, typeof(CardManager), "AddCard", postfix: nameof(AddCardPostfix));
             TryPatchOne(harmony, typeof(HandSelectionUI), "Open", postfix: nameof(HandSelectionOpenPostfix));
             TryPatchOne(harmony, typeof(SaveManager), "AddCardToDeck", postfix: nameof(AddCardToDeckPostfix));
+            TryPatchOne(harmony, typeof(PlayerManager), "AddEnergy", prefix: nameof(EnergyPrefix), postfix: nameof(AddEnergyPostfix));
+            TryPatchOne(harmony, typeof(SaveManager), "AdjustGold", prefix: nameof(GoldPrefix), postfix: nameof(AdjustGoldPostfix));
+            TryPatchOne(harmony, typeof(CharacterState), "BuffDamage", postfix: nameof(BuffDamagePostfix));
+            TryPatchOne(harmony, typeof(CharacterState), "DebuffDamage", postfix: nameof(DebuffDamagePostfix));
+            TryPatchOne(harmony, typeof(MonsterManager), "OnSpawnPointChanged", prefix: nameof(MonsterSpawnPointChangedPrefix));
         }
 
         private static void TryPatchOne(Harmony harmony, Type type, string method, string prefix = null, string postfix = null)
@@ -165,6 +170,94 @@ namespace MonsterTrainAccessibility.Patches
             catch (Exception ex)
             {
                 MonsterTrainAccessibility.LogError($"Error in add card to deck patch: {ex.Message}");
+            }
+        }
+
+        public static void EnergyPrefix(PlayerManager __instance, out int __state)
+        {
+            __state = __instance != null ? __instance.GetEnergy() : -1;
+        }
+
+        /// <summary>Ember gained from card or relic effects during your turn (not the turn's refill).</summary>
+        public static void AddEnergyPostfix(PlayerManager __instance, int __state)
+        {
+            try
+            {
+                if (__instance == null || __state < 0 || IsPreview()) return;
+                var battle = MonsterTrainAccessibility.BattleHandler;
+                if (battle == null || !battle.IsInBattle || battle.IsAwaitingTurnStart) return;
+                if (CombatPhaseChangePatch.CurrentPhase != 3) return; // MonsterTurn only
+                int now = __instance.GetEnergy();
+                if (now > __state)
+                    battle.OnEmberGained(now - __state, now);
+            }
+            catch (Exception ex)
+            {
+                MonsterTrainAccessibility.LogError($"Error in ember patch: {ex.Message}");
+            }
+        }
+
+        public static void GoldPrefix(SaveManager __instance, out int __state)
+        {
+            __state = __instance != null && !__instance.PreviewMode ? __instance.GetGold() : -1;
+        }
+
+        /// <summary>Gold gained or spent (rewards, purchases, Slay gold): "+50 gold, 175 total".</summary>
+        public static void AdjustGoldPostfix(SaveManager __instance, int __state)
+        {
+            try
+            {
+                if (__instance == null || __state < 0 || __instance.PreviewMode) return;
+                switch (Help.ScreenStateTracker.CurrentScreen)
+                {
+                    case Help.GameScreen.MainMenu:
+                    case Help.GameScreen.ClanSelection:
+                    case Help.GameScreen.Unknown:
+                    case Help.GameScreen.Loading:
+                        return; // run setup
+                }
+                int now = __instance.GetGold();
+                int delta = now - __state;
+                if (delta == 0) return;
+                string text = delta > 0 ? $"Gained {delta} gold, {now} total" : $"Spent {-delta} gold, {now} left";
+                MonsterTrainAccessibility.ScreenReader?.Queue(text);
+                if (MonsterTrainAccessibility.BattleHandler?.IsInBattle == true)
+                    MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(text);
+            }
+            catch (Exception ex)
+            {
+                MonsterTrainAccessibility.LogError($"Error in gold patch: {ex.Message}");
+            }
+        }
+
+        public static void BuffDamagePostfix(CharacterState __instance, int amount, bool fromStatusEffect)
+        {
+            // fromStatusEffect = Rage/Sap, already announced as a status
+            if (__instance == null || amount <= 0 || fromStatusEffect || __instance.PreviewMode) return;
+            MonsterTrainAccessibility.BattleHandler?.OnAttackChanged(__instance.GetName(), amount, __instance.GetAttackDamage());
+        }
+
+        public static void DebuffDamagePostfix(CharacterState __instance, int amount, bool fromStatusEffect)
+        {
+            if (__instance == null || amount <= 0 || fromStatusEffect || __instance.PreviewMode) return;
+            MonsterTrainAccessibility.BattleHandler?.OnAttackChanged(__instance.GetName(), -amount, __instance.GetAttackDamage());
+        }
+
+        /// <summary>Your unit moved to another floor (bumped, Ascend/Descend effects).</summary>
+        public static void MonsterSpawnPointChangedPrefix(CharacterState characterState, SpawnPoint prevPoint, SpawnPoint newPoint)
+        {
+            try
+            {
+                if (characterState == null || prevPoint == null || newPoint == null) return;
+                if (characterState.PreviewMode || IsPreview() || characterState.IsPyreHeart()) return;
+                int from = prevPoint.GetRoomOwner()?.GetRoomIndex() ?? -1;
+                int to = newPoint.GetRoomOwner()?.GetRoomIndex() ?? -1;
+                if (from < 0 || to < 0 || from == to) return;
+                MonsterTrainAccessibility.BattleHandler?.OnFriendlyUnitMoved(characterState.GetName(), to, to > from);
+            }
+            catch (Exception ex)
+            {
+                MonsterTrainAccessibility.LogError($"Error in unit move patch: {ex.Message}");
             }
         }
 

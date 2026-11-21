@@ -87,6 +87,11 @@ namespace MonsterTrainAccessibility.Patches
         {
             try
             {
+                // The pyre heart's fixed traits (Relentless, Sweep, Immobile, Immunity
+                // on The Last Divinity's pyre) are applied at every battle start
+                if (__instance is CharacterState pyre && pyre.IsPyreHeart() && CombatPhaseChangePatch.CurrentPhase < 0)
+                    return;
+
                 if (__state >= 0 && __instance is CharacterState cs)
                 {
                     int gained = cs.GetStatusEffectStacks(statusId) - __state;

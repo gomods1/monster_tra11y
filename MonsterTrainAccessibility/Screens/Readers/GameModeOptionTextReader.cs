@@ -38,10 +38,15 @@ namespace MonsterTrainAccessibility.Screens
                     return IsPlayButton(go) ? $"Active run: {summary}. {label}" : $"Active run: {summary}";
                 }
 
+                // Standard Run's "New game option", and the challenge dialog's
+                // Hell Royale / Daily / Custom options - their buttons all just
+                // say "Start" or "Play"
                 var option = UITextHelper.FindComponentInHierarchy(go, "GameModeOption");
-                if (option != null && IsPlayButton(go))
+                if (option != null && go.GetComponent<UnityEngine.UI.Selectable>() != null)
                 {
                     string title = GetOptionTitle(option);
+                    if (string.IsNullOrEmpty(title))
+                        title = UITextHelper.CleanGameObjectName(option.gameObject.name.Replace(" option", "").Replace(" Option", ""));
                     string label = GetLabel(go) ?? "Start";
                     return string.IsNullOrEmpty(title) ? label : $"{title}: {label}";
                 }

@@ -145,7 +145,7 @@ namespace MonsterTrainAccessibility.Screens
                 return null;
 
             var details = new List<string>();
-            foreach (var part in System.Text.RegularExpressions.Regex.Split(full, @"(?=Ring \d+: |Final Boss: )"))
+            foreach (var part in System.Text.RegularExpressions.Regex.Split(full, @"(?=Boss \d+: |Final Boss: )"))
             {
                 string item = part.Trim().TrimEnd('.').Trim();
                 if (item.Length == 0 || item.StartsWith("Boss Battles", StringComparison.Ordinal)) continue;
@@ -155,7 +155,7 @@ namespace MonsterTrainAccessibility.Screens
             }
 
             string summary = details.Count > 0
-                ? $"Boss battles for this run, {details.Count} rings. Enter to begin. Ctrl plus Up reads each boss"
+                ? $"Boss battles for this run, {details.Count} bosses. Enter to begin. Ctrl plus Up reads each boss"
                 : "Boss battles for this run. Enter to begin";
             return new Core.Buffers.FocusReadout { Summary = summary, Details = details, FullText = full };
         }
@@ -210,7 +210,7 @@ namespace MonsterTrainAccessibility.Screens
 
                             // Add ring label: "Ring 1:", "Ring 2:", ..., last one is "Final Boss:"
                             if (i < bossDetailsList.Count - 1)
-                                sb.Append($"Ring {i + 1}: ");
+                                sb.Append($"Boss {i + 1}: ");
                             else
                                 sb.Append("Final Boss: ");
 

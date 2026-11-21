@@ -32,7 +32,8 @@ namespace MonsterTrainAccessibility.Help
         Credits,
         KeyMapping,
         RunSummary,
-        Loading
+        Loading,
+        RunOpening
     }
 
     /// <summary>

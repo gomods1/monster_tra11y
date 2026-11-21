@@ -81,8 +81,8 @@ namespace MonsterTrainAccessibility.Patches
                 if (phaseName == "MonsterTurn")
                 {
                     MonsterTrainAccessibility.BattleHandler?.OnMonsterTurnPhaseBegan();
-                    if (summaryMode)
-                        MonsterTrainAccessibility.BattleHandler?.AnnounceCombatSummary();
+                    // The summary is spoken when the player gets control
+                    // (BattleAccessibility.OnPlayerTurnStarted), after the draw
                     return;
                 }
 

@@ -72,6 +72,9 @@ namespace MonsterTrainAccessibility.Screens
         private bool _awaitingTurnStart;
         private int _pendingDraws;
 
+        /// <summary>True between the MonsterTurn phase starting and the player getting control.</summary>
+        internal bool IsAwaitingTurnStart => _awaitingTurnStart;
+
         /// <summary>Called when the MonsterTurn phase begins (before the turn's draw).</summary>
         internal void OnMonsterTurnPhaseBegan()
         {
@@ -100,6 +103,9 @@ namespace MonsterTrainAccessibility.Screens
             {
                 Help.ScreenStateTracker.SetScreen(Help.GameScreen.Battle);
             }
+
+            if (MonsterTrainAccessibility.AccessibilitySettings.CombatSummaryMode.Value)
+                AnnounceCombatSummary();
 
             var parts = new List<string> { "Your turn" };
             int ember = ResourceReader.GetCurrentEnergy(_cache);
@@ -379,8 +385,35 @@ namespace MonsterTrainAccessibility.Screens
             {
                 message = $"{unitName} summoned on {floorName}";
             }
-            // Enemy wave spawns (PreCombat) and auto-spawns are folded into the turn-start
-            // board listing; your own summons during MonsterTurn stay live.
+            // Enemy wave spawns (PreCombat) and auto-spawns are folded into the
+            // summary; your own summons during MonsterTurn stay live.
+            if (IsAutoEventSuppressed())
+                _turnSummary.AddArrival(unitName, isEnemy, roomIndex);
+            SpeakOrLogAutoEvent(message);
+        }
+
+        public void OnEmberGained(int amount, int total)
+        {
+            if (!IsInBattle) return;
+            string message = $"Gained {amount} ember, {total} total";
+            MonsterTrainAccessibility.ScreenReader?.Queue(message);
+            MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(message);
+        }
+
+        public void OnAttackChanged(string unitName, int delta, int newAttack)
+        {
+            if (!IsInBattle || delta == 0) return;
+            string message = delta > 0
+                ? $"{unitName} gains {delta} attack, {newAttack} total"
+                : $"{unitName} loses {-delta} attack, {newAttack} left";
+            SpeakOrLogAutoEvent(message);
+        }
+
+        public void OnFriendlyUnitMoved(string unitName, int toRoomIndex, bool up)
+        {
+            if (!IsInBattle) return;
+            string where = toRoomIndex == 3 ? "the pyre room" : RoomIndexToFloorName(toRoomIndex).ToLower();
+            string message = $"Your {unitName} moves {(up ? "up" : "down")} to {where}";
             SpeakOrLogAutoEvent(message);
         }
 
@@ -433,6 +466,8 @@ namespace MonsterTrainAccessibility.Screens
                 return;
 
             string message = $"{enemyName} ascends to {RoomIndexToFloorName(roomIndex).ToLower()}";
+            if (IsAutoEventSuppressed())
+                _turnSummary.AddMove(enemyName, roomIndex, up: true);
             SpeakOrLogAutoEvent(message);
         }
 
@@ -592,6 +627,8 @@ namespace MonsterTrainAccessibility.Screens
                 return;
 
             string message = $"{enemyName} descends to {RoomIndexToFloorName(roomIndex).ToLower()}";
+            if (IsAutoEventSuppressed())
+                _turnSummary.AddMove(enemyName, roomIndex, up: false);
             SpeakOrLogAutoEvent(message);
         }
 
@@ -640,82 +677,27 @@ namespace MonsterTrainAccessibility.Screens
         internal void AccumulatePyre(int damage, int remaining)
             => _turnSummary.AddPyre(damage, remaining);
 
+        /// <summary>Record a hit during automated combat for the summary.</summary>
+        internal void AccumulateDamage(object target, string targetName, bool targetIsEnemy, int roomIndex, int amount)
+            => _turnSummary.AddDamage(target, targetName, targetIsEnemy, roomIndex, amount);
+
         /// <summary>
-        /// Speak the accumulated automated-combat summary — who died on each side, then who
-        /// stayed alive per floor (current board state), then any pyre damage — and reset the
-        /// accumulator. Called when the player regains control (entering MonsterTurn). Leads
-        /// with "Combat summary." Speaks nothing on a turn with nothing to report.
+        /// Speak what happened since the player's last turn as one block, then
+        /// reset. Called from <see cref="OnPlayerTurnStarted"/> just before the
+        /// "Your turn" line, so the turn's draw and start-of-turn effects don't
+        /// interleave with it. Speaks nothing when nothing happened.
         /// </summary>
         internal void AnnounceCombatSummary()
         {
             try
             {
-                if (!IsInBattle)
+                if (!IsInBattle || _turnSummary.IsEmpty)
                     return;
 
-                var parts = new List<string>();
-
-                // Per floor (0..2 = bottom..top): who was defeated/lost there, then who is
-                // still standing (current board state). Side blocks are enemies-first.
-                for (int roomIndex = 0; roomIndex <= 2; roomIndex++)
-                {
-                    var yourUnits = new List<string>();
-                    var enemyUnits = new List<string>();
-
-                    var room = FloorReader.GetRoom(_cache, roomIndex);
-                    if (room != null)
-                    {
-                        foreach (var unit in FloorReader.GetUnitsInRoom(room))
-                        {
-                            if (unit == null) continue;
-                            int hp = FloorReader.GetUnitHP(_cache, unit);
-                            if (hp <= 0) continue; // skip corpses not yet removed
-                            int armor = FloorReader.GetUnitArmor(unit);
-                            string brief = armor > 0
-                                ? $"{FloorReader.GetUnitName(_cache, unit)} {hp} hp, {armor} armor"
-                                : $"{FloorReader.GetUnitName(_cache, unit)} {hp} hp";
-                            if (FloorReader.IsEnemyUnit(_cache, unit))
-                                enemyUnits.Add(brief);
-                            else
-                                yourUnits.Add(brief);
-                        }
-                    }
-
-                    var enemyDead = _turnSummary.EnemyDeathsOnFloor(roomIndex);
-                    var yourDead = _turnSummary.YourDeathsOnFloor(roomIndex);
-
-                    if (yourUnits.Count == 0 && enemyUnits.Count == 0
-                        && enemyDead.Count == 0 && yourDead.Count == 0)
-                        continue;
-
-                    var floorParts = new List<string>();
-                    if (enemyDead.Count > 0)
-                        floorParts.Add($"enemies defeated {string.Join(", ", enemyDead)}");
-                    if (enemyUnits.Count > 0)
-                        floorParts.Add($"enemy {string.Join(", ", enemyUnits)}");
-                    if (yourDead.Count > 0)
-                        floorParts.Add($"your units lost {string.Join(", ", yourDead)}");
-                    if (yourUnits.Count > 0)
-                        floorParts.Add($"your {string.Join(", ", yourUnits)}");
-
-                    parts.Add($"{RoomIndexToFloorName(roomIndex)}: {string.Join("; ", floorParts)}");
-                }
-
-                // Deaths whose floor couldn't be pinned down (e.g. on the pyre).
-                var enemyDeadElsewhere = _turnSummary.EnemyDeathsOffFloor();
-                if (enemyDeadElsewhere.Count > 0)
-                    parts.Add($"Enemies defeated: {string.Join(", ", enemyDeadElsewhere)}");
-                var yourDeadElsewhere = _turnSummary.YourDeathsOffFloor();
-                if (yourDeadElsewhere.Count > 0)
-                    parts.Add($"Your units lost: {string.Join(", ", yourDeadElsewhere)}");
-
-                // Pyre damage stays gated by the Damage announcement toggle.
-                if (MonsterTrainAccessibility.AccessibilitySettings.AnnounceDamage.Value && _turnSummary.PyreTouched)
-                    parts.Add($"Pyre took {_turnSummary.PyreDamageTotal} damage, {_turnSummary.PyreRemaining} remaining");
-
+                var parts = _turnSummary.Build(MonsterTrainAccessibility.AccessibilitySettings.AnnounceDamage.Value);
                 if (parts.Count > 0)
                 {
-                    string text = "Combat summary. " + string.Join(". ", parts) + ".";
+                    string text = (_turnSummary.OnlyArrivals ? "" : "Combat summary. ") + string.Join(". ", parts) + ".";
                     MonsterTrainAccessibility.ScreenReader?.Speak(text, false);
                     MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(text);
                 }
