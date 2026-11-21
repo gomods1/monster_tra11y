@@ -31,6 +31,7 @@ namespace MonsterTrainAccessibility.Patches
             TryPatchOne(harmony, typeof(CardManager), "AddCard", postfix: nameof(AddCardPostfix));
             TryPatchOne(harmony, typeof(HandSelectionUI), "Open", postfix: nameof(HandSelectionOpenPostfix));
             TryPatchOne(harmony, typeof(SaveManager), "AddCardToDeck", postfix: nameof(AddCardToDeckPostfix));
+            TryPatchOne(harmony, typeof(SaveManager), "AddRelic", postfix: nameof(AddRelicPostfix));
             TryPatchOne(harmony, typeof(PlayerManager), "AddEnergy", prefix: nameof(EnergyPrefix), postfix: nameof(AddEnergyPostfix));
             TryPatchOne(harmony, typeof(SaveManager), "AdjustGold", prefix: nameof(GoldPrefix), postfix: nameof(AdjustGoldPostfix));
             TryPatchOne(harmony, typeof(CharacterState), "BuffDamage", postfix: nameof(BuffDamagePostfix));
@@ -88,6 +89,17 @@ namespace MonsterTrainAccessibility.Patches
             {
                 MonsterTrainAccessibility.LogError($"Error in unit notification patch: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// True while one of your units is still inside its Setup coroutine (not
+        /// yet reported as summoned): card upgrades are applied as max HP and
+        /// attack buffs then, which are part of the unit, not events.
+        /// </summary>
+        internal static bool IsMonsterSettingUp(object unit)
+        {
+            return unit is CharacterState cs && cs.GetTeamType() == Team.Type.Monsters &&
+                   !cs.IsPyreHeart() && !_announcedMonsters.Contains(RuntimeHelpers.GetHashCode(cs));
         }
 
         public static void OnCharacterAddedPostfix(CharacterState addedChar)
@@ -173,6 +185,30 @@ namespace MonsterTrainAccessibility.Patches
             }
         }
 
+        /// <summary>An artifact joined the run (artifact draft, event, shop, hoard).</summary>
+        public static void AddRelicPostfix(RelicData relicData)
+        {
+            try
+            {
+                if (relicData == null) return;
+                switch (Help.ScreenStateTracker.CurrentScreen)
+                {
+                    case Help.GameScreen.MainMenu:
+                    case Help.GameScreen.ClanSelection:
+                    case Help.GameScreen.Unknown:
+                    case Help.GameScreen.Loading:
+                        return; // run setup (mutators, challenge rules)
+                }
+                string name = relicData.GetName();
+                if (string.IsNullOrEmpty(name)) return;
+                MonsterTrainAccessibility.ScreenReader?.Queue($"Artifact gained: {name}");
+            }
+            catch (Exception ex)
+            {
+                MonsterTrainAccessibility.LogError($"Error in add relic patch: {ex.Message}");
+            }
+        }
+
         public static void EnergyPrefix(PlayerManager __instance, out int __state)
         {
             __state = __instance != null ? __instance.GetEnergy() : -1;
@@ -234,6 +270,7 @@ namespace MonsterTrainAccessibility.Patches
         {
             // fromStatusEffect = Rage/Sap, already announced as a status
             if (__instance == null || amount <= 0 || fromStatusEffect || __instance.PreviewMode) return;
+            if (IsMonsterSettingUp(__instance)) return;
             MonsterTrainAccessibility.BattleHandler?.OnAttackChanged(__instance.GetName(), amount, __instance.GetAttackDamage());
         }
 

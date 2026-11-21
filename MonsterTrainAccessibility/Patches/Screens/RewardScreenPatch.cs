@@ -101,6 +101,13 @@ namespace MonsterTrainAccessibility.Patches
             yield return null;
             if (UnityEngine.Time.frameCount - _enemyShowcaseFrame <= 3)
                 yield break;
+            // A map node's reward (banner, hoard, Hellvent) opens its draft or
+            // deck screen right on top of the reward screen, which then
+            // initializes underneath and claims the tracker; re-derive it from
+            // the screen stack. The screen on top announces itself.
+            ScreenFocusSyncPatch.SyncNow();
+            if (ScreenStateTracker.CurrentScreen != Help.GameScreen.Rewards)
+                yield break;
             AutoReadRewards(screen);
         }
 

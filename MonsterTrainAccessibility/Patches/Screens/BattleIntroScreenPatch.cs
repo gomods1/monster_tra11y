@@ -102,7 +102,14 @@ namespace MonsterTrainAccessibility.Patches
                 sb.Append("Battle intro. ");
                 if (!string.IsNullOrEmpty(battleName))
                 {
-                    sb.Append("Battle: ");
+                    bool isBoss = false;
+                    try
+                    {
+                        isBoss = (Utilities.ReflectionHelper.FindManager("SaveManager") as SaveManager)
+                            ?.GetCurrentScenarioData()?.GetDifficulty() == ScenarioDifficulty.Boss;
+                    }
+                    catch { }
+                    sb.Append(isBoss ? "Boss battle: " : "Battle: ");
                     sb.Append(battleName);
                     sb.Append(". ");
                 }

@@ -166,7 +166,7 @@ The mod automatically reads text when:
 | N | Toggle combat speed (game's native key) - announces the new speed |
 | Page Up/Down | Change the selected floor (game's native keys) - announces the floor |
 
-Each of your turns starts with one line - "Your turn, 3 ember, drew 5 cards, 2 waves remaining" - and cards in hand announce their position ("2 of 5"). During combat the mod announces attacks, deaths, unit trigger abilities (Summon, Slay, Revenge, Resolve...), healing, status effects, enemies moving, cards added to your deck or hand, and pyre damage. Everything is also kept in the Events buffer.
+Each of your turns starts with one line - "Your turn, 3 ember, 5 cards in hand, 2 waves remaining" - and cards in hand announce their position ("2 of 5"). During combat the mod announces attacks, deaths, unit trigger abilities (Summon, Slay, Revenge, Resolve...), healing, status effects, enemies moving, cards added to your deck or hand, and pyre damage. Everything is also kept in the Events buffer.
 
 ### Floor Review (Shift+K in battle)
 

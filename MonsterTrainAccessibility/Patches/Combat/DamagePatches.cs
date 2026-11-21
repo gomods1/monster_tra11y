@@ -573,7 +573,7 @@ namespace MonsterTrainAccessibility.Patches
                 if (newHP > oldHP)
                 {
                     // oldHP 0 = the unit is being set up (spawn), not healed
-                    if (oldHP > 0 && !MaxHPBuffPatch.WasJustBuffed(__instance))
+                    if (oldHP > 0 && !MaxHPBuffPatch.WasJustBuffed(__instance) && !BattleNotificationPatches.IsMonsterSettingUp(__instance))
                     {
                         string healed = CharacterStateHelper.GetUnitName(__instance);
                         MonsterTrainAccessibility.BattleHandler?.OnUnitHealed(healed, newHP - oldHP, newHP);
@@ -618,10 +618,14 @@ namespace MonsterTrainAccessibility.Patches
                     bool summaryMode = MonsterTrainAccessibility.AccessibilitySettings.CombatSummaryMode.Value;
                     bool announceDamage = MonsterTrainAccessibility.AccessibilitySettings.AnnounceDamage.Value;
 
-                    // Hits on the pyre heart are the pyre's own HP: PyreDamagePatch
-                    // already says "Pyre takes N damage", so only log this one
+                    // Hits on the pyre heart are the pyre's HP. This line knows the
+                    // attacker, so in battle it replaces PyreDamagePatch's generic one
                     if (__instance is CharacterState targetState && targetState.IsPyreHeart())
-                        announceDamage = false;
+                    {
+                        announcement = !string.IsNullOrEmpty(attackerName) && attackerName != "Unit"
+                            ? $"{attackerName} hits the pyre for {damage}, {newHP} left"
+                            : $"Pyre takes {damage} damage, {newHP} left";
+                    }
 
                     if (summaryMode && CombatPhaseChangePatch.IsAutoCombatPhase)
                     {

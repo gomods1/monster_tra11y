@@ -28,7 +28,7 @@ namespace MonsterTrainAccessibility.Help.Contexts
         {
             return
                 "Battle: enemies enter on the bottom floor and climb one floor after each round of combat. The pyre sits above the top floor. If the pyre runs out of health the run ends. " +
-                "Each of your turns starts with one line: your ember, how many cards you drew and how many enemy waves remain. " +
+                "Each of your turns starts with one line: your ember, how many cards are in your hand and how many enemy waves remain. " +
                 "Left and Right arrows: Move through your hand. Each card says its name, cost, stats and position, for example 2 of 5. " +
                 "Number keys 1 to 9 and 0: Jump to a card in your hand. " +
                 "Enter or E: Play the focused card. Units and floor spells then ask for a floor, targeted spells ask for a unit. " +

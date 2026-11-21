@@ -148,26 +148,29 @@ namespace MonsterTrainAccessibility.Screens
                 {
                     try
                     {
+                        // Visual order (rows top to bottom, then left to right):
+                        // the grid's sibling order doesn't match what is shown,
+                        // and the grid also holds non-card children
                         Transform cardTransform = cardUIComponent.transform;
                         Transform parent = cardTransform.parent;
                         if (parent != null)
                         {
-                            int siblingIndex = cardTransform.GetSiblingIndex();
-                            // Count only active children (visible cards)
-                            int totalCards = 0;
+                            var cards = new List<Transform>();
                             for (int i = 0; i < parent.childCount; i++)
                             {
-                                if (parent.GetChild(i).gameObject.activeSelf)
-                                    totalCards++;
+                                var child = parent.GetChild(i);
+                                if (child.gameObject.activeSelf && child.GetComponent(cardUIComponent.GetType()) != null)
+                                    cards.Add(child);
                             }
-                            // Calculate position among active siblings
-                            int position = 0;
-                            for (int i = 0; i <= siblingIndex && i < parent.childCount; i++)
+                            cards.Sort((a, b) =>
                             {
-                                if (parent.GetChild(i).gameObject.activeSelf)
-                                    position++;
-                            }
-                            if (totalCards > 0)
+                                float dy = b.position.y - a.position.y;
+                                if (Mathf.Abs(dy) > 1f) return dy > 0 ? 1 : -1;
+                                return a.position.x.CompareTo(b.position.x);
+                            });
+                            int totalCards = cards.Count;
+                            int position = cards.IndexOf(cardTransform) + 1;
+                            if (totalCards > 0 && position > 0)
                             {
                                 string positionInfo = $"Card {position} of {totalCards}";
                                 readout.Summary = $"{readout.Summary}. {positionInfo}.";

@@ -47,10 +47,17 @@ namespace MonsterTrainAccessibility.Screens
             _pendingDraws = 0;
 
             MonsterTrainAccessibility.LogInfo("Battle entered");
-            MonsterTrainAccessibility.ScreenReader?.AnnounceScreen("Battle started");
-
-            // Announce initial state
-            AnnounceResources();
+            // Short opener; the full resource list is on the Resources buffer and
+            // the info keys (at battle start ember and hand are still 0)
+            var opener = new List<string> { "Battle started" };
+            int pyre = ResourceReader.GetPyreHealth(_cache);
+            int maxPyre = ResourceReader.GetMaxPyreHealth(_cache);
+            if (pyre > 0)
+                opener.Add(maxPyre > 0 ? $"pyre {pyre} of {maxPyre}" : $"pyre {pyre}");
+            string waves = ResourceReader.GetWaveText(_cache);
+            if (!string.IsNullOrEmpty(waves))
+                opener.Add(waves);
+            MonsterTrainAccessibility.ScreenReader?.AnnounceScreen(string.Join(", ", opener));
         }
 
         /// <summary>
@@ -111,7 +118,12 @@ namespace MonsterTrainAccessibility.Screens
             int ember = ResourceReader.GetCurrentEnergy(_cache);
             if (ember >= 0)
                 parts.Add($"{ember} ember");
-            if (hadPending && drawn > 0 && MonsterTrainAccessibility.AccessibilitySettings.AnnounceCardDraws.Value)
+            // Hand size, not the draw count: part of the opening hand is drawn
+            // before the MonsterTurn phase, and relics add extra draws
+            int handSize = HandReader.GetHandCount(_cache);
+            if (handSize >= 0)
+                parts.Add(handSize == 1 ? "1 card in hand" : $"{handSize} cards in hand");
+            else if (hadPending && drawn > 0 && MonsterTrainAccessibility.AccessibilitySettings.AnnounceCardDraws.Value)
                 parts.Add(drawn == 1 ? "drew 1 card" : $"drew {drawn} cards");
             string wave = ResourceReader.GetWaveText(_cache);
             if (!string.IsNullOrEmpty(wave))
@@ -168,7 +180,7 @@ namespace MonsterTrainAccessibility.Screens
             {
                 message = $"Drew: {string.Join(", ", cardNames)}";
             }
-            MonsterTrainAccessibility.ScreenReader?.Queue(message);
+            MonsterTrainAccessibility.ScreenReader?.QueueBatched(message);
             MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(message);
         }
 
@@ -198,7 +210,7 @@ namespace MonsterTrainAccessibility.Screens
             }
             else return;
 
-            MonsterTrainAccessibility.ScreenReader?.Queue(message);
+            MonsterTrainAccessibility.ScreenReader?.QueueBatched(message);
             MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(message);
         }
 
@@ -208,7 +220,7 @@ namespace MonsterTrainAccessibility.Screens
         public void OnCardPlayed(int cardIndex)
         {
             // The card was played successfully
-            MonsterTrainAccessibility.ScreenReader?.Queue("Card played");
+            MonsterTrainAccessibility.ScreenReader?.QueueBatched("Card played");
             MonsterTrainAccessibility.ScreenReader?.LogCombatEvent("Card played");
         }
 
@@ -219,7 +231,7 @@ namespace MonsterTrainAccessibility.Screens
         {
             if (!string.IsNullOrEmpty(cardName) && cardName != "Card")
             {
-                MonsterTrainAccessibility.ScreenReader?.Queue($"Discarded {cardName}");
+                MonsterTrainAccessibility.ScreenReader?.QueueBatched($"Discarded {cardName}");
                 MonsterTrainAccessibility.ScreenReader?.LogCombatEvent($"Discarded {cardName}");
             }
         }
@@ -270,7 +282,7 @@ namespace MonsterTrainAccessibility.Screens
                 return;
 
             string message = $"{sourceName} deals {damage} to {targetName}";
-            MonsterTrainAccessibility.ScreenReader?.Queue(message);
+            MonsterTrainAccessibility.ScreenReader?.QueueBatched(message);
             MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(message);
         }
 
@@ -321,7 +333,7 @@ namespace MonsterTrainAccessibility.Screens
             }
             else
             {
-                output?.Queue(message);
+                output?.QueueBatched(message);
                 output?.LogCombatEvent(message);
             }
         }
@@ -343,7 +355,7 @@ namespace MonsterTrainAccessibility.Screens
                 SpeakOrLogAutoEvent(message);
             else
             {
-                MonsterTrainAccessibility.ScreenReader?.Queue(message);
+                MonsterTrainAccessibility.ScreenReader?.QueueBatched(message);
                 MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(message);
             }
         }
@@ -396,7 +408,7 @@ namespace MonsterTrainAccessibility.Screens
         {
             if (!IsInBattle) return;
             string message = $"Gained {amount} ember, {total} total";
-            MonsterTrainAccessibility.ScreenReader?.Queue(message);
+            MonsterTrainAccessibility.ScreenReader?.QueueBatched(message);
             MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(message);
         }
 
@@ -453,7 +465,7 @@ namespace MonsterTrainAccessibility.Screens
             if (!IsInBattle)
                 return;
 
-            MonsterTrainAccessibility.ScreenReader?.Queue("Enemies ascend");
+            MonsterTrainAccessibility.ScreenReader?.QueueBatched("Enemies ascend");
             MonsterTrainAccessibility.ScreenReader?.LogCombatEvent("Enemies ascend");
         }
 
@@ -479,9 +491,11 @@ namespace MonsterTrainAccessibility.Screens
             if (!IsInBattle && !IsRunEventScreen())
                 return;
 
-            string message = $"Pyre takes {damage} damage! {remainingHP} health remaining";
-            MonsterTrainAccessibility.ScreenReader?.Queue(message);
-            MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(message);
+            string message = $"Pyre takes {damage} damage, {remainingHP} left";
+            // In battle the pyre heart's own damage line (with the attacker) is spoken
+            if (IsInBattle)
+                return;
+            MonsterTrainAccessibility.ScreenReader?.QueueBatched(message);
         }
 
         /// <summary>
@@ -517,7 +531,7 @@ namespace MonsterTrainAccessibility.Screens
             {
                 string speaker = string.IsNullOrEmpty(speakerName) ? "Unit" : speakerName;
                 string message = $"{speaker} says: {text}";
-                MonsterTrainAccessibility.ScreenReader?.Queue(message);
+                MonsterTrainAccessibility.ScreenReader?.QueueBatched(message);
                 MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(message);
             }
         }
@@ -536,7 +550,7 @@ namespace MonsterTrainAccessibility.Screens
                 return;
 
             // Only announce if there are units to fight
-            MonsterTrainAccessibility.ScreenReader?.Queue("Combat!");
+            MonsterTrainAccessibility.ScreenReader?.QueueBatched("Combat!");
             MonsterTrainAccessibility.ScreenReader?.LogCombatEvent("Combat!");
         }
 
@@ -552,7 +566,7 @@ namespace MonsterTrainAccessibility.Screens
                 return;
 
             string message = $"{relicName} triggered";
-            MonsterTrainAccessibility.ScreenReader?.Queue(message);
+            MonsterTrainAccessibility.ScreenReader?.QueueBatched(message);
             MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(message);
         }
 
@@ -565,7 +579,7 @@ namespace MonsterTrainAccessibility.Screens
                 return;
 
             string message = $"{feederName} eats {morselName}";
-            MonsterTrainAccessibility.ScreenReader?.Queue(message);
+            MonsterTrainAccessibility.ScreenReader?.QueueBatched(message);
             MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(message);
         }
 
@@ -578,7 +592,7 @@ namespace MonsterTrainAccessibility.Screens
                 return;
 
             string message = $"{cardName} consumed";
-            MonsterTrainAccessibility.ScreenReader?.Queue(message);
+            MonsterTrainAccessibility.ScreenReader?.QueueBatched(message);
             MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(message);
         }
 
@@ -591,7 +605,7 @@ namespace MonsterTrainAccessibility.Screens
                 return;
 
             string message = $"Pyre healed for {amount}. {currentHP} health";
-            MonsterTrainAccessibility.ScreenReader?.Queue(message);
+            MonsterTrainAccessibility.ScreenReader?.QueueBatched(message);
             MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(message);
         }
 
@@ -613,7 +627,7 @@ namespace MonsterTrainAccessibility.Screens
                 SpeakOrLogAutoEvent(message);
             else
             {
-                MonsterTrainAccessibility.ScreenReader?.Queue(message);
+                MonsterTrainAccessibility.ScreenReader?.QueueBatched(message);
                 MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(message);
             }
         }
@@ -640,7 +654,7 @@ namespace MonsterTrainAccessibility.Screens
             if (!IsInBattle)
                 return;
 
-            MonsterTrainAccessibility.ScreenReader?.Queue("All enemies defeated");
+            MonsterTrainAccessibility.ScreenReader?.QueueBatched("All enemies defeated");
             MonsterTrainAccessibility.ScreenReader?.LogCombatEvent("All enemies defeated");
         }
 
@@ -652,7 +666,7 @@ namespace MonsterTrainAccessibility.Screens
             if (!IsInBattle)
                 return;
 
-            MonsterTrainAccessibility.ScreenReader?.Queue(phaseName);
+            MonsterTrainAccessibility.ScreenReader?.QueueBatched(phaseName);
             MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(phaseName);
         }
 
@@ -665,7 +679,7 @@ namespace MonsterTrainAccessibility.Screens
                 return;
 
             string message = $"{unitName} gains {amount} max health";
-            MonsterTrainAccessibility.ScreenReader?.Queue(message);
+            MonsterTrainAccessibility.ScreenReader?.QueueBatched(message);
             MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(message);
         }
 

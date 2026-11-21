@@ -13,6 +13,8 @@ namespace MonsterTrainAccessibility.Patches
     public static class CombatPhaseChangePatch
     {
         private static string _lastPhase = "";
+        private static string _lastAnnouncement;
+        private static float _lastAnnouncementTime;
 
         // CombatManager.Phase enum int values (game/CombatManager.cs:14-27).
         private const int Phase_MonsterTurn = 3;
@@ -111,6 +113,13 @@ namespace MonsterTrainAccessibility.Patches
 
                 if (announcement != null)
                 {
+                    // Boss actions can be described twice in one go (pre and post
+                    // combat phases reading the same queued action)
+                    float now = UnityEngine.Time.unscaledTime;
+                    if (announcement == _lastAnnouncement && now - _lastAnnouncementTime < 2f)
+                        return;
+                    _lastAnnouncement = announcement;
+                    _lastAnnouncementTime = now;
                     MonsterTrainAccessibility.BattleHandler?.OnCombatPhaseChanged(announcement);
                 }
             }
@@ -208,7 +217,11 @@ namespace MonsterTrainAccessibility.Patches
                 }
                 else if (isEmpty)
                 {
-                    parts.Add($"{bossName} moves to {floorStr}");
+                    // Movement-only action: the actual move is announced by the
+                    // movement patch when it happens; the queued action's rooms
+                    // read here were stale ("moves to bottom floor", then it
+                    // ascended to the top)
+                    return null;
                 }
                 else
                 {

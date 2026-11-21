@@ -737,7 +737,7 @@ namespace MonsterTrainAccessibility.Screens
                 }
                 if (friendlyUnits.Count > 0)
                 {
-                    string label = friendlyUnits.Count == 1 ? "your 1 unit" : $"your {friendlyUnits.Count} units";
+                    string label = friendlyUnits.Count == 1 ? "Your 1 unit" : $"Your {friendlyUnits.Count} units";
                     parts.Add($"{label}: {string.Join(", ", friendlyUnits)}");
                 }
 

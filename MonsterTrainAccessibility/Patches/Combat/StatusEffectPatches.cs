@@ -321,6 +321,7 @@ namespace MonsterTrainAccessibility.Patches
             try
             {
                 if (__0 <= 0 || __instance == null) return;
+                if (BattleNotificationPatches.IsMonsterSettingUp(__instance)) return;
 
                 _recentBuffs[System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(__instance)] = UnityEngine.Time.unscaledTime;
 

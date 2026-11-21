@@ -1300,8 +1300,9 @@ namespace MonsterTrainAccessibility.Screens
             if (MonsterTrainAccessibility.BattleHandler?.IsInBattle != true)
                 return false;
             int phase = Patches.CombatPhaseChangePatch.CurrentPhase;
-            // -1 = unknown, 3 = MonsterTurn (player in control)
-            if (phase < 0 || phase == 3)
+            // 3 = MonsterTurn (player in control); -1 = battle setup before the
+            // first turn, when the game also moves the selection on its own
+            if (phase == 3)
                 return false;
             // Only navigation counts: the F that ends the turn also makes the
             // game move the selection, and that jump is not the player's doing
@@ -1373,6 +1374,13 @@ namespace MonsterTrainAccessibility.Screens
 
             // Check for dialog buttons (Yes/No buttons inside Dialog popups)
             text = GetDialogButtonText(go);
+            if (!string.IsNullOrEmpty(text))
+            {
+                return text;
+            }
+
+            // Run-end score rows: "Battle won. +5000. breakdown"
+            text = ScoreTextReader.GetBattleScoreText(go);
             if (!string.IsNullOrEmpty(text))
             {
                 return text;
@@ -1782,7 +1790,8 @@ namespace MonsterTrainAccessibility.Screens
             string directText = GetDirectText(go);
 
             // If text is very short (1-2 chars), it's likely an icon character - use cleaned name instead
-            if (!string.IsNullOrEmpty(directText) && directText.Length <= 2)
+            if (!string.IsNullOrEmpty(directText) && directText.Length <= 2 &&
+                !SelfDescribingLabels.Contains(directText))
             {
                 string cleanedName = UITextHelper.CleanGameObjectName(go.name);
                 if (!string.IsNullOrEmpty(cleanedName) && cleanedName.Length > 2)
@@ -1948,7 +1957,7 @@ namespace MonsterTrainAccessibility.Screens
         }
 
         /// <summary>
-        /// Read all visible text on the current screen (press T)
+        /// Read all visible text on the current screen (F3)
         /// </summary>
         /// <summary>
         /// Read the train stats panel that appears when pressing TAB

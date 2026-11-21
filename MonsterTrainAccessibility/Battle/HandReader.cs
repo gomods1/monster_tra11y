@@ -105,6 +105,13 @@ namespace MonsterTrainAccessibility.Screens
             return result;
         }
 
+        /// <summary>Number of cards in hand, or -1 when unavailable.</summary>
+        internal static int GetHandCount(BattleManagerCache cache)
+        {
+            var hand = GetHandCards(cache);
+            return hand != null ? hand.Count : -1;
+        }
+
         internal static List<object> GetHandCards(BattleManagerCache cache)
         {
             if (cache.CardManager == null || cache.GetHandMethod == null)

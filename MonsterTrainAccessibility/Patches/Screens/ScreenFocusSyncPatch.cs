@@ -75,6 +75,14 @@ namespace MonsterTrainAccessibility.Patches
             }
         }
 
+        /// <summary>Re-derive the tracker from the current screen stack (for patches that set it out of order).</summary>
+        public static void SyncNow()
+        {
+            if (_activeScreensField == null) return;
+            var sm = Utilities.ReflectionHelper.FindManager("ScreenManager") as ScreenManager;
+            if (sm != null) Postfix(sm);
+        }
+
         public static void Postfix(ScreenManager __instance)
         {
             try

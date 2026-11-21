@@ -264,6 +264,18 @@ namespace MonsterTrainAccessibility.Core
                     }
                     else Write("> submit: nothing selected");
                     break;
+                case "navinfo":
+                    {
+                        var cur = EventSystem.current?.currentSelectedGameObject;
+                        var navSel = cur != null ? cur.GetComponent<Selectable>() : null;
+                        if (navSel == null) { Write("> navinfo: no selectable"); break; }
+                        var nav = navSel.navigation;
+                        Write($"> navinfo {GetPath(cur)} mode={nav.mode} interactable={navSel.IsInteractable()} " +
+                              $"left={GetPath(navSel.FindSelectableOnLeft()?.gameObject)} right={GetPath(navSel.FindSelectableOnRight()?.gameObject)} " +
+                              $"up={GetPath(navSel.FindSelectableOnUp()?.gameObject)} down={GetPath(navSel.FindSelectableOnDown()?.gameObject)} " +
+                              $"module={EventSystem.current?.currentInputModule?.GetType().Name} sendNav={EventSystem.current?.sendNavigationEvents}");
+                    }
+                    break;
                 case "screens":
                     Write("> screens\n" + ListScreens());
                     break;

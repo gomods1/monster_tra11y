@@ -104,6 +104,10 @@ namespace MonsterTrainAccessibility.Core
             if (!_initialized || string.IsNullOrEmpty(text))
                 return;
 
+            // Anything spoken directly goes after the combat lines already batched
+            if (_batch.Count > 0 && !_flushing)
+                FlushBatch();
+
             try
             {
                 // Apply verbosity filtering
@@ -125,6 +129,48 @@ namespace MonsterTrainAccessibility.Core
             catch (Exception ex)
             {
                 MonsterTrainAccessibility.LogError($"Error speaking text: {ex.Message}");
+            }
+        }
+
+        private readonly System.Collections.Generic.List<string> _batch = new System.Collections.Generic.List<string>();
+        private bool _flushing;
+
+        /// <summary>
+        /// Queue a combat line to be spoken at the end of the frame. Identical lines
+        /// from the same frame are spoken once with a count - a wave of three
+        /// Clergymen entering with Rage reads "Clergyman gains Rage 2, 3 times"
+        /// instead of the same sentence three times.
+        /// </summary>
+        public void QueueBatched(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+            _batch.Add(text);
+        }
+
+        /// <summary>Speak the batched lines (called every LateUpdate and before direct speech).</summary>
+        public void FlushBatch()
+        {
+            if (_batch.Count == 0 || _flushing) return;
+            _flushing = true;
+            try
+            {
+                var order = new System.Collections.Generic.List<string>();
+                var counts = new System.Collections.Generic.Dictionary<string, int>();
+                foreach (var line in _batch)
+                {
+                    if (counts.TryGetValue(line, out int n)) counts[line] = n + 1;
+                    else { counts[line] = 1; order.Add(line); }
+                }
+                _batch.Clear();
+                foreach (var line in order)
+                {
+                    int n = counts[line];
+                    Speak(n > 1 ? $"{line}, {n} times" : line, false);
+                }
+            }
+            finally
+            {
+                _flushing = false;
             }
         }
 
@@ -273,6 +319,7 @@ namespace MonsterTrainAccessibility.Core
             text = SpaceAfterParen.Replace(text, "(");
             text = MissingSpaceAfterPeriod.Replace(text, "$1. $2");
             text = DoublePeriod.Replace(text, ".");
+            text = text.Replace("!.", "!").Replace("?.", "?");
             text = MultiSpace.Replace(text, " ");
             return text.Trim();
         }

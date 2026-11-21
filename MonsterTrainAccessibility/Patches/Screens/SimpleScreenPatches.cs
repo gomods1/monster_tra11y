@@ -92,7 +92,7 @@ namespace MonsterTrainAccessibility.Patches
                 MonsterTrainAccessibility.ScreenReader?.AnnounceScreen(
                     "Logbook. Sections: Checklist, Cards, Champion Upgrades, Artifacts, Card Frames, and Statistics. " +
                     "Press Page Down or Enter to open the first section, Page Up and Page Down to switch sections, " +
-                    "Left and Right arrows to turn pages, T to read a summary of the current section, " +
+                    "Left and Right arrows to turn pages, F3 to read a summary of the current section, " +
                     "F1 for help, Escape to close.");
             }
             catch (Exception ex)
@@ -183,13 +183,13 @@ namespace MonsterTrainAccessibility.Patches
             {
                 case "Checklist":
                     string hint = "Your meta progression. Arrow keys move between clans and progress meters, " +
-                                  "T reads the full summary";
+                                  "F3 reads the full summary";
                     if (IsHellforgedInstalled())
                         hint += ", F switches to The Last Divinity page";
                     return hint + ".";
                 case "Stats":
                     return "Stats Leaderboard page. F switches between Stats Leaderboard and Personal Records, " +
-                           "T reads the visible entries.";
+                           "F3 reads the visible entries.";
                 default:
                     return null;
             }
@@ -356,8 +356,8 @@ namespace MonsterTrainAccessibility.Patches
                 var hellforgedPage = AccessTools.Field(type, "hellforgedChecklistPage")?.GetValue(__instance);
                 bool isDlcPage = currentPage != null && ReferenceEquals(currentPage, hellforgedPage);
                 MonsterTrainAccessibility.ScreenReader?.Speak(
-                    isDlcPage ? "The Last Divinity progress page. T reads the full summary."
-                              : "Standard progress page. T reads the full summary.", false);
+                    isDlcPage ? "The Last Divinity progress page. F3 reads the full summary."
+                              : "Standard progress page. F3 reads the full summary.", false);
             }
             catch (Exception ex)
             {
@@ -416,8 +416,8 @@ namespace MonsterTrainAccessibility.Patches
                 var runStatsPage = AccessTools.Field(type, "runStatsPage")?.GetValue(__instance);
                 bool isRecords = ReferenceEquals(currentPage, runStatsPage);
                 MonsterTrainAccessibility.ScreenReader?.Speak(
-                    isRecords ? "Personal Records page. T reads all records."
-                              : "Stats Leaderboard page. T reads the visible entries.", false);
+                    isRecords ? "Personal Records page. F3 reads all records."
+                              : "Stats Leaderboard page. F3 reads the visible entries.", false);
             }
             catch (Exception ex)
             {

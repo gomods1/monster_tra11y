@@ -28,6 +28,11 @@ namespace MonsterTrainAccessibility.Core
         /// </summary>
         private int _browsingFloor = 0; // Start at bottom floor (room index 0)
 
+        private void LateUpdate()
+        {
+            MonsterTrainAccessibility.ScreenReader?.FlushBatch();
+        }
+
         private void Update()
         {
             if (!IsEnabled)

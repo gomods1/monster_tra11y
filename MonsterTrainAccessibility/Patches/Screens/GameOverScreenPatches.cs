@@ -328,12 +328,10 @@ namespace MonsterTrainAccessibility.Patches
                 bool isVictory = victoryTypeStr == "Standard" || victoryTypeStr == "Hellforged";
                 Help.ScreenStateTracker.SetScreen(isVictory ? Help.GameScreen.Victory : Help.GameScreen.Defeat);
 
-                // Victory/Defeat - use title text if available, otherwise infer from victoryType
-                if (!string.IsNullOrEmpty(titleText))
-                {
-                    sb.Append($"{titleText}! ");
-                }
-                else if (!string.IsNullOrEmpty(victoryTypeStr))
+                // Victory/Defeat from the game's victory type. The title label is
+                // read the frame the game sets it, so its rendered text can still be
+                // the prefab's "VICTORY" on a defeat; it is only the fallback
+                if (!string.IsNullOrEmpty(victoryTypeStr))
                 {
                     if (victoryTypeStr == "Hellforged")
                         sb.Append("Hellforged Victory! ");
@@ -341,6 +339,10 @@ namespace MonsterTrainAccessibility.Patches
                         sb.Append("Victory! ");
                     else
                         sb.Append("Defeat. ");
+                }
+                else if (!string.IsNullOrEmpty(titleText))
+                {
+                    sb.Append($"{titleText}! ");
                 }
                 else
                 {
