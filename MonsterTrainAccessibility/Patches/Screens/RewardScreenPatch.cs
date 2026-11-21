@@ -97,9 +97,10 @@ namespace MonsterTrainAccessibility.Patches
 
         private static System.Collections.IEnumerator AutoReadRewardsDeferred(object screen)
         {
-            yield return null;
-            yield return null;
-            if (UnityEngine.Time.frameCount - _enemyShowcaseFrame <= 3)
+            int startFrame = UnityEngine.Time.frameCount;
+            // Long enough for a map node's draft / upgrade screen to open on top
+            yield return new UnityEngine.WaitForSecondsRealtime(0.35f);
+            if (_enemyShowcaseFrame >= startFrame)
                 yield break;
             // A map node's reward (banner, hoard, Hellvent) opens its draft or
             // deck screen right on top of the reward screen, which then
@@ -145,6 +146,24 @@ namespace MonsterTrainAccessibility.Patches
                     {
                         rewards = rewardsProp.GetValue(screen) as System.Collections.IList;
                     }
+                }
+
+                // A single reward that needs input (draft, champion upgrade, card
+                // duplication) opens its own screen straight away, which announces
+                // itself; announcing the reward screen underneath was noise
+                if (rewards != null && rewards.Count == 1 && rewards[0] is IRewardDisplayable only &&
+                    only.RewardRequiresPlayerInput)
+                    return;
+
+                // Post-battle: the victory panel's Collect already granted the gold;
+                // the reward screen then only passes through to the drafts
+                if (rewards != null && rewards.Count > 0)
+                {
+                    bool allClaimed = true;
+                    foreach (var r in rewards)
+                        if (!(r is RewardState rs) || !rs.Claimed) { allClaimed = false; break; }
+                    if (allClaimed)
+                        return;
                 }
 
                 if (rewards != null && rewards.Count > 0)

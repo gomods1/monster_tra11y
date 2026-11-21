@@ -601,6 +601,21 @@ namespace MonsterTrainAccessibility.Patches
                         upgradeDesc = string.Join(", ", statParts);
                 }
 
+                // Named upgrades (champion paths like "Glutton", named enhancers)
+                string upgradeTitle = null;
+                try
+                {
+                    var data = (upgradeState as CardUpgradeState)?.GetCardUpgradeDataId() is string id && !string.IsNullOrEmpty(id)
+                        ? (Utilities.ReflectionHelper.FindManager("SaveManager") as SaveManager)?.GetAllGameData()?.FindCardUpgradeData(id)
+                        : null;
+                    string key = data?.GetUpgradeTitleKey();
+                    if (!string.IsNullOrEmpty(key))
+                        upgradeTitle = Utilities.LocalizationHelper.LocalizeOrNull(key);
+                }
+                catch { }
+                if (!string.IsNullOrEmpty(upgradeTitle))
+                    upgradeDesc = string.IsNullOrEmpty(upgradeDesc) ? upgradeTitle : $"{upgradeTitle}, {upgradeDesc}";
+
                 if (!string.IsNullOrEmpty(upgradeDesc))
                 {
                     string announcement = $"{cardName} upgraded: {upgradeDesc}";

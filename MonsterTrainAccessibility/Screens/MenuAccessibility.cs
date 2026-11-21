@@ -20,6 +20,8 @@ namespace MonsterTrainAccessibility.Screens
     {
         private GameObject _lastSelectedObject;
         private string _lastSelectedText;
+        private string _lastFocusSpoken;
+        private float _lastFocusSpokenTime;
         private GameObject _pendingInvisible;
         private float _pendingInvisibleSince;
         private float _pollInterval = 0.1f;
@@ -991,7 +993,13 @@ namespace MonsterTrainAccessibility.Screens
                         // Clean sprite tags before announcing
                         text = TextUtilities.CleanSpriteTagsForSpeech(text);
                         _lastSelectedText = text;
-                        MonsterTrainAccessibility.ScreenReader?.AnnounceFocus(text);
+                        // The game sometimes hands focus from a container to its
+                        // child button with the same label within a frame or two
+                        bool repeat = text == _lastFocusSpoken && Time.unscaledTime - _lastFocusSpokenTime < 0.5f;
+                        _lastFocusSpoken = text;
+                        _lastFocusSpokenTime = Time.unscaledTime;
+                        if (!repeat)
+                            MonsterTrainAccessibility.ScreenReader?.AnnounceFocus(text);
 
                         // Feed the contextual review buffers (UI, Card, Artifact, Reward)
                         Core.Buffers.FocusBuffers.OnFocusAnnounced(currentSelected, text, _lastFocusDomain, _lastFocusDetails);
@@ -1297,7 +1305,9 @@ namespace MonsterTrainAccessibility.Screens
 
         private static bool IsAutomatedCombatFocusChange()
         {
-            if (MonsterTrainAccessibility.BattleHandler?.IsInBattle != true)
+            // Also while the battle screen loads, before combat is flagged as started
+            if (MonsterTrainAccessibility.BattleHandler?.IsInBattle != true &&
+                Help.ScreenStateTracker.CurrentScreen != Help.GameScreen.Battle)
                 return false;
             int phase = Patches.CombatPhaseChangePatch.CurrentPhase;
             // 3 = MonsterTurn (player in control); -1 = battle setup before the
@@ -1374,6 +1384,20 @@ namespace MonsterTrainAccessibility.Screens
 
             // Check for dialog buttons (Yes/No buttons inside Dialog popups)
             text = GetDialogButtonText(go);
+            if (!string.IsNullOrEmpty(text))
+            {
+                return text;
+            }
+
+            // Run History rows: "Defeat, Hellhorned and Stygian Guard, 2 battles won, ..."
+            text = RunHistoryTextReader.GetRunRowText(go);
+            if (!string.IsNullOrEmpty(text))
+            {
+                return text;
+            }
+
+            // Currency score rows and covenant icons (run summary, run history)
+            text = RunWidgetTextReader.GetText(go);
             if (!string.IsNullOrEmpty(text))
             {
                 return text;
@@ -1825,7 +1849,18 @@ namespace MonsterTrainAccessibility.Screens
         /// </summary>
         private string GetDirectText(GameObject go)
         {
-            // Try TMP text first
+            // Rendered text first: labels the game fills with SetTextSafe keep the
+            // prefab placeholder in .text ("11/01/19 2:30pm" on every run history
+            // row). Fall back to .text for labels set this very frame.
+            foreach (var tmp in go.GetComponentsInChildren<Component>())
+            {
+                if (tmp == null || !tmp.GetType().Name.Contains("TextMeshPro")) continue;
+                if (!tmp.gameObject.activeInHierarchy) continue;
+                string rendered = UITextHelper.GetRenderedTMPLabelText(tmp, fallbackToTextProperty: false)?.Trim();
+                if (!string.IsNullOrEmpty(rendered))
+                    return rendered;
+            }
+
             string text = UITextHelper.GetTMPText(go);
             if (!string.IsNullOrEmpty(text))
             {
@@ -2327,15 +2362,8 @@ namespace MonsterTrainAccessibility.Screens
             MonsterTrainAccessibility.ScreenReader?.AnnounceScreen(
                 $"Main Menu. {Core.SettingsMenu.KeyName(MonsterTrainAccessibility.AccessibilitySettings.SettingsKey.Value)} for accessibility settings, F1 for help");
 
-            // Read the currently selected item if any
-            if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject != null)
-            {
-                string text = GetTextFromGameObject(EventSystem.current.currentSelectedGameObject);
-                if (!string.IsNullOrEmpty(text))
-                {
-                    MonsterTrainAccessibility.ScreenReader?.Queue(text);
-                }
-            }
+            // The selection poll reads the selected item next (_lastSelectedObject
+            // was reset above); reading it here too spoke it twice
         }
 
         /// <summary>

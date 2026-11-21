@@ -302,7 +302,7 @@ namespace MonsterTrainAccessibility.Core
         private static readonly System.Text.RegularExpressions.Regex SpaceAfterParen =
             new System.Text.RegularExpressions.Regex(@"\([ \t]+");
         private static readonly System.Text.RegularExpressions.Regex MissingSpaceAfterPeriod =
-            new System.Text.RegularExpressions.Regex(@"([a-z)])\.([A-Z])");
+            new System.Text.RegularExpressions.Regex(@"([a-z0-9)])\.([A-Z])");
         private static readonly System.Text.RegularExpressions.Regex DoublePeriod =
             new System.Text.RegularExpressions.Regex(@"(?<!\.)\.\.(?!\.)");
         private static readonly System.Text.RegularExpressions.Regex MultiSpace =

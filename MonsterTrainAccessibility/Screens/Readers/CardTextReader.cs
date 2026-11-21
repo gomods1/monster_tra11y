@@ -555,6 +555,11 @@ namespace MonsterTrainAccessibility.Screens
                     }
                 }
 
+                // Champions: the subtype is also "Champion" ("Champion Champion Unit")
+                if (!string.IsNullOrEmpty(unitSubtype) && !string.IsNullOrEmpty(rarity) &&
+                    string.Equals(unitSubtype, rarity, StringComparison.OrdinalIgnoreCase))
+                    unitSubtype = null;
+
                 // Build the full header: [Upgraded] Name (Rarity [Subtype] Type), Clan, Cost
                 var header = new StringBuilder();
                 if (hasUpgrades)

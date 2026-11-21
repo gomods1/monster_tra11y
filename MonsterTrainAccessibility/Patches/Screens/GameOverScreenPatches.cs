@@ -923,7 +923,14 @@ namespace MonsterTrainAccessibility.Patches
 
                     var getDate = type.GetMethod("GetSaveDateString");
                     string date = getDate?.Invoke(runData, null) as string;
-                    if (!string.IsNullOrEmpty(date)) sb.Append($"Date: {date}. ");
+                    if (!string.IsNullOrEmpty(date))
+                    {
+                        // Stored as "2026-06-12 15:15:56.000000"; speak it the way the game shows dates
+                        if (DateTime.TryParse(date, System.Globalization.CultureInfo.InvariantCulture,
+                                System.Globalization.DateTimeStyles.AssumeUniversal, out var parsed))
+                            date = parsed.ToLocalTime().ToString("g", LocalizationUtil.CurrentCulture);
+                        sb.Append($"Date: {date}. ");
+                    }
                 }
                 sb.Append("Use arrows to navigate buttons. Press F3 to read all screen text.");
 

@@ -32,6 +32,9 @@ namespace MonsterTrainAccessibility.Patches
             TryPatchOne(harmony, typeof(HandSelectionUI), "Open", postfix: nameof(HandSelectionOpenPostfix));
             TryPatchOne(harmony, typeof(SaveManager), "AddCardToDeck", postfix: nameof(AddCardToDeckPostfix));
             TryPatchOne(harmony, typeof(SaveManager), "AddRelic", postfix: nameof(AddRelicPostfix));
+            TryPatchOne(harmony, typeof(HellforgedSaveData), "AddCrystals", postfix: nameof(AddCrystalsPostfix));
+            TryPatchOne(harmony, typeof(HellforgedSaveData), "RemoveCrystals", postfix: nameof(RemoveCrystalsPostfix));
+            TryPatchOne(harmony, typeof(HellforgedSaveData), "ConsumeCrystalsIfPossible", postfix: nameof(ConsumeCrystalsPostfix));
             TryPatchOne(harmony, typeof(PlayerManager), "AddEnergy", prefix: nameof(EnergyPrefix), postfix: nameof(AddEnergyPostfix));
             TryPatchOne(harmony, typeof(SaveManager), "AdjustGold", prefix: nameof(GoldPrefix), postfix: nameof(AdjustGoldPostfix));
             TryPatchOne(harmony, typeof(CharacterState), "BuffDamage", postfix: nameof(BuffDamagePostfix));
@@ -207,6 +210,49 @@ namespace MonsterTrainAccessibility.Patches
             {
                 MonsterTrainAccessibility.LogError($"Error in add relic patch: {ex.Message}");
             }
+        }
+
+        // Pact shards (HellforgedSaveData "crystals", The Last Divinity)
+        public static void AddCrystalsPostfix(HellforgedSaveData __instance, int addCrystals)
+        {
+            if (__instance == null || addCrystals == 0 || IsRunSetupScreen()) return;
+            SpeakResource(addCrystals > 0
+                ? $"Gained {addCrystals} pact shards, {__instance.GetCrystals()} total"
+                : $"Lost {-addCrystals} pact shards, {__instance.GetCrystals()} left");
+        }
+
+        public static void RemoveCrystalsPostfix(HellforgedSaveData __instance, int removeCrystals)
+        {
+            if (__instance == null || removeCrystals <= 0 || IsRunSetupScreen()) return;
+            SpeakResource($"Spent {removeCrystals} pact shards, {__instance.GetCrystals()} left");
+        }
+
+        /// <summary>Shards spent in battle, e.g. absorbing pyre damage.</summary>
+        public static void ConsumeCrystalsPostfix(int requiredAmount, bool __result)
+        {
+            if (!__result || requiredAmount <= 0 || IsPreview()) return;
+            SpeakResource($"Used {requiredAmount} pact shards");
+        }
+
+        private static bool IsRunSetupScreen()
+        {
+            switch (Help.ScreenStateTracker.CurrentScreen)
+            {
+                case Help.GameScreen.MainMenu:
+                case Help.GameScreen.ClanSelection:
+                case Help.GameScreen.Unknown:
+                case Help.GameScreen.Loading:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static void SpeakResource(string text)
+        {
+            MonsterTrainAccessibility.ScreenReader?.Queue(text);
+            if (MonsterTrainAccessibility.BattleHandler?.IsInBattle == true)
+                MonsterTrainAccessibility.ScreenReader?.LogCombatEvent(text);
         }
 
         public static void EnergyPrefix(PlayerManager __instance, out int __state)
