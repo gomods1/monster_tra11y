@@ -32,7 +32,7 @@ ring_4: El tren entra en los Arcos Encerados, un suelo azul de cera donde arcos 
 ring_5: Los raíles cruzan el Mar Estigia Helado, un campo de placas de hielo azul oscuro. Una luz violeta brilla en las grietas que las separan y, en una abertura, unas formas oscuras se arremolinan bajo la superficie.
 ring_6: El tren se adentra en el Bosque Salvaje, un suelo verde de hierba espesa donde brotan por todas partes enredaderas espinosas y retorcidas. Hay brotes morados por el suelo, la niebla flota baja y pequeños pozos de lava brillan en naranja.
 ring_7: El tren avanza por las Llanuras Ardientes, roca volcánica negra surcada por ríos de lava incandescente. La vía se retuerce en bucles cerrados sobre la piedra mientras el vapor sube de las grietas.
-ring_8: El tren desciende al Crisol, las minas donde los Nacidos en el Infierno y los Recortados excavaban cristales juntos. Los raíles corren por zanjas profundas entre adoquines marrones y rocas, junto a andamios de madera, una tolva de hierro sobre pilotes y un foso de metal negro.
+ring_8: El tren desciende al Crisol, las minas donde los Nacidos en el Infierno y los Alicortados excavaban cristales juntos. Los raíles corren por zanjas profundas entre adoquines marrones y rocas, junto a andamios de madera, una tolva de hierro sobre pilotes y un foso de metal negro.
 ring_9: El tren llega al Corazón Helado, el núcleo del Infierno, una cuenca de piedra negra. La vía termina en un pilar destrozado sobre un cráter de gélida luz azul, rodeado de agujas negras y curvas agrietadas por un resplandor azul.
 ring_10: Con cien Fragmentos del Pacto a bordo, el tren va más allá del final de la línea y entra en el dominio de La Última Divinidad. Algo antiguo e infinitamente destructivo se agita más adelante.
 
@@ -58,7 +58,7 @@ outer_boss_action_Level3BattleTalos: Talos despliega sus alas de cristal y elige
 # Fel, las Alas de la Luz
 # ---------------------------------------------------------------------------
 
-boss_intro_Level6BattleFel: Fel, las Alas de la Luz, flota sobre alas dentadas de luz amarilla resplandeciente. Lleva un elegante traje ceñido blanco con franjas rojas, una visera roja y una cresta azul en punta, con una larga guja blanca en cada mano. Antaño aliada de confianza del Infierno, esta leyenda Recortada se alza ahora contra la Pira.
+boss_intro_Level6BattleFel: Fel, las Alas de la Luz, flota sobre alas dentadas de luz amarilla resplandeciente. Lleva un elegante traje ceñido blanco con franjas rojas, una visera roja y una cresta azul en punta, con una larga guja blanca en cada mano. Antaño aliada de confianza del Infierno, esta leyenda Alicortada se alza ahora contra la Pira.
 relentless_Level6BattleFel: Con su guardia rota, Fel se vuelve Implacable, y su cresta azul se enciende en un oro llameante. Baja al piso inferior y asciende hacia la Pira, congelando cada piso después de luchar en él.
 boss_defeated_Level6BattleFel: Fel, las Alas de la Luz, cae, y el tren sigue su marcha dejando atrás a la aliada que abandonó el Infierno.
 outer_boss_action_Level6BattleFel: Fel reúne su Luz y elige el piso que piensa atacar.
@@ -73,10 +73,10 @@ boss_defeated_Level6BattleArchus: Archus, la Oscuridad Encarnada, cae. Sea cual 
 outer_boss_action_Level6BattleArchus: Archus invoca sus poderes antiguos y elige el piso que piensa atacar.
 
 # ---------------------------------------------------------------------------
-# Los Alas de la Pira (batalla de jefe antigua, liderada por Fel)
+# Las Alas de la Pira (batalla de jefe antigua, liderada por Fel)
 # ---------------------------------------------------------------------------
 
-boss_intro_Level8BattleBossOld: Los Alas de la Pira se reúnen más adelante, Alados corpulentos con armaduras de placas negras surcadas de vetas rojas incandescentes, pesadas alas negras y pálidos pies con garras. Alados caídos en desgracia que buscan redimirse gracias a su conocimiento del Infierno, siguen a Fel, las Alas de la Luz, que vuela sobre sus alas de luz amarilla.
+boss_intro_Level8BattleBossOld: Las Alas de la Pira se reúnen más adelante, Alados corpulentos con armaduras de placas negras surcadas de vetas rojas incandescentes, pesadas alas negras y pálidos pies con garras. Alados caídos en desgracia que buscan redimirse gracias a su conocimiento del Infierno, siguen a Fel, las Alas de la Luz, que vuela sobre sus alas de luz amarilla.
 relentless_Level8BattleBossOld: Con los Alas de la Pira dispersos, Fel se vuelve Implacable, y su cresta azul se enciende en un oro llameante. Baja al piso inferior y asciende hacia la Pira, congelando cada piso después de luchar en él.
 boss_defeated_Level8BattleBossOld: Fel cae, y los Alas de la Pira, caídos en desgracia, pierden su oportunidad de redención.
 outer_boss_action_Level8BattleBossOld: Fel reúne su Luz y elige el piso que piensa atacar.
