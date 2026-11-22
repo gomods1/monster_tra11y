@@ -23,11 +23,6 @@ namespace MonsterTrainAccessibility.Core
         private float _inputCooldown = 0f;
         private const float INPUT_COOLDOWN_TIME = 0.15f;
 
-        /// <summary>
-        /// Currently browsed floor room index for Page Up/Down outside targeting mode
-        /// </summary>
-        private int _browsingFloor = 0; // Start at bottom floor (room index 0)
-
         private void LateUpdate()
         {
             MonsterTrainAccessibility.ScreenReader?.FlushBatch();
@@ -113,23 +108,13 @@ namespace MonsterTrainAccessibility.Core
 
             bool shiftHeld = KeyInput.GetKey(KeyCode.LeftShift) || KeyInput.GetKey(KeyCode.RightShift);
 
-            // Floor review: Shift+K in battle opens a virtual cursor over the
-            // floors; while it is open the arrows, Enter, and Escape belong to it
-            // (InputSuppressionPatch keeps them from the game). Unclaimed keys
-            // fall through so F1 and the other hotkeys keep working.
+            // Battle navigation: Up/Down walk hand, top, middle, bottom, pyre
+            // room; on a floor Left/Right step through its units and Enter reads
+            // details (InputSuppressionPatch keeps those keys from the game).
+            // Unclaimed keys fall through so F1 and the other hotkeys keep working.
             var review = MonsterTrainAccessibility.FloorReview;
-            if (review != null && review.IsActive)
+            if (review != null && review.HandleInput())
             {
-                if (review.HandleInput())
-                {
-                    _inputCooldown = INPUT_COOLDOWN_TIME;
-                    return;
-                }
-            }
-            else if (review != null && shiftHeld && KeyInput.GetKeyDown(config.FloorReviewKey.Value) &&
-                     FloorReviewSystem.IsBattleScreenFrontmost())
-            {
-                review.Open();
                 _inputCooldown = INPUT_COOLDOWN_TIME;
                 return;
             }
@@ -460,7 +445,10 @@ namespace MonsterTrainAccessibility.Core
         private System.Collections.IEnumerator BrowseFloorDelayed()
         {
             // Wait one frame for the game to process the PageUp/PageDown input
-            // and update its selected room before we read it.
+            // and update its selected room before we read it. Always read it,
+            // also at the ends (the floor before the press can't be known
+            // reliably: script order decides whether the game already moved,
+            // and the arrows change the floor too)
             yield return null;
 
             var battle = MonsterTrainAccessibility.BattleHandler;
@@ -469,15 +457,10 @@ namespace MonsterTrainAccessibility.Core
             int gameFloor = battle.GetSelectedFloor();
             if (gameFloor < 0 || gameFloor > 3) yield break;
 
-            // Only announce if the floor actually changed
-            if (gameFloor != _browsingFloor)
-            {
-                _browsingFloor = gameFloor;
-                string floorName = Screens.BattleAccessibility.RoomIndexToFloorName(_browsingFloor);
-                string summary = battle.GetFloorSummary(_browsingFloor) ?? "";
-                string message = string.IsNullOrEmpty(summary) ? floorName : $"{floorName}. {summary}";
-                MonsterTrainAccessibility.ScreenReader?.Speak(message, false);
-            }
+            string floorName = Screens.BattleAccessibility.RoomIndexToFloorName(gameFloor);
+            string summary = battle.GetFloorSummary(gameFloor) ?? "";
+            string message = string.IsNullOrEmpty(summary) ? floorName : $"{floorName}. {summary}";
+            MonsterTrainAccessibility.ScreenReader?.Speak(message, false);
         }
 
         /// <summary>
@@ -497,6 +480,13 @@ namespace MonsterTrainAccessibility.Core
         /// </summary>
         private void RereadCurrentSelection()
         {
+            // On a focused battle floor the hand's card is not what the player is on
+            var review = MonsterTrainAccessibility.FloorReview;
+            if (review != null && review.IsActive && FloorReviewSystem.IsNavigable())
+            {
+                review.ReadFocusDetails();
+                return;
+            }
             MonsterTrainAccessibility.MenuHandler?.RereadCurrentSelection();
         }
 

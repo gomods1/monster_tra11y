@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using HarmonyLib;
 using MonsterTrainAccessibility.Core.Buffers;
 using MonsterTrainAccessibility.Screens;
 using MonsterTrainAccessibility.Utilities;
@@ -9,54 +10,61 @@ using UnityEngine;
 namespace MonsterTrainAccessibility.Battle
 {
     /// <summary>
-    /// Virtual review cursor over the battle floors, opened with the plain
-    /// Up arrow during battle. MT1 has no keyboard way to inspect units in
-    /// place (only mouse hover tooltips, and clicking units never performs
-    /// actions), so this fills that gap.
+    /// Battle navigation with the plain arrows. Up and Down walk the screen
+    /// bottom to top: your hand, then the bottom, middle and top floors,
+    /// then the pyre room (Up climbs, Down comes back toward the hand, no
+    /// wrap). On the hand, Left and
+    /// Right stay the game's (they cycle the cards); on a floor they step
+    /// through what is on it: your units back-to-front, then enemies
+    /// front-to-back (the pyre itself is the first stop in the pyre room),
+    /// repeating at the ends. Enter on a floor reads its full details.
     ///
-    /// Up/Down move between floors (bottom, middle, top, pyre room) and
-    /// Left/Right step through the units on the floor in spatial order:
-    /// your units back-to-front, then enemies front-to-back, matching the
-    /// targeting convention that your frontmost unit faces the first enemy.
-    /// Enter re-reads the focused floor or unit with full details, Escape
-    /// closes.
-    ///
-    /// The cursor never moves the real game selection, and game state is
-    /// re-read on every keypress so the view stays current while units
-    /// move or die. Focus announcements stay concise; full details (status
-    /// effects with keyword explanations, abilities, intents, floor
+    /// Moving onto a floor also selects it in the game, the same as Page
+    /// Up/Down (during the player's action phase, when the game allows
+    /// scrolling); outside it the cursor only reviews. Focus announcements
+    /// are the Page Up/Down floor line or a concise unit line; full details
+    /// (status effects with keyword explanations, abilities, intents, floor
     /// corruption and enchantments) feed the UI buffer - and the Creature
-    /// buffer for units - for Ctrl+arrow review.
+    /// buffer for units and the pyre - for Ctrl+arrow review.
     ///
-    /// Input is driven from InputInterceptor; InputSuppressionPatch keeps
-    /// the claimed keys (arrows, Enter, Escape) away from the game while
-    /// the review is open, including the Up press that opens it.
+    /// IsActive = a floor (not the hand) is focused. The navigation only
+    /// applies while the battle screen is frontmost and the player is not
+    /// targeting, holding a picked-up card or choosing cards from the hand
+    /// (IsNavigable). InputSuppressionPatch then keeps Up/Down from the game
+    /// (its own Up-from-hand tower mode is replaced by this), and while a
+    /// floor is focused also Left/Right and Submit (Enter/E would otherwise
+    /// pick up the hand's still-focused card). Escape, number keys and Page
+    /// Up/Down stay the game's.
     /// </summary>
     public class FloorReviewSystem
     {
-        /// <summary>
-        /// Whether the review cursor is currently open
-        /// </summary>
+        /// <summary>True while a floor (not the hand) is focused.</summary>
         public bool IsActive { get; private set; }
 
         private int _closedFrame = -1;
 
         /// <summary>
-        /// True for the rest of the frame in which the review was closed.
-        /// The Escape that closed it reads as pressed for the whole frame
-        /// and must stay claimed or it would also pause the game.
+        /// True for the rest of the frame in which focus left the floors. Keys
+        /// pressed that frame still read as down and must stay claimed.
         /// </summary>
         public bool ClosedThisFrame => _closedFrame == Time.frameCount;
 
         private int _roomIndex;
 
-        /// <summary>-1 focuses the floor itself; 0.. index into the unit lineup.</summary>
+        /// <summary>-1 focuses the floor itself; 0.. index into the lineup.</summary>
         private int _unitIndex = -1;
+
+        /// <summary>The game's selected room as last seen (to follow Page Up/Down).</summary>
+        private int _lastGameRoom = -1;
+
+        /// <summary>Up walks this list after the hand: bottom, middle, top, pyre room.</summary>
+        private static readonly int[] FloorOrder = { 0, 1, 2, 3 };
 
         private struct LineupEntry
         {
             public object Unit;
             public bool IsEnemy;
+            public bool IsPyre;
             public int Rank;      // 1 = frontmost of its team
             public int TeamCount;
         }
@@ -64,24 +72,8 @@ namespace MonsterTrainAccessibility.Battle
         private static BattleManagerCache Cache => MonsterTrainAccessibility.BattleHandler?.Cache;
 
         /// <summary>
-        /// Open the review at the game's currently selected floor.
-        /// </summary>
-        public void Open()
-        {
-            var battle = MonsterTrainAccessibility.BattleHandler;
-            if (battle == null || !IsBattleScreenFrontmost())
-                return;
-
-            int floor = battle.GetSelectedFloor();
-            _roomIndex = floor >= 0 && floor <= 3 ? floor : 0;
-            _unitIndex = -1;
-            IsActive = true;
-            AnnounceFocus("Floor review. ", ". Press Escape to close");
-        }
-
-        /// <summary>
-        /// Close the review; quiet when closed externally (battle ends,
-        /// targeting starts).
+        /// Return focus to the hand without speaking (targeting starts, the
+        /// turn starts, battle ends, an overlay covers the battle).
         /// </summary>
         public void Close(bool announce)
         {
@@ -92,42 +84,39 @@ namespace MonsterTrainAccessibility.Battle
             _closedFrame = Time.frameCount;
             _unitIndex = -1;
             if (announce)
-                MonsterTrainAccessibility.ScreenReader?.Speak("Floor review closed", false);
+                AnnounceHand();
         }
 
         /// <summary>
-        /// Handle a keypress while the review is open. Returns true when the
-        /// key was claimed (InputInterceptor then applies its cooldown);
-        /// unclaimed keys fall through to the normal hotkeys (F1, H, T...).
+        /// Handle a keypress. Returns true when the key was claimed
+        /// (InputInterceptor then applies its cooldown); unclaimed keys fall
+        /// through to the normal hotkeys.
         /// </summary>
         public bool HandleInput()
         {
-            if (!IsActive)
-                return false;
-
-            // An overlay (pile view, dialog, settings) took the screen - give
-            // the arrows back to it
-            if (!IsBattleScreenFrontmost())
+            if (!IsNavigable())
             {
                 Close(announce: false);
                 return false;
             }
 
-            if (KeyInput.GetKeyDown(KeyCode.Escape))
-            {
-                Close(announce: true);
-                return true;
-            }
+            if (IsActive)
+                FollowGameRoom();
+
             if (KeyInput.GetKeyDown(KeyCode.UpArrow))
             {
-                MoveFloor(+1);
+                Move(+1);
                 return true;
             }
             if (KeyInput.GetKeyDown(KeyCode.DownArrow))
             {
-                MoveFloor(-1);
+                Move(-1);
                 return true;
             }
+
+            if (!IsActive)
+                return false;
+
             if (KeyInput.GetKeyDown(KeyCode.RightArrow))
             {
                 MoveUnit(+1);
@@ -147,37 +136,72 @@ namespace MonsterTrainAccessibility.Battle
         }
 
         /// <summary>
-        /// Room indices run bottom (0) to pyre room (3), so up is +1.
-        /// At the ends the current floor is re-read instead of wrapping.
+        /// Step through hand, bottom, middle, top, pyre room. At the ends the
+        /// current stop is read again.
         /// </summary>
-        private void MoveFloor(int direction)
+        private void Move(int direction)
         {
-            _roomIndex = Mathf.Clamp(_roomIndex + direction, 0, 3);
+            // Position 0 = hand, 1.. = FloorOrder
+            int position = IsActive ? Array.IndexOf(FloorOrder, _roomIndex) + 1 : 0;
+            position = Mathf.Clamp(position + direction, 0, FloorOrder.Length);
+
+            if (position == 0)
+            {
+                if (IsActive)
+                {
+                    IsActive = false;
+                    _closedFrame = Time.frameCount;
+                }
+                _unitIndex = -1;
+                AnnounceHand();
+                return;
+            }
+
+            IsActive = true;
+            _roomIndex = FloorOrder[position - 1];
             _unitIndex = -1;
+            if (SelectGameRoom(_roomIndex))
+                _lastGameRoom = _roomIndex;
             AnnounceFocus();
         }
 
         /// <summary>
-        /// Step through the floor's units; moving left of the first unit
-        /// returns to the floor overview.
+        /// Left/Right through the floor's lineup. From the floor overview
+        /// Right enters at the first stop and Left at the last; at the ends
+        /// the focused unit is read again.
         /// </summary>
         private void MoveUnit(int direction)
         {
             var lineup = BuildLineup();
-            if (lineup.Count == 0 && direction > 0)
+            if (lineup.Count == 0)
             {
+                _unitIndex = -1;
                 MonsterTrainAccessibility.ScreenReader?.Speak("No units on this floor", false);
                 return;
             }
-            _unitIndex = Mathf.Clamp(_unitIndex + direction, -1, lineup.Count - 1);
+
+            if (_unitIndex < 0 || _unitIndex >= lineup.Count)
+                _unitIndex = direction > 0 ? 0 : lineup.Count - 1;
+            else
+                _unitIndex = Mathf.Clamp(_unitIndex + direction, 0, lineup.Count - 1);
             AnnounceFocus();
         }
 
         /// <summary>
-        /// Announce the focused floor or unit concisely and feed its full
-        /// details to the review buffers.
+        /// Back on the hand: say so, and let the menu poll re-read the focused
+        /// card (it refills the Card buffer the floors replaced).
         /// </summary>
-        private void AnnounceFocus(string prefix = "", string suffix = "")
+        private void AnnounceHand()
+        {
+            MonsterTrainAccessibility.ScreenReader?.Speak("Hand", false);
+            MonsterTrainAccessibility.MenuHandler?.ForgetFocus();
+        }
+
+        /// <summary>
+        /// Announce the focused floor (the Page Up/Down line) or unit
+        /// (concise) and feed its full details to the review buffers.
+        /// </summary>
+        private void AnnounceFocus()
         {
             try
             {
@@ -191,13 +215,13 @@ namespace MonsterTrainAccessibility.Battle
                 if (isCreature)
                 {
                     var entry = lineup[_unitIndex];
-                    announcement = prefix + DescribeUnit(entry, brief: true) + suffix;
-                    details = DescribeUnit(entry, brief: false);
+                    announcement = DescribeEntry(entry, brief: true);
+                    details = DescribeEntry(entry, brief: false);
                 }
                 else
                 {
-                    announcement = prefix + GetFloorOverview(lineup) + suffix;
-                    details = GetFloorDetails();
+                    announcement = GetFloorLine(includeKeywords: false);
+                    details = GetFloorLine(includeKeywords: true);
                 }
 
                 FocusBuffers.SetReviewFocus(details, isCreature);
@@ -205,14 +229,14 @@ namespace MonsterTrainAccessibility.Battle
             }
             catch (Exception ex)
             {
-                MonsterTrainAccessibility.LogError($"Floor review announce failed: {ex.Message}");
+                MonsterTrainAccessibility.LogError($"Floor navigation announce failed: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Enter: read the focused floor or unit with full details live.
+        /// Enter (and F2): read the focused floor or unit with full details live.
         /// </summary>
-        private void ReadFocusDetails()
+        public void ReadFocusDetails()
         {
             try
             {
@@ -221,20 +245,20 @@ namespace MonsterTrainAccessibility.Battle
                     _unitIndex = lineup.Count - 1;
 
                 string details = _unitIndex >= 0
-                    ? DescribeUnit(lineup[_unitIndex], brief: false)
-                    : GetFloorDetails();
+                    ? DescribeEntry(lineup[_unitIndex], brief: false)
+                    : GetFloorLine(includeKeywords: true);
                 MonsterTrainAccessibility.ScreenReader?.Speak(details, false);
             }
             catch (Exception ex)
             {
-                MonsterTrainAccessibility.LogError($"Floor review detail read failed: {ex.Message}");
+                MonsterTrainAccessibility.LogError($"Floor navigation detail read failed: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Build the floor's lineup left to right: your units back-to-front,
-        /// then enemies front-to-back (the readers return each team
-        /// front-to-back).
+        /// Build the floor's lineup left to right: the pyre (pyre room only),
+        /// your units back-to-front, then enemies front-to-back (the readers
+        /// return each team front-to-back).
         /// </summary>
         private List<LineupEntry> BuildLineup()
         {
@@ -248,10 +272,16 @@ namespace MonsterTrainAccessibility.Battle
                 if (room == null)
                     return lineup;
 
+                var pyreHeart = (room as PyreRoomState)?.GetPyreHeart();
+                if (pyreHeart != null)
+                    lineup.Add(new LineupEntry { Unit = pyreHeart, IsPyre = true, Rank = 1, TeamCount = 1 });
+
                 var friendly = new List<object>();
                 var enemies = new List<object>();
                 foreach (var unit in FloorReader.GetUnitsInRoom(room))
                 {
+                    if (unit == null || ReferenceEquals(unit, pyreHeart))
+                        continue;
                     if (FloorReader.IsEnemyUnit(cache, unit))
                         enemies.Add(unit);
                     else
@@ -265,13 +295,16 @@ namespace MonsterTrainAccessibility.Battle
             }
             catch (Exception ex)
             {
-                MonsterTrainAccessibility.LogError($"Floor review lineup failed: {ex.Message}");
+                MonsterTrainAccessibility.LogError($"Floor navigation lineup failed: {ex.Message}");
             }
             return lineup;
         }
 
-        private string DescribeUnit(LineupEntry entry, bool brief)
+        private string DescribeEntry(LineupEntry entry, bool brief)
         {
+            if (entry.IsPyre)
+                return DescribePyre(entry.Unit, brief);
+
             var cache = Cache;
             string side = entry.IsEnemy ? "Enemy" : "Your unit";
             string position = "";
@@ -290,78 +323,225 @@ namespace MonsterTrainAccessibility.Battle
         }
 
         /// <summary>
-        /// Concise floor announcement: capacity (or pyre health), frozen
-        /// state, corruption, then unit names front-to-back per team.
-        /// Per-unit stats and floor enchantments live in the buffers.
+        /// The pyre as a stop of its own: health, attack, how many times it
+        /// attacks, and its status effects (keyword explanations in details).
         /// </summary>
-        private string GetFloorOverview(List<LineupEntry> lineup)
+        private static string DescribePyre(object pyreHeart, bool brief)
         {
             var cache = Cache;
-            string floorName = FloorReader.RoomIndexToFloorName(_roomIndex);
             var parts = new List<string>();
 
-            var room = cache != null ? FloorReader.GetRoom(cache, _roomIndex) : null;
-            if (_roomIndex == 3)
-            {
-                int pyreHP = ResourceReader.GetPyreHealth(cache);
-                if (pyreHP >= 0)
-                    parts.Add($"Pyre {pyreHP} of {ResourceReader.GetMaxPyreHealth(cache)} health");
-            }
-            else if (room != null)
-            {
-                if (IsRoomFrozen(room))
-                    parts.Add("Frozen");
-                var (used, max) = FloorReader.GetFloorCapacityInfo(room);
-                if (max > 0)
-                    parts.Add($"{used} of {max} capacity");
-                string corruption = FloorReader.GetFloorCorruption(room);
-                if (!string.IsNullOrEmpty(corruption))
-                    parts.Add(corruption);
-            }
+            // The game's own name for it: "Last Shard of the Pyre"
+            string name = FloorReader.GetUnitName(cache, pyreHeart);
+            if (string.IsNullOrEmpty(name))
+                name = "Pyre";
+            int attack = FloorReader.GetUnitAttack(cache, pyreHeart);
+            int hp = ResourceReader.GetPyreHealth(cache);
+            int maxHp = ResourceReader.GetMaxPyreHealth(cache);
+            string head = $"{name} {attack} attack";
+            if (hp >= 0)
+                head += maxHp > 0 ? $", {hp} of {maxHp} health" : $", {hp} health";
+            parts.Add(head);
 
-            var friendlyNames = new List<string>();
-            var enemyNames = new List<string>();
-            foreach (var entry in lineup)
-            {
-                string name = FloorReader.GetUnitName(cache, entry.Unit);
-                if (entry.IsEnemy)
-                    enemyNames.Add(name);
-                else
-                    friendlyNames.Add(name);
-            }
-            friendlyNames.Reverse(); // lineup holds yours back-to-front
-            if (friendlyNames.Count > 0)
-                parts.Add($"Your units: {string.Join(", ", friendlyNames)}");
-            if (enemyNames.Count > 0)
-                parts.Add($"Enemies: {string.Join(", ", enemyNames)}");
-            if (friendlyNames.Count == 0 && enemyNames.Count == 0)
-                parts.Add("Empty");
+            int attacks = GetPyreAttackCount();
+            if (attacks > 1)
+                parts.Add($"Attacks {attacks} times");
 
-            return $"{floorName}: {string.Join(". ", parts)}";
+            string statuses = EnemyReader.GetUnitStatusEffects(pyreHeart);
+            if (!string.IsNullOrEmpty(statuses))
+                parts.Add(statuses);
+
+            if (!brief)
+            {
+                string keywords = EnemyReader.GetUnitKeywordExplanations(statuses, null);
+                if (!string.IsNullOrEmpty(keywords))
+                    parts.Add($"Keywords: {keywords}");
+                parts.Add("The pyre attacks enemies that reach the pyre room. If its health runs out, the run is lost");
+            }
+            return string.Join(". ", parts);
         }
 
-        private string GetFloorDetails()
+        private static int GetPyreAttackCount()
+        {
+            try
+            {
+                return (Cache?.SaveManager as SaveManager)?.GetDisplayedPyreNumAttacks() ?? 1;
+            }
+            catch
+            {
+                return 1;
+            }
+        }
+
+        /// <summary>The Page Up/Down floor line: name, then the floor summary.</summary>
+        private string GetFloorLine(bool includeKeywords)
         {
             var cache = Cache;
             string floorName = FloorReader.RoomIndexToFloorName(_roomIndex);
             string summary = cache != null
-                ? FloorReader.GetFloorSummary(cache, _roomIndex, includeKeywords: true)
+                ? FloorReader.GetFloorSummary(cache, _roomIndex, includeKeywords)
                 : null;
-            return string.IsNullOrEmpty(summary) ? floorName : $"{floorName}: {summary}";
+            return string.IsNullOrEmpty(summary) ? floorName : $"{floorName}. {summary}";
         }
 
-        private static bool IsRoomFrozen(object room)
+        #region Game room selection
+
+        private static MethodInfo _innerSetSelectedRoom;
+        private static FieldInfo _scrollEnabledField;
+        private static bool _roomReflectionDone;
+
+        private static RoomManager GetRoomManager()
+        {
+            var cache = Cache;
+            if (cache == null)
+                return null;
+            if (cache.RoomManager == null || cache.RoomManager.Equals(null))
+                cache.FindManagers();
+            return cache.RoomManager as RoomManager;
+        }
+
+        /// <summary>
+        /// The game only lets the player change floors in the action phase
+        /// with scrolling enabled; then select the room the way Page Up/Down
+        /// does (RoomUI.InnerSetSelectedRoom with fromPlayerInput: camera,
+        /// sound, the game's floor highlights, and with a card picked up its
+        /// targets and preview). True when the game's room is now roomIndex.
+        /// Also used by FloorTargetingSystem for Up/Down.
+        /// </summary>
+        internal static bool SelectGameRoom(int roomIndex)
         {
             try
             {
-                var method = room.GetType().GetMethod("IsRoomEnabled", Type.EmptyTypes);
-                return method?.Invoke(room, null) is bool enabled && !enabled;
+                var roomManager = GetRoomManager();
+                var combat = Cache?.CombatManager as CombatManager;
+                if (roomManager == null || combat == null || !combat.IsPlayerActionPhase())
+                    return false;
+                if (roomManager.GetSelectedRoom() == roomIndex)
+                    return true;
+
+                var roomUI = roomManager.GetRoomUI();
+                if (roomUI == null)
+                    return false;
+                if (!_roomReflectionDone)
+                {
+                    _roomReflectionDone = true;
+                    _innerSetSelectedRoom = AccessTools.Method(typeof(RoomUI), "InnerSetSelectedRoom", new[] { typeof(int), typeof(bool) });
+                    _scrollEnabledField = AccessTools.Field(typeof(RoomUI), "scrollEnabled");
+                    if (_innerSetSelectedRoom == null)
+                        MonsterTrainAccessibility.LogWarning("Floor navigation: RoomUI.InnerSetSelectedRoom not found");
+                }
+                if (_innerSetSelectedRoom == null)
+                    return false;
+                if (_scrollEnabledField?.GetValue(roomUI) is bool scrollEnabled && !scrollEnabled)
+                    return false;
+
+                _innerSetSelectedRoom.Invoke(roomUI, new object[] { roomIndex, true });
+                return roomManager.GetSelectedRoom() == roomIndex;
             }
-            catch
+            catch (Exception ex)
             {
+                MonsterTrainAccessibility.LogError($"Floor navigation room select failed: {ex.Message}");
                 return false;
             }
         }
+
+        /// <summary>
+        /// Page Up/Down still change the game's floor (and announce it); while
+        /// a floor is focused the cursor follows. Only in the action phase:
+        /// during combat the camera moves the selection by itself.
+        /// </summary>
+        private void FollowGameRoom()
+        {
+            try
+            {
+                var roomManager = GetRoomManager();
+                var combat = Cache?.CombatManager as CombatManager;
+                if (roomManager == null || combat == null || !combat.IsPlayerActionPhase())
+                {
+                    _lastGameRoom = -1;
+                    return;
+                }
+
+                int gameRoom = roomManager.GetSelectedRoom();
+                if (gameRoom == _lastGameRoom)
+                    return;
+                bool follow = _lastGameRoom >= 0 && gameRoom != _roomIndex && gameRoom >= 0 && gameRoom <= 3;
+                _lastGameRoom = gameRoom;
+                if (follow)
+                {
+                    _roomIndex = gameRoom;
+                    _unitIndex = -1;
+                    FocusBuffers.SetReviewFocus(GetFloorLine(includeKeywords: true), false);
+                }
+            }
+            catch (Exception ex)
+            {
+                MonsterTrainAccessibility.LogError($"Floor navigation room follow failed: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region When the arrows belong to the navigation
+
+        private static int _navigableFrame = -1;
+        private static bool _navigableResult;
+        private static HandUI _handUI;
+
+        /// <summary>
+        /// True while the arrows drive this navigation: the battle screen is
+        /// frontmost and the player is not targeting, holding a picked-up
+        /// card, or choosing cards from the hand (discard/exhaust prompts).
+        /// Cached per frame - the input suppression patches call this.
+        /// </summary>
+        internal static bool IsNavigable()
+        {
+            if (Time.frameCount == _navigableFrame)
+                return _navigableResult;
+            _navigableFrame = Time.frameCount;
+            _navigableResult = ComputeNavigable();
+            return _navigableResult;
+        }
+
+        private static bool ComputeNavigable()
+        {
+            if (!IsBattleScreenFrontmost())
+                return false;
+            if (FloorTargetingSystem.Instance?.IsTargeting == true ||
+                UnitTargetingSystem.Instance?.IsTargeting == true)
+                return false;
+
+            try
+            {
+                if (_handUI == null)
+                    _handUI = UnityEngine.Object.FindObjectOfType<HandUI>();
+                if (_handUI == null)
+                    return true;
+                if (_handUI.IsHandSelectionActive() && !_handUI.IsHandSelectionHidden())
+                    return false;
+                var selection = _handUI.GetSelectionBehaviour();
+                if (selection != null && (selection.IsCardSelected() || selection.IsPlayingCard()))
+                    return false;
+            }
+            catch (Exception ex)
+            {
+                MonsterTrainAccessibility.LogError($"Floor navigation state check failed: {ex.Message}");
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Up/Down belong to the mod: the floor navigation, or choosing a
+        /// floor for a picked-up card (FloorTargetingSystem).
+        /// </summary>
+        internal static bool ClaimsVerticalArrows()
+        {
+            if (IsNavigable())
+                return true;
+            return FloorTargetingSystem.Instance?.IsTargeting == true && IsBattleScreenFrontmost();
+        }
+
+        #endregion
 
         #region Battle screen frontmost check
 
@@ -379,7 +559,7 @@ namespace MonsterTrainAccessibility.Battle
         /// <summary>
         /// True when the battle screen itself has input focus: combat is
         /// active, ScreenName.Game is active, and the game reports it
-        /// interactable. The plain Up arrow is only claimed then.
+        /// interactable. The plain arrows are only claimed then.
         /// IsInteractable is the game's own focus notion:
         /// ScreenManager.UpdateInteractable walks the active screen stack
         /// top-down and only screens above the first DoesBlockInteractions
@@ -446,7 +626,7 @@ namespace MonsterTrainAccessibility.Battle
             }
             catch (Exception ex)
             {
-                MonsterTrainAccessibility.LogError($"Floor review screen check failed: {ex.Message}");
+                MonsterTrainAccessibility.LogError($"Floor navigation screen check failed: {ex.Message}");
                 return Help.ScreenStateTracker.CurrentScreen == Help.GameScreen.Battle;
             }
         }

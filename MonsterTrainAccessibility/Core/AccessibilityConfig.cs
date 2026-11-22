@@ -14,7 +14,6 @@ namespace MonsterTrainAccessibility.Core
         public ConfigEntry<bool> UseSAPIFallback { get; private set; }
         public ConfigEntry<bool> EnableBraille { get; private set; }
         public ConfigEntry<bool> DebugBridge { get; private set; }
-        public ConfigEntry<KeyCode> FloorReviewKey { get; private set; }
         public ConfigEntry<KeyCode> SettingsKey { get; private set; }
         public ConfigEntry<bool> SceneDescriptions { get; private set; }
         public ConfigEntry<int> KeyLayoutVersion { get; private set; }
@@ -196,13 +195,6 @@ namespace MonsterTrainAccessibility.Core
                 "ReadCurrentFloor",
                 KeyCode.K,
                 "Key to read the selected floor's capacity and units (battle)"
-            );
-
-            FloorReviewKey = config.Bind(
-                "Keys.Information",
-                "FloorReview",
-                KeyCode.K,
-                "Key to open the floor review cursor (battle), pressed together with Shift"
             );
 
             ReadEnemiesKey = config.Bind(

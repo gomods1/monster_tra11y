@@ -957,6 +957,17 @@ namespace MonsterTrainAccessibility.Screens
                 }
                 _pendingInvisible = null;
 
+                // A floor is focused in the battle navigation: the hand keeps the
+                // game's focus underneath, and anything the game does to it (cards
+                // drawn, refocused after a room change) is not the player's stop.
+                // Going back to the hand calls ForgetFocus, which re-reads it.
+                if (MonsterTrainAccessibility.FloorReview?.IsActive == true)
+                {
+                    _lastSelectedObject = currentSelected;
+                    _lastSelectedText = null;
+                    return;
+                }
+
                 var previousSelected = _lastSelectedObject;
                 _lastSelectedObject = currentSelected;
                 _changeIsPlayerMove = ComputePlayerMove(currentSelected);

@@ -79,10 +79,11 @@ Arrived => Llegan
 Joined you => Se unen a ti
 
 # Battle/FloorReviewSystem.cs
-Floor review => Revisión de pisos
 Press Escape to close => Pulsa Escape para cerrar
-Floor review closed => Revisión de pisos cerrada
 No units on this floor => No hay unidades en este piso
+Pyre {#atk} attack => Pira, {atk} de ataque
+Attacks {#n} times => Ataca {n} veces
+The pyre attacks enemies that reach the pyre room. If its health runs out, the run is lost => La pira ataca a los enemigos que llegan a la Sala de la Pira. Si se queda sin salud, la partida está perdida
 Enemy {#rank} of {#count} => Enemigo {rank} de {count}
 Your unit {#rank} of {#count} => Tu unidad {rank} de {count}
 front => delante
@@ -105,7 +106,6 @@ Key to read all text content on screen (patch notes, descriptions, run summary, 
 Key to read all cards in hand (battle) => Tecla para leer todas las cartas de la mano (batalla)
 Key to read all floors (battle) => Tecla para leer todos los pisos (batalla)
 Key to read the selected floor's capacity and units (battle) => Tecla para leer la capacidad y las unidades del piso seleccionado (batalla)
-Key to open the floor review cursor (battle), pressed together with Shift => Tecla para abrir el cursor de revisión de pisos (batalla), pulsada junto con Mayúsculas
 Key to read all units with full detail (battle), pressed together with Shift => Tecla para leer todas las unidades con todos los detalles (batalla), pulsada junto con Mayúsculas
 Key to read current ember (battle) => Tecla para leer las brasas actuales (batalla)
 Key to read current gold => Tecla para leer el oro actual
@@ -391,14 +391,15 @@ F2: Re-read dialog text => F2: volver a leer el texto del diálogo
 Arrow keys: Navigate between buttons => Flechas: moverse entre los botones
 
 # Help/Contexts/FloorReviewHelp.cs
-Floor review: a virtual cursor over the train's floors => Revisión de pisos: un cursor virtual sobre los pisos del tren
-The real game selection does not move => La selección real del juego no se mueve
-Up and Down arrows: Move between floors, from bottom floor up to the pyre room => Flechas arriba y abajo: moverse entre los pisos, desde el piso inferior hasta la Sala de la Pira
-Right arrow: Step through the units on the floor in their positions, your units back to front, then enemies front to back => Flecha derecha: recorrer las unidades del piso en su orden, tus unidades de detrás hacia delante y luego los enemigos de delante hacia detrás
-Left arrow: Step back; left of the first unit returns to the floor overview => Flecha izquierda: retroceder; a la izquierda de la primera unidad vuelve al resumen del piso
-Enter: Read the focused floor or unit with full details => Intro: leer el piso o la unidad enfocada con todos los detalles
-Ctrl plus Up/Down: Review the focused item's details in the UI buffer, including keyword explanations; units also fill the Creature buffer => Control más flecha arriba o abajo: revisar los detalles del elemento enfocado en la lista de interfaz, con las explicaciones de las palabras clave; las unidades también llenan la lista de criaturas
-Escape: Close floor review => Escape: cerrar la revisión de pisos
+Floors: Up arrow climbs from your hand to the bottom floor, the middle floor, the top floor and the pyre room; Down arrow comes back => Pisos: la flecha arriba sube desde tu mano al piso inferior, el piso central, el piso superior y la Sala de la Pira; la flecha abajo vuelve
+Moving onto a floor also selects it in the game, like Page Up and Page Down, and reads it => Al moverte a un piso también se selecciona en el juego, como con Re Pág y Av Pág, y se lee
+Left and Right arrows: Step through what is on the floor in position order, your units back to front, then enemies front to back => Flechas izquierda y derecha: recorren lo que hay en el piso por orden de posición, tus unidades de detrás hacia delante y luego los enemigos de delante hacia detrás
+In the pyre room the pyre comes first => En la Sala de la Pira, la pira va primero
+At the ends the same unit is read again => En los extremos se vuelve a leer la misma unidad
+Enter or F2: Read the focused floor or unit with full details => Intro o F2: lee el piso o la unidad enfocada con todos los detalles
+Ctrl plus Up/Down: Review the focused item's details in the UI buffer, including keyword explanations; units and the pyre also fill the Creature buffer => Control más flecha arriba o abajo: revisa los detalles del elemento enfocado en la lista de interfaz, con las explicaciones de las palabras clave; las unidades y la pira también llenan la lista de criaturas
+Down arrow from the bottom floor: Back to your hand, where Left and Right move through the cards again => Flecha abajo desde el piso inferior: vuelve a tu mano, donde las flechas izquierda y derecha recorren de nuevo las cartas
+Number keys still pick a card, and F ends your turn => Las teclas numéricas siguen eligiendo una carta, y F termina tu turno
 
 # Help/Contexts/SynthesisHelp.cs
 Unit Synthesis => Síntesis de unidades
@@ -652,6 +653,7 @@ No floor selected => Ningún piso seleccionado
 Floor Targeting => Selección de piso
 Select a floor to play the card => Elige un piso para jugar la carta
 Page Up and Page Down: Cycle between floors => Re Pág y Av Pág: Cambiar de piso
+Up and Down arrows, or Page Up and Page Down: Cycle between floors => Flechas arriba y abajo, o Re Pág y Av Pág: cambian de piso
 Enter: Confirm and play card on selected floor => Intro: Confirmar y jugar la carta en el piso seleccionado
 Escape: Cancel card play => Escape: Cancelar la carta
 
@@ -878,6 +880,7 @@ Bottom floor => Piso inferior
 Middle floor => Piso central
 Top floor => Piso superior
 Unknown floor => Piso desconocido
+Enchantments => Encantamientos
 Floor status => Estado de los pisos
 {floor} ({#used}/{#max} capacity => {floor} ({#used}/{#max} de capacidad
 {#used}/{#max} capacity => {#used}/{#max} de capacidad
@@ -938,7 +941,8 @@ L: Read all floors => L: lee todos los pisos
 Shift plus L: Read all units with full detail => Mayúsculas más L: lee todas las unidades con todo detalle
 G: Read ember => G: lee las brasas
 Page Up and Page Down: Change the selected floor and read it => Re Pág y Av Pág: cambia el piso seleccionado y lo lee
-Shift plus K: Open floor review, a cursor that walks the floors and their units without changing anything in the game => Mayúsculas más K: abre la revisión de pisos, un cursor que recorre los pisos y sus unidades sin cambiar nada en el juego
+Up arrow: Climb from your hand to the bottom floor, the middle floor, the top floor and the pyre room; Down arrow comes back => Flecha arriba: sube desde tu mano al piso inferior, el piso central, el piso superior y la Sala de la Pira; la flecha abajo vuelve
+On a floor, Left and Right step through its units and the pyre, and Enter reads full details => En un piso, las flechas izquierda y derecha recorren sus unidades y la pira, e Intro lee todos los detalles
 N: Change game speed => N: cambia la velocidad del juego
 Game piles: Z deck, X draw pile, B eaten pile => Pilas del juego: Z mazo, X pila de robo, B pila de devoradas
 Escape or Q closes a pile view => Escape o Q cierra la vista de una pila
@@ -1208,7 +1212,6 @@ Read hand key => Tecla de leer la mano
 Read selected floor key => Tecla de leer el piso seleccionado
 Read all floors key => Tecla de leer todos los pisos
 Read all units key => Tecla de leer todas las unidades
-Floor review key => Tecla de revisión de pisos
 Read ember key => Tecla de leer las brasas
 Extra map node key => Tecla extra de nodo del mapa
 Extra run summary key => Tecla extra de resumen de la partida

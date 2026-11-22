@@ -94,7 +94,6 @@ namespace MonsterTrainAccessibility.Core
             Add("Read selected floor key, battle", c.ReadCurrentFloorKey);
             Add("Read all floors key, battle", c.ReadFloorsKey);
             Add("Read all units key, battle, with Shift", c.ReadEnemiesKey);
-            Add("Floor review key, battle, with Shift", c.FloorReviewKey);
             Add("Read ember key, battle", c.ReadEmberKey);
             Add("Extra map node key, optional", c.ReadMapNodeKey);
             Add("Extra run summary key, optional", c.ReadRunSummaryKey);

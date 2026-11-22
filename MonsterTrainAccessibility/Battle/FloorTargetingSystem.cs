@@ -6,7 +6,7 @@ namespace MonsterTrainAccessibility.Battle
     /// <summary>
     /// Handles keyboard-based floor targeting for playing cards.
     /// When a card requires floor selection, this system allows the player
-    /// to select a floor using Page Up/Down instead of mouse.
+    /// to select a floor using Up/Down or Page Up/Down instead of mouse.
     /// </summary>
     public class FloorTargetingSystem : MonoBehaviour
     {
@@ -93,6 +93,19 @@ namespace MonsterTrainAccessibility.Battle
             else if (KeyInput.GetKeyDown(KeyCode.Escape))
             {
                 CancelTargeting();
+                _inputCooldown = INPUT_COOLDOWN_TIME;
+            }
+            // Up/Down change the floor like Page Up/Down (Ctrl+arrows are the
+            // review buffers). The poll announces the new floor next frame;
+            // at the ends, or if the game refuses, the floor is read again
+            else if ((KeyInput.GetKeyDown(KeyCode.UpArrow) || KeyInput.GetKeyDown(KeyCode.DownArrow)) &&
+                     !KeyInput.GetKey(KeyCode.LeftControl) && !KeyInput.GetKey(KeyCode.RightControl) &&
+                     MonsterTrainAccessibility.Settings?.IsOpen != true)
+            {
+                int direction = KeyInput.GetKeyDown(KeyCode.UpArrow) ? 1 : -1;
+                int target = Mathf.Clamp(SelectedFloor + direction, 0, 3);
+                if (target == SelectedFloor || !FloorReviewSystem.SelectGameRoom(target))
+                    AnnounceFloorSelection();
                 _inputCooldown = INPUT_COOLDOWN_TIME;
             }
         }

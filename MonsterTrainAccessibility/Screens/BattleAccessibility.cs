@@ -100,6 +100,9 @@ namespace MonsterTrainAccessibility.Screens
             if (!IsInBattle)
                 return;
 
+            // Each turn starts on the hand, so Left/Right move through the cards
+            MonsterTrainAccessibility.FloorReview?.Close(announce: false);
+
             bool hadPending = _awaitingTurnStart;
             _awaitingTurnStart = false;
             int drawn = _pendingDraws;
