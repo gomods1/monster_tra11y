@@ -18,7 +18,7 @@ namespace MonsterTrainAccessibility
     {
         public const string GUID = "com.accessibility.monstertrain";
         public const string NAME = "Monster Train Accessibility";
-        public const string VERSION = "8.2.0";
+        public const string VERSION = "8.3.0";
 
         // Static reference for global access
         public static MonsterTrainAccessibility Instance { get; private set; }
@@ -60,6 +60,9 @@ namespace MonsterTrainAccessibility
             {
                 // Initialize configuration first
                 AccessibilitySettings = new AccessibilityConfig(Config);
+
+                // Language before the first announcement (Spanish speech and game text)
+                Core.Translation.ModLanguage.Initialize(AccessibilitySettings);
 
                 // Initialize screen reader output (Tolk)
                 ScreenReader = new ScreenReaderOutput();
@@ -105,6 +108,9 @@ namespace MonsterTrainAccessibility
 
         private void ApplyPatches()
         {
+            // Game text in languages the game doesn't ship (Spanish)
+            Core.Translation.GameTextTranslation.TryPatch(_harmony);
+
             // Screen transition patches
             MainMenuScreenPatch.TryPatch(_harmony);
             BattleIntroScreenPatch.TryPatch(_harmony);

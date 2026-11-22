@@ -29,6 +29,12 @@
     <!-- Editable scene descriptions ship next to the DLL (they override the embedded copy) -->
     <Copy SourceFiles="SceneDescriptions.txt" DestinationFolder="$(OutputPath)" Condition="Exists('SceneDescriptions.txt')" />
     <Copy SourceFiles="SceneDescriptions.txt" DestinationFolder="$(MonsterTrainPath)\BepInEx\plugins" Condition="Exists('SceneDescriptions.txt')" />
+    <!-- Spanish: game text, mod speech rules and scene descriptions (BepInEx/plugins/Spanish) -->
+    <ItemGroup>
+      <SpanishFiles Include="Spanish\*.txt" />
+    </ItemGroup>
+    <Copy SourceFiles="@(SpanishFiles)" DestinationFolder="$(OutputPath)Spanish" />
+    <Copy SourceFiles="@(SpanishFiles)" DestinationFolder="$(MonsterTrainPath)\BepInEx\plugins\Spanish" />
   </Target>
 
   <!-- BepInEx References (from game folder) -->

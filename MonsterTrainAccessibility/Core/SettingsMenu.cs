@@ -16,8 +16,8 @@ namespace MonsterTrainAccessibility.Core
     /// close. Key settings: Enter, then press the new key (Escape cancels,
     /// Backspace clears an optional key); keys the game itself uses are refused
     /// so a mod key never triggers a game action. BepInEx saves each change to
-    /// the config file immediately. There is no language option: the mod reads
-    /// the game's own localized text.
+    /// the config file immediately. The first item, Language / Idioma, switches
+    /// the mod (and, for Spanish, the game's text) between English and Spanish.
     /// </summary>
     public class SettingsMenu
     {
@@ -68,6 +68,8 @@ namespace MonsterTrainAccessibility.Core
                 if (entry != null) _items.Add(new Item { Label = label, Entry = entry, Hint = hint });
             }
 
+            // Language first, so a player who doesn't read the current one finds it
+            Add("Language, Idioma", c.Language);
             // Announcements
             Add("Combat summary instead of live combat narration", c.CombatSummaryMode);
             Add("Announce damage", c.AnnounceDamage);
@@ -197,6 +199,14 @@ namespace MonsterTrainAccessibility.Core
                     _capturing = true;
                     Speak($"Press the new key for {item.Label}. Escape cancels, Backspace clears it");
                     return;
+                case Translation.Language lang:
+                    var next = lang == Translation.Language.English ? Translation.Language.Spanish : Translation.Language.English;
+                    entry.BoxedValue = next;
+                    Translation.ModLanguage.Apply(next, refreshGame: true);
+                    Speak(next == Translation.Language.Spanish
+                        ? "Español. Reinicia el juego para que todo el texto cambie de idioma. El idioma del juego debe estar en inglés"
+                        : "English. Restart the game so all text changes language");
+                    return;
                 case Enum e:
                     var values = Enum.GetValues(e.GetType());
                     int i = Array.IndexOf(values, e);
@@ -285,6 +295,7 @@ namespace MonsterTrainAccessibility.Core
             {
                 case bool b: return b ? "on" : "off";
                 case KeyCode k: return KeyName(k);
+                case Translation.Language l: return l == Translation.Language.Spanish ? "Español" : "English";
                 default: return value?.ToString() ?? "none";
             }
         }

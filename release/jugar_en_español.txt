@@ -1,0 +1,68 @@
+JUGAR A MONSTER TRAIN EN ESPAÑOL
+================================
+
+Este mod de accesibilidad incluye una traducción al español de Monster Train
+hecha por fans, y la traducción al español de todo lo que dice el propio mod
+(anuncios, ayuda, ajustes y descripciones de escenas).
+
+No hace falta instalar nada más ni tocar los archivos del juego: la traducción
+viene dentro del mod (carpeta BepInEx\plugins\Spanish) y se aplica mientras el
+juego está abierto. Si un día quieres volver al inglés, basta con cambiar el
+ajuste otra vez.
+
+
+CÓMO ACTIVARLO
+--------------
+
+1. Instala el mod como siempre (con el instalador o descomprimiendo el zip en
+   la carpeta del juego).
+
+2. Deja el idioma del juego en inglés (English). Es el idioma por defecto; si
+   lo cambiaste en las opciones del juego, vuelve a ponerlo en English. La
+   traducción sustituye al texto en inglés, así que con otro idioma del juego
+   no se aplica.
+
+3. Abre el juego y pulsa F9. Se abre la lista de ajustes del mod. El primer
+   ajuste es "Language, Idioma".
+
+4. Pulsa Intro (o flecha derecha) para cambiarlo a "Español".
+
+5. Pulsa Escape para cerrar la lista y reinicia el juego. Al cambiar el
+   ajuste, buena parte del texto cambia en el momento, pero algunas pantallas
+   ya cargadas siguen en inglés hasta que reinicias.
+
+Otra forma: con el juego cerrado, abre el archivo
+BepInEx\config\com.accessibility.monstertrain.cfg con el Bloc de notas, busca
+la línea "Language = English" y cámbiala por "Language = Spanish".
+
+
+QUÉ ESTÁ TRADUCIDO
+------------------
+
+- El texto del juego: cartas, unidades, artefactos, eventos e historias,
+  menús, jefes y la bitácora.
+- Todo lo que dice el mod: anuncios de combate, lectura de la mano y los
+  pisos, mapa, tiendas, la ayuda de F1, los ajustes de F9 y las descripciones
+  de escenas.
+
+
+LIMITACIONES
+------------
+
+- La traducción del juego se hizo en 2024. Si una actualización posterior del
+  juego cambió algún texto (por ejemplo los números de una carta), ese texto
+  se queda en inglés en lugar de mostrar una traducción vieja con datos
+  incorrectos.
+- Es una traducción de fans y algunos términos pueden sonar raros. Algunos
+  nombres de teclas y textos poco frecuentes del mod pueden seguir en inglés.
+- Si alguna vez usaste la traducción antigua (Traducir.bat con UnityEX), ya no
+  hace falta. Esa traducción modificaba los archivos del juego; para
+  deshacerla, en Steam haz clic derecho en Monster Train, Propiedades,
+  Archivos instalados, "Verificar integridad de los archivos del juego".
+
+
+PROBLEMAS
+---------
+
+Si algo se oye mal o queda en inglés, avísanos indicando qué se dijo y en qué
+pantalla. El registro del mod está en BepInEx\LogOutput.log.

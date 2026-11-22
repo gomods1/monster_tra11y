@@ -307,6 +307,10 @@ namespace MonsterTrainAccessibility.Core
             new System.Text.RegularExpressions.Regex(@"(?<!\.)\.\.(?!\.)");
         private static readonly System.Text.RegularExpressions.Regex SkipWithoutCurrency =
             new System.Text.RegularExpressions.Regex(@"Skip \(\+(\d+)\)");
+        private static readonly System.Text.RegularExpressions.Regex SkipWithoutCurrencyEs =
+            new System.Text.RegularExpressions.Regex(@"Saltar \(\+(\d+)\)");
+        private static readonly System.Text.RegularExpressions.Regex StrayXBeforeCurrencyEs =
+            new System.Text.RegularExpressions.Regex(@"(\d+) X (oro|brasas?|Fragmentos del Pacto)");
         private static readonly System.Text.RegularExpressions.Regex StrayXBeforeCurrency =
             new System.Text.RegularExpressions.Regex(@"(\d+) X (gold|ember|pact shards?)");
         private static readonly System.Text.RegularExpressions.Regex MultiSpace =
@@ -323,12 +327,15 @@ namespace MonsterTrainAccessibility.Core
             text = SpaceAfterParen.Replace(text, "(");
             text = MissingSpaceAfterPeriod.Replace(text, "$1. $2");
             text = DoublePeriod.Replace(text, ".");
-            text = text.Replace("!.", "!").Replace("?.", "?").Replace(".,", ",").Replace(".:", ":");
+            text = text.Replace("!.", "!").Replace("?.", "?").Replace(".,", ",").Replace(".:", ":").Replace(":,", ",");
             // Draft skip buttons: "Skip (+25)" when the gold icon didn't come
             // through - skipping a draft always pays gold (GetGoldForSkipping)
             text = SkipWithoutCurrency.Replace(text, "Skip (+$1 gold)");
             // A cost-X icon ahead of the gold icon leaves "Gain 40 X gold"
             text = StrayXBeforeCurrency.Replace(text, "$1 $2");
+            // Same two fixes for the Spanish game text
+            text = SkipWithoutCurrencyEs.Replace(text, "Saltar (+$1 oro)");
+            text = StrayXBeforeCurrencyEs.Replace(text, "$1 $2");
             text = MultiSpace.Replace(text, " ");
             return text.Trim();
         }
@@ -336,6 +343,10 @@ namespace MonsterTrainAccessibility.Core
         private string ApplyVerbosityFilter(string text)
         {
             text = NormalizeSpeech(text);
+            // The mod builds its speech in English; other languages are
+            // translated here, at the one place all speech passes through
+            if (Translation.ModLanguage.Current != Translation.Language.English)
+                text = NormalizeSpeech(Translation.ModLanguage.TranslateSpeech(text));
             // For now, return text as-is
             // In the future, we can filter based on verbosity level
             var verbosity = MonsterTrainAccessibility.AccessibilitySettings.VerbosityLevel.Value;

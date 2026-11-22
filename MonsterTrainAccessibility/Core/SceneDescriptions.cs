@@ -18,6 +18,8 @@ namespace MonsterTrainAccessibility.Core
     /// longest key whose suffix is a prefix of the scenario's asset name
     /// ("boss_intro_Level3BattleTalos" covers every Talos variant).
     ///
+    /// With the Spanish language, Spanish/SceneDescriptions_es.txt is used instead.
+    ///
     /// Toggle: Announcements.SceneDescriptions (F9 settings).
     /// </summary>
     public static class SceneDescriptions
@@ -49,7 +51,13 @@ namespace MonsterTrainAccessibility.Core
             {
                 string dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 string overridePath = Path.Combine(dir ?? "", FileName);
-                if (File.Exists(overridePath))
+                string spanishPath = Translation.ModLanguage.SpanishPath("SceneDescriptions_es.txt");
+                if (Translation.ModLanguage.IsSpanish && File.Exists(spanishPath))
+                {
+                    text = File.ReadAllText(spanishPath);
+                    MonsterTrainAccessibility.LogInfo($"Scene descriptions loaded from {spanishPath}");
+                }
+                else if (File.Exists(overridePath))
                 {
                     text = File.ReadAllText(overridePath);
                     MonsterTrainAccessibility.LogInfo($"Scene descriptions loaded from {overridePath}");

@@ -10,6 +10,7 @@ namespace MonsterTrainAccessibility.Core
     {
         // Speech settings
         public ConfigEntry<VerbosityLevel> VerbosityLevel { get; private set; }
+        public ConfigEntry<Translation.Language> Language { get; private set; }
         public ConfigEntry<bool> UseSAPIFallback { get; private set; }
         public ConfigEntry<bool> EnableBraille { get; private set; }
         public ConfigEntry<bool> DebugBridge { get; private set; }
@@ -68,6 +69,16 @@ namespace MonsterTrainAccessibility.Core
                 "Minimal = Names and numbers only\n" +
                 "Normal = Standard descriptions\n" +
                 "Verbose = Full details including flavor text"
+            );
+
+            Language = config.Bind(
+                "Speech",
+                "Language",
+                Translation.Language.English,
+                "Language of the mod's speech and, for Spanish, of the game's own text (fan translation). " +
+                "Spanish needs the game's language set to English. Restart the game after changing it.\n" +
+                "Idioma del mod y, en español, del texto del juego (traducción de fans). " +
+                "El idioma del juego debe estar en inglés. Reinicia el juego después de cambiarlo."
             );
 
             UseSAPIFallback = config.Bind(

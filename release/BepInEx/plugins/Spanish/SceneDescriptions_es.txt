@@ -1,0 +1,134 @@
+# Monster Train Accesibilidad: descripciones de escenas
+#
+# Breves descripciones sonoras que se leen una sola vez en momentos que un jugador vidente solo contempla:
+# el arranque del juego, el inicio de una partida, la llegada a un anillo del Infierno, la entrada de un jefe,
+# un jefe que se vuelve Implacable, la caída de un jefe, la acción de un jefe desde fuera del tren y el
+# final de una partida. Nunca se leen durante el combate automático.
+#
+# Formato: una entrada por línea, así:   clave: texto
+# El texto debe ir en una sola línea. Las líneas que empiezan por # son comentarios y
+# las líneas en blanco se ignoran. Las claves de jefe usan un prefijo del nombre de recurso del escenario: una entrada
+# se aplica a toda batalla cuyo nombre de recurso empiece por ese prefijo.
+#
+# Puedes editar estas descripciones. Coloca una copia de este archivo junto a la DLL del mod
+# en BepInEx/plugins y sustituirá a la integrada. Borra una línea para silenciar
+# ese momento.
+
+# ---------------------------------------------------------------------------
+# Juego y partida
+# ---------------------------------------------------------------------------
+
+launch: Un campo de batalla helado bajo un cielo arremolinado de turquesa y naranja, sembrado de espadas, martillos y calaveras con cuernos. En lo hondo del hielo prende una brasa, y un cristal en llamas se libera. Un tren rojo que escupe humo negro corre por raíles helados, con el resplandeciente cristal de la Pira en su interior. Aparecen los soldados del Cielo, enmascarados y vestidos de blanco, y los monstruos del Infierno responden: una mujer verde y espinosa con un bastón, un demonio rojo con cuernos y un ogro morado con un martillo. Por último, un ángel imponente despliega sus alas doradas.
+run_start: El tren se pone en marcha, una locomotora de hierro negro adornada con púas doradas y, en el frontal, un gran quitanieves rojo y resplandeciente marcado con tres barras doradas. La Pira arde en su vagón superior, sobre tres pisos que esperan a tus defensores. Las fuerzas del Cielo subirán a bordo por abajo y escalarán hacia la llama.
+
+# ---------------------------------------------------------------------------
+# Anillos del Infierno
+# ---------------------------------------------------------------------------
+
+ring_1: El tren entra en el Limbo, el anillo más exterior del Infierno, un páramo anaranjado y polvoriento de suelo agrietado y pedregoso. La vía serpentea por él en curvas largas y perezosas.
+ring_2: Las vías llegan a los Acantilados de las Almas Caídas, altos pilares de roca oscura coronados de hierba y cubiertos de hielo, que se alzan desde un profundo abismo. Los raíles se separan alrededor de una meseta central salpicada de agujeros oscuros.
+ring_3: El tren cruza los Restos de Bogwurm, una ciénaga negra de barro y charcos de alquitrán congelados de un azul pálido. Los restos del gusano gigante emergen del suelo alrededor de los raíles, con sus enormes fauces llenas de púas abiertas de par en par y rodeadas de dientes.
+ring_4: El tren entra en los Arcos Encerados, un suelo azul de cera donde arcos derretidos se curvan por encima, con las puntas brillando en naranja. Entre ellos se alza una capilla de piedra con una rueda hidráulica, con los tejados goteando cera azul y las ventanas iluminadas de amarillo.
+ring_5: Los raíles cruzan el Mar Estigia Helado, un campo de placas de hielo azul oscuro. Una luz violeta brilla en las grietas que las separan y, en una abertura, unas formas oscuras se arremolinan bajo la superficie.
+ring_6: El tren se adentra en el Bosque Salvaje, un suelo verde de hierba espesa donde brotan por todas partes enredaderas espinosas y retorcidas. Hay brotes morados por el suelo, la niebla flota baja y pequeños pozos de lava brillan en naranja.
+ring_7: El tren avanza por las Llanuras Ardientes, roca volcánica negra surcada por ríos de lava incandescente. La vía se retuerce en bucles cerrados sobre la piedra mientras el vapor sube de las grietas.
+ring_8: El tren desciende al Crisol, las minas donde los Nacidos en el Infierno y los Recortados excavaban cristales juntos. Los raíles corren por zanjas profundas entre adoquines marrones y rocas, junto a andamios de madera, una tolva de hierro sobre pilotes y un foso de metal negro.
+ring_9: El tren llega al Corazón Helado, el núcleo del Infierno, una cuenca de piedra negra. La vía termina en un pilar destrozado sobre un cráter de gélida luz azul, rodeado de agujas negras y curvas agrietadas por un resplandor azul.
+ring_10: Con cien Fragmentos del Pacto a bordo, el tren va más allá del final de la línea y entra en el dominio de La Última Divinidad. Algo antiguo e infinitamente destructivo se agita más adelante.
+
+# ---------------------------------------------------------------------------
+# Dédalo, el Profesor
+# ---------------------------------------------------------------------------
+
+boss_intro_Level3BattleDaedalus: Dédalo, el Profesor, flota sobre enormes alas mecánicas de placas de cobre oxidado, con una mochila propulsora de dos depósitos a la espalda. Lleva una visera de soldador, un bigote rojo de manillar y un peto de acero con un cristal azul resplandeciente, y blande una llave grifa roja. El ingeniero que armó a los Discípulos protege ahora a Serafín.
+relentless_Level3BattleDaedalus: Con sus creaciones destruidas, Dédalo se vuelve Implacable. Llave en mano, baja al piso inferior y asciende hacia la Pira, congelando cada piso después de luchar en él.
+boss_defeated_Level3BattleDaedalus: Dédalo, el Profesor, cae. El hombre que ayudó a romper el Ferrocarril no fabricará más armas para el Cielo.
+outer_boss_action_Level3BattleDaedalus: Dédalo prepara uno de sus artefactos y elige el piso que piensa atacar.
+
+# ---------------------------------------------------------------------------
+# Talos, la Arquitecta
+# ---------------------------------------------------------------------------
+
+boss_intro_Level3BattleTalos: Talos, la Arquitecta, flota sobre vastas alas de cristal violeta y azul que centellean como un cielo estrellado. Lleva una corona de laurel dorada y una túnica blanca y vaporosa, con protecciones de cristal en brazos y espinillas, y sostiene una lanza dorada con punta de cristal.
+relentless_Level3BattleTalos: Sin su escolta, Talos se vuelve Implacable y empuña ahora una lanza de cristal en cada mano. Baja al piso inferior y asciende hacia la Pira, congelando cada piso después de luchar en él.
+boss_defeated_Level3BattleTalos: Talos, la Arquitecta, cae, y los secretos del Éxodo enmudecen con ella.
+outer_boss_action_Level3BattleTalos: Talos despliega sus alas de cristal y elige el piso que piensa atacar.
+
+# ---------------------------------------------------------------------------
+# Fel, las Alas de la Luz
+# ---------------------------------------------------------------------------
+
+boss_intro_Level6BattleFel: Fel, las Alas de la Luz, flota sobre alas dentadas de luz amarilla resplandeciente. Lleva un elegante traje ceñido blanco con franjas rojas, una visera roja y una cresta azul en punta, con una larga guja blanca en cada mano. Antaño aliada de confianza del Infierno, esta leyenda Recortada se alza ahora contra la Pira.
+relentless_Level6BattleFel: Con su guardia rota, Fel se vuelve Implacable, y su cresta azul se enciende en un oro llameante. Baja al piso inferior y asciende hacia la Pira, congelando cada piso después de luchar en él.
+boss_defeated_Level6BattleFel: Fel, las Alas de la Luz, cae, y el tren sigue su marcha dejando atrás a la aliada que abandonó el Infierno.
+outer_boss_action_Level6BattleFel: Fel reúne su Luz y elige el piso que piensa atacar.
+
+# ---------------------------------------------------------------------------
+# Archus, la Oscuridad Encarnada
+# ---------------------------------------------------------------------------
+
+boss_intro_Level6BattleArchus: Archus, la Oscuridad Encarnada, aparece más allá del tren: una figura demacrada y con garras, con una armadura dentada de color verde azulado oscuro, dos pares de alas de plumas negras y una pálida máscara con cuernos. De una muñeca le cuelga un grillete roto con su cadena, y empuña una espada larga. El hermano abandonado domina poderes antiguos.
+relentless_Level6BattleArchus: Sin su escolta, Archus se vuelve Implacable. El hermano de alas oscuras baja al piso inferior y asciende hacia la Pira, congelando cada piso después de luchar en él.
+boss_defeated_Level6BattleArchus: Archus, la Oscuridad Encarnada, cae. Sea cual sea el poder antiguo que tenía el hermano abandonado, se desvanece de los raíles.
+outer_boss_action_Level6BattleArchus: Archus invoca sus poderes antiguos y elige el piso que piensa atacar.
+
+# ---------------------------------------------------------------------------
+# Los Alas de la Pira (batalla de jefe antigua, liderada por Fel)
+# ---------------------------------------------------------------------------
+
+boss_intro_Level8BattleBossOld: Los Alas de la Pira se reúnen más adelante, Alados corpulentos con armaduras de placas negras surcadas de vetas rojas incandescentes, pesadas alas negras y pálidos pies con garras. Alados caídos en desgracia que buscan redimirse gracias a su conocimiento del Infierno, siguen a Fel, las Alas de la Luz, que vuela sobre sus alas de luz amarilla.
+relentless_Level8BattleBossOld: Con los Alas de la Pira dispersos, Fel se vuelve Implacable, y su cresta azul se enciende en un oro llameante. Baja al piso inferior y asciende hacia la Pira, congelando cada piso después de luchar en él.
+boss_defeated_Level8BattleBossOld: Fel cae, y los Alas de la Pira, caídos en desgracia, pierden su oportunidad de redención.
+outer_boss_action_Level8BattleBossOld: Fel reúne su Luz y elige el piso que piensa atacar.
+
+# ---------------------------------------------------------------------------
+# Serafín el Paciente
+# ---------------------------------------------------------------------------
+
+boss_intro_Level8FinalBossAttacker: El final está cerca. Serafín el Paciente flota con los brazos cruzados, con seis alas de plumas negras salpicadas de oro desplegadas tras él, una armadura azul marino ribeteada en oro y cuernos en forma de media luna que le brotan de la cabeza. El Traidor se une a la lucha de inmediato, y cada movimiento que haces alimenta su fuerza.
+relentless_Level8FinalBossAttacker: Caen las últimas de sus fuerzas, y Serafín se vuelve Implacable. Sus brazos cruzados se abren y tiende las manos en forma de garra mientras baja al piso inferior y asciende hacia la Pira, congelando cada piso después de luchar en él.
+boss_defeated_Level8FinalBossAttacker: Serafín el Paciente cae. El Rompedor del Pacto, que una vez ayudó a construir el Ferrocarril, es derribado, y la Pira sigue ardiendo.
+outer_boss_action_Level8FinalBossAttacker: Serafín el Paciente elige uno de tus pisos ocupados para atacarlo.
+
+# ---------------------------------------------------------------------------
+# Serafín el Templado
+# ---------------------------------------------------------------------------
+
+boss_intro_Level8FinalBossDebuffUnits: El final está cerca. Serafín el Templado flota con los brazos cruzados, con seis alas de plumas blancas salpicadas de rojo desplegadas tras él, una armadura carmesí y dorada grabada con runas y cuernos en forma de media luna que le brotan de la cabeza. Esta encarnación templa la fuerza de tus unidades.
+relentless_Level8FinalBossDebuffUnits: Caen las últimas de sus fuerzas, y Serafín se vuelve Implacable. Sus brazos cruzados se abren y tiende las manos en forma de garra mientras baja al piso inferior y asciende hacia la Pira, congelando cada piso después de luchar en él.
+boss_defeated_Level8FinalBossDebuffUnits: Serafín el Templado cae. El Rompedor del Pacto, antaño salvador del Infierno y Guardián del Cielo, es derribado, y la Pira sigue ardiendo.
+outer_boss_action_Level8FinalBossDebuffUnits: Serafín el Templado alarga la mano hacia uno de tus pisos ocupados para templar la fuerza de tus unidades.
+
+# ---------------------------------------------------------------------------
+# Serafín el Casto (también cubre la variante del tutorial)
+# ---------------------------------------------------------------------------
+
+boss_intro_Level8FinalBossPurify: El final está cerca. Serafín el Casto flota con los brazos cruzados, con seis alas de plumas blancas salpicadas de oro desplegadas tras él, una armadura negra ribeteada en oro y grabada con runas resplandecientes, y dorados cuernos en forma de media luna que le brotan de la cabeza. Purifica a todas las unidades de los efectos que no le sirven.
+relentless_Level8FinalBossPurify: Caen las últimas de sus fuerzas, y Serafín se vuelve Implacable. Sus brazos cruzados se abren y tiende las manos en forma de garra mientras baja al piso inferior y asciende hacia la Pira, congelando cada piso después de luchar en él.
+boss_defeated_Level8FinalBossPurify: Serafín el Casto cae. El Rompedor del Pacto, que una vez ayudó a construir el Ferrocarril, es derribado, y la Pira sigue ardiendo.
+outer_boss_action_Level8FinalBossPurify: Serafín el Casto dirige su Luz purificadora hacia uno de tus pisos ocupados.
+
+# ---------------------------------------------------------------------------
+# Serafín el Diligente
+# ---------------------------------------------------------------------------
+
+boss_intro_Level8FinalBossSpellConsume: El final está cerca. Serafín el Diligente flota con los brazos cruzados, con seis alas de plumas blancas salpicadas de violeta desplegadas tras él, una armadura magenta y azul intenso, y cuernos carmesí en forma de media luna que le brotan de la cabeza. El Gran Traidor devora tus hechizos, así que trae muchos.
+relentless_Level8FinalBossSpellConsume: Caen las últimas de sus fuerzas, y Serafín se vuelve Implacable. Sus brazos cruzados se abren y tiende las manos en forma de garra mientras baja al piso inferior y asciende hacia la Pira, congelando cada piso después de luchar en él.
+boss_defeated_Level8FinalBossSpellConsume: Serafín el Diligente cae. El Rompedor del Pacto, antaño salvador del Infierno y Guardián del Cielo, es derribado, y la Pira sigue ardiendo.
+outer_boss_action_Level8FinalBossSpellConsume: Serafín el Diligente invoca a otra unidad enemiga para que se una a la lucha.
+
+# ---------------------------------------------------------------------------
+# La Última Divinidad (DLC La Última Divinidad)
+# ---------------------------------------------------------------------------
+
+boss_intro_Level9TrueFinalBoss: Más allá del final de la línea se alza La Última Divinidad, un gigante formado por fragmentos de cristal flotantes, verde en su cabeza sin rostro y que pasa por el naranja y el rosa hasta el violeta de sus pies. De sus manos de cristal estalla la luz en una neblina violeta. Su destrucción no tiene fin.
+relentless_Level9TrueFinalBoss: Sin su escolta, La Última Divinidad se vuelve Implacable, baja al piso inferior y asciende hacia la Pira, congelando cada piso después de luchar en él.
+boss_defeated_Level9TrueFinalBoss: La Última Divinidad cae ante la Pira. Incluso derrotada, su destrucción infinita resuena por todo el Infierno.
+
+# ---------------------------------------------------------------------------
+# Final de la partida
+# ---------------------------------------------------------------------------
+
+victory: Serafín cae, y la invasión del Cielo queda rota. Al final de la línea, el cristal de la Pira se eleva desde un puente de piedra roto sobre lava incandescente, bañando la caverna de luz roja, listo para reavivar el Infierno.
+victory_last_divinity: La Última Divinidad ha sido derrotada. Entre agujas de roca roja, fragmentos de cristal brotan hacia arriba en un pilar de luz desde un cráter violeta. La Pira sigue ardiendo, y la llama del Infierno perdura.
+defeat: La Pira se apaga. El tren destrozado yace medio enterrado en la nieve sobre un mar helado, con sus vagones rotos desperdigados, y esquirlas rojas de la Pira salpican el hielo.
