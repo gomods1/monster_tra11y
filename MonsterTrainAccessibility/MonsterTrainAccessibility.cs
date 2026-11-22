@@ -18,7 +18,7 @@ namespace MonsterTrainAccessibility
     {
         public const string GUID = "com.accessibility.monstertrain";
         public const string NAME = "Monster Train Accessibility";
-        public const string VERSION = "8.6.0";
+        public const string VERSION = "8.6.1";
 
         // Static reference for global access
         public static MonsterTrainAccessibility Instance { get; private set; }

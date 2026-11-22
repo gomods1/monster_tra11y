@@ -10,12 +10,15 @@
 # and ends before , . : ; ! ? ) " (" " - " or a newline. The longest match wins.
 # Only the first letter is matched without case. A single trailing period is
 # ignored. The first rule for an English template wins; later duplicates are ignored.
+# Hole contents (unit, card, clan names) are game text, already Spanish, of unknown
+# gender: avoid articles and adjectives that must agree with them.
 # Edit freely: the file is read when the game starts.
 
 # Core (ScreenReaderOutput batching)
 {#n} times => {n} veces
 Victory! Battle won => ¡Victoria! Batalla ganada
-Enemy {name} => Enemigo {name}
+# FloorReader prefixes enemy unit lines with "Enemy "; the "{name} {#atk} attack" forms have their own rules
+Enemy {name} => {name} (enemigo)
 UI => Interfaz
 Discord button => Botón de Discord
 Language => Idioma
@@ -23,112 +26,118 @@ Global volume => Volumen general
 Music volume => Volumen de la música
 SFX volume => Volumen de los efectos
 Main Menu Screen => Menú principal
-Game Speed => Velocidad del juego
+Game Speed => Velocidad de juego
 Preview => Vista previa
 Background mute => Silenciar en segundo plano
-Lore tooltips => Descripciones de historia
+Lore tooltips => Textos de historia
 Tip tooltips => Consejos
-Drag to scroll => Arrastrar para desplazar
-Scroll sensitivity => Sensibilidad del desplazamiento
+Drag to scroll => Arrastrar para desplazarse
+Scroll sensitivity => Sensibilidad de desplazamiento
 Sound Effects volume => Volumen de los efectos
 High quality => Alta calidad
 Resolution => Resolución
 Fullscreen => Pantalla completa
 V-Sync => Sincronización vertical
-Target framerate => Fotogramas por segundo
+Target framerate => Velocidad de fotogramas objetivo
 Video player => Reproductor de vídeo
 Tip tooltip => Consejos
 Background Scroll => Desplazamiento del fondo
 Screen Shake => Temblor de pantalla
-Colorblind mode => Modo para daltónicos
+Colorblind mode => Modo daltónico
 Interface Scale => Escala de la interfaz
-Hide player names => Ocultar nombres de jugadores
+Hide player names => Ocultar los nombres de los jugadores
 Googly eyes => Ojos saltones
 
 # Icon words the mod puts into game text ("+2[attack]" reads "+2 attack",
 # TextUtilities.MapSpriteName); the Spanish card text around them is the game's.
+# They replace whole words anywhere in leftover text, so keep them to bare nouns.
+# "1 ember" is the only singular that can be caught safely ("+1 ember", "-1 ember").
+~ 1 ember => 1 brasa
 ~ ember => brasas
 ~ gold => oro
 ~ attack => ataque
 ~ health => salud
 ~ damage => daño
 ~ capacity => capacidad
-~ pactshards => fragmentos del pacto
+~ pactshards => Fragmentos del Pacto
 
 # ======== part 1 ========
 # Battle/CombatTurnSummary.cs
 # Summary: "Bottom floor: you dealt 5, took 3, killed 2 Imp, Guard, your Guard at 3 of 5. Moved: Imp up to middle floor. Pyre took 4, 120 left. Arrived on bottom floor: Imp. Joined you: Guard"
 # Floor names (Bottom floor / bottom floor...) come from FloorReader rules in another chunk.
+# Hole {where}/{floor} = a lowercased floor name ("middle floor" -> "piso central"), so "al" works.
 Pyre room => Sala de la Pira
 the pyre room => la Sala de la Pira
 {unit} up to the pyre room => {unit} sube a la Sala de la Pira
 {unit} up to {where} => {unit} sube al {where}
 {unit} down to {where} => {unit} baja al {where}
-your {name} at {#hp} of {#max} => tu {name} con {hp} de {max}
-{who} at {#hp} of {#max} => {who} con {hp} de {max}
-you dealt {#dealt}, took {#taken} => infligiste {dealt}, recibiste {taken}
-you dealt {#dealt} => infligiste {dealt}
-you took {#taken} => recibiste {taken}
+your {name} at {#hp} of {#max} => tu {name} queda con {hp} de {max}
+{who} at {#hp} of {#max} => {who} queda con {hp} de {max}
+you dealt {#dealt}, took {#taken} => infligiste {dealt} de daño y recibiste {taken}
+you dealt {#dealt} => infligiste {dealt} de daño
+you took {#taken} => recibiste {taken} de daño
 killed {names} => eliminaste a {names}
 lost {names} => perdiste a {names}
 Moved => Movimientos
-Pyre took {#d}, {#left} left => La pira recibió {d}, quedan {left}
-Pyre took {#d} => La pira recibió {d}
+Pyre took {#d}, {#left} left => La pira recibió {d} de daño, le quedan {left}
+Pyre took {#d} => La pira recibió {d} de daño
 Arrived on {floor} => Llegan al {floor}
 Arrived => Llegan
 Joined you => Se unen a ti
 
 # Battle/FloorReviewSystem.cs
+# Unit stop: "{details}. Enemy 2 of 3, front"
 Press Escape to close => Pulsa Escape para cerrar
 No units on this floor => No hay unidades en este piso
 Pyre {#atk} attack => Pira, {atk} de ataque
 Attacks {#n} times => Ataca {n} veces
-The pyre attacks enemies that reach the pyre room. If its health runs out, the run is lost => La pira ataca a los enemigos que llegan a la Sala de la Pira. Si se queda sin salud, la partida está perdida
+The pyre attacks enemies that reach the pyre room. If its health runs out, the run is lost => La pira ataca a los enemigos que llegan a la Sala de la Pira. Si se queda sin salud, pierdes la partida
 Enemy {#rank} of {#count} => Enemigo {rank} de {count}
 Your unit {#rank} of {#count} => Tu unidad {rank} de {count}
-front => delante
-back => detrás
-Pyre {#hp} of {#max} health => Pira: {hp} de {max} de salud
+front => al frente
+back => al fondo
+Pyre {#hp} of {#max} health => Salud de la pira: {hp} de {max}
 Frozen => Congelado
 {#used} of {#max} capacity => {used} de {max} de capacidad
 Your units => Tus unidades
 Enemies => Enemigos
-Empty => Vacío
+# Said of a floor or the pyre room (FloorReader, FocusableItem): neutral for both genders
+Empty => Sin unidades
 
 # Core/AccessibilityConfig.cs (descriptions read with F2 in the F9 settings list)
-How much detail to include in announcements => Cuánto detalle incluir en los anuncios
-Minimal = Names and numbers only => Mínimo = Solo nombres y números
-Normal = Standard descriptions => Normal = Descripciones estándar
-Verbose = Full details including flavor text => Detallado = Todos los detalles, incluido el texto de ambientación
-Send text to braille display if available => Enviar el texto a la línea braille si hay una disponible
-Key to re-read the currently focused item (cards, shop items and artifacts read their full details) => Tecla para releer el elemento enfocado (las cartas, los artículos de la tienda y los artefactos leen todos sus detalles)
+How much detail to include in announcements => Cuánto detalle incluyen los anuncios
+Minimal = Names and numbers only => Mínimo = solo nombres y números
+Normal = Standard descriptions => Normal = descripciones estándar
+Verbose = Full details including flavor text => Detallado = todos los detalles, incluido el texto de ambientación
+Send text to braille display if available => Enviar el texto a la línea braille, si hay una conectada
+Key to re-read the currently focused item (cards, shop items and artifacts read their full details) => Tecla para releer el elemento enfocado (las cartas, los artículos de la tienda y los artefactos se leen con todos sus detalles)
 Key to read all text content on screen (patch notes, descriptions, run summary, etc.) => Tecla para leer todo el texto de la pantalla (notas de la versión, descripciones, resumen de la partida, etc.)
-Key to read all cards in hand (battle) => Tecla para leer todas las cartas de la mano (batalla)
-Key to read all floors (battle) => Tecla para leer todos los pisos (batalla)
-Key to read the selected floor's capacity and units (battle) => Tecla para leer la capacidad y las unidades del piso seleccionado (batalla)
-Key to read all units with full detail (battle), pressed together with Shift => Tecla para leer todas las unidades con todos los detalles (batalla), pulsada junto con Mayúsculas
-Key to read current ember (battle) => Tecla para leer las brasas actuales (batalla)
-Key to read current gold => Tecla para leer el oro actual
-Key to read current Pyre health => Tecla para leer la salud actual de la pira
-Key to read pact shards and threat level (The Last Divinity) => Tecla para leer los Fragmentos del Pacto y el nivel de amenaza (The Last Divinity)
-Key to cycle through verbosity levels => Tecla para cambiar entre niveles de detalle
+Key to read all cards in hand (battle) => Tecla para leer todas las cartas de la mano (en batalla)
+Key to read all floors (battle) => Tecla para leer todos los pisos (en batalla)
+Key to read the selected floor's capacity and units (battle) => Tecla para leer la capacidad y las unidades del piso seleccionado (en batalla)
+Key to read all units with full detail (battle), pressed together with Shift => Tecla para leer todas las unidades con todos los detalles (en batalla), junto con Mayúsculas
+Key to read current ember (battle) => Tecla para leer las brasas que tienes (en batalla)
+Key to read current gold => Tecla para leer el oro que tienes
+Key to read current Pyre health => Tecla para leer la salud de la pira
+Key to read pact shards and threat level (The Last Divinity) => Tecla para leer los Fragmentos del Pacto y el nivel de amenaza (La Última Divinidad)
+Key to cycle through verbosity levels => Tecla para cambiar el nivel de detalle
 Key to show context-sensitive help for current screen => Tecla para mostrar la ayuda de la pantalla actual
 Key to open the accessibility settings list (works on any screen) => Tecla para abrir la lista de ajustes de accesibilidad (funciona en cualquier pantalla)
-Optional extra key to re-read the focused map node (the ReadCurrent key does the same) => Tecla extra opcional para releer el nodo del mapa enfocado (la tecla de releer el elemento hace lo mismo)
-Optional extra key to read the run summary on the victory/defeat screen (the ReadText key does the same) => Tecla extra opcional para leer el resumen de la partida en la pantalla de victoria o derrota (la tecla de leer todo el texto hace lo mismo)
-Announce when cards are drawn => Anunciar cuando se roban cartas
-Announce when status effects are applied => Anunciar cuando se aplican efectos de estado
-Announce damage dealt during combat => Anunciar el daño infligido durante el combate
-During automated combat, stay silent and speak one summary right before your next turn instead of narrating each hit, death, move and arrival: per floor the damage your units dealt and took, kills, losses and the health left on every unit that was hit, then enemy moves, pyre damage and new arrivals => Durante el combate automático, guardar silencio y decir un único resumen justo antes de tu siguiente turno en lugar de narrar cada golpe, muerte, movimiento y llegada: por piso, el daño que tus unidades infligieron y recibieron, las bajas enemigas, las pérdidas y la salud que le queda a cada unidad golpeada; después, los movimientos enemigos, el daño a la pira y las nuevas llegadas
-Everything is still logged to the Events buffer and combat log => Todo se sigue registrando en la lista de eventos y en el registro de combate
-Off = live blow-by-blow narration => Desactivado = narración en directo golpe a golpe
-Describe static scenes a sighted player watches: the game launching, a run starting, arriving at a new ring, a boss's entrance, a boss turning Relentless or falling, the outer-train boss acting, and the run's end => Describir las escenas estáticas que ve un jugador vidente: el inicio del juego, el comienzo de una partida, la llegada a un nuevo anillo, la entrada de un jefe, un jefe que se vuelve Implacable o cae, las acciones del jefe fuera del tren y el final de la partida
+Optional extra key to re-read the focused map node (the ReadCurrent key does the same) => Tecla adicional opcional para releer el nodo del mapa enfocado (la tecla de releer hace lo mismo)
+Optional extra key to read the run summary on the victory/defeat screen (the ReadText key does the same) => Tecla adicional opcional para leer el resumen de la partida en la pantalla de victoria o derrota (la tecla de leer todo el texto hace lo mismo)
+Announce when cards are drawn => Anunciar las cartas que robas
+Announce when status effects are applied => Anunciar los efectos de estado aplicados
+Announce damage dealt during combat => Anunciar el daño infligido en combate
+During automated combat, stay silent and speak one summary right before your next turn instead of narrating each hit, death, move and arrival: per floor the damage your units dealt and took, kills, losses and the health left on every unit that was hit, then enemy moves, pyre damage and new arrivals => Durante el combate automático, no narrar cada golpe, muerte, movimiento y llegada, sino dar un único resumen justo antes de tu siguiente turno: por piso, el daño que infligieron y recibieron tus unidades, los enemigos eliminados, las unidades perdidas y la salud que le queda a cada unidad golpeada; después, los movimientos enemigos, el daño a la pira y las nuevas llegadas
+Everything is still logged to the Events buffer and combat log => Todo sigue quedando en la lista Eventos y en el registro de combate
+Off = live blow-by-blow narration => Desactivado = narración en directo, golpe a golpe
+Describe static scenes a sighted player watches: the game launching, a run starting, arriving at a new ring, a boss's entrance, a boss turning Relentless or falling, the outer-train boss acting, and the run's end => Describir las escenas que ve un jugador vidente: el arranque del juego, el comienzo de una partida, la llegada a un nuevo anillo, la entrada de un jefe, un jefe que se vuelve Implacable o cae, las acciones del jefe fuera del tren y el final de la partida
 Never during automated combat => Nunca durante el combate automático
 Texts are in SceneDescriptions.txt (a copy next to the mod DLL overrides the built-in one) => Los textos están en SceneDescriptions.txt (una copia junto a la DLL del mod sustituye a la incorporada)
-Announce when units die => Anunciar cuando mueren unidades
-Announce when enemies and units enter the battlefield => Anunciar cuando enemigos y unidades entran en el campo de batalla
+Announce when units die => Anunciar las muertes de unidades
+Announce when enemies and units enter the battlefield => Anunciar la llegada de enemigos y unidades al campo de batalla
 Announce enemy speech bubbles and dialogue => Anunciar los bocadillos y diálogos de los enemigos
-Announce when artifacts/relics trigger during combat => Anunciar cuando se activan artefactos durante el combate
+Announce when artifacts/relics trigger during combat => Anunciar cuando se activan artefactos en combate
 Verbosity => Nivel de detalle
 Minimal => Mínimo
 Verbose => Detallado
@@ -147,69 +156,75 @@ No items => Sin elementos
 # Help/Contexts/ClanSelectionHelp.cs
 Clan Selection => Selección de clan
 Left and Right arrows => Flechas izquierda y derecha
-Browse clans and champions => Explorar clanes y campeones
+Browse clans and champions => recorre los clanes y campeones
 Enter => Intro
-Select highlighted option => Seleccionar la opción resaltada
-Re-read current selection => Releer la selección actual
-Read all available options => Leer todas las opciones disponibles
-Return to main menu => Volver al menú principal
+Select highlighted option => elige la opción resaltada
+Re-read current selection => vuelve a leer la selección actual
+Read all available options => lee todas las opciones disponibles
+Return to main menu => vuelve al menú principal
 
 # Help/Contexts/DeckScreenHelp.cs
 Deck => Mazo
 Arrow keys => Flechas
-Browse cards => Explorar las cartas
-Select card (for purge or upgrade => Seleccionar carta (para purgar o mejorar
-Read the focused card's full details => Leer todos los detalles de la carta enfocada
+Browse cards => recorre las cartas
+Select card (for purge or upgrade => elige una carta (para purgarla o mejorarla
+Read the focused card's full details => lee todos los detalles de la carta enfocada
 Ctrl plus Up => Control más flecha arriba
-Step through the card's details in the Card buffer, one piece at a time => Recorrer los detalles de la carta en la lista Carta, de uno en uno
+Step through the card's details in the Card buffer, one piece at a time => recorre los detalles de la carta en la lista Carta, uno a uno
 Ctrl plus Left/Right => Control más flecha izquierda o derecha
-Switch review buffers => Cambiar de lista de revisión
-Read all cards => Leer todas las cartas
-Close deck view or cancel => Cerrar la vista del mazo o cancelar
+Switch review buffers => cambia de lista de revisión
+Read all cards => lee todas las cartas
+Close deck view or cancel => cierra la vista del mazo o cancela
 
 # Help/Contexts/UnitTargetingHelp.cs
 Unit Targeting => Selección de objetivo
 Unit Targeting Mode => Modo de selección de objetivo
-Arrow keys or Left/Right => Flechas o izquierda y derecha
-Cycle through targets => Recorrer los objetivos
-Number keys 1-5 => Teclas numéricas 1-5
-Select target directly => Seleccionar el objetivo directamente
-Confirm target => Confirmar el objetivo
-Cancel spell => Cancelar el hechizo
+Arrow keys or Left/Right => Flechas, o izquierda y derecha
+Cycle through targets => recorre los objetivos
+Number keys 1-5 => Teclas numéricas del 1 al 5
+Select target directly => elige el objetivo directamente
+Confirm target => confirma el objetivo
+Cancel spell => cancela el hechizo
 
 # Patches/CharacterStateHelper.cs (fallback names)
 Unit => Unidad
 
 # Patches/Combat/BattleNotificationPatches.cs
 # "{card} added to {pile}" is built in BattleAccessibility.OnCardAdded; pile phrases are holes.
-{card} added to your deck => {card} añadida a tu mazo
-{card} added to {pile} => {card} añadida a {pile}
+# {card} = a card name of unknown gender: "se añade" needs no agreement.
+{card} added to your deck => {card} se añade a tu mazo
+{card} added to {pile} => {card} se añade a {pile}
 your hand => tu mano
 your discard pile => tu pila de descartes
 the consumed pile => la pila de consumidas
 the eaten pile => la pila de devoradas
 your draw pile => tu pila de robo
 Artifact gained => Artefacto obtenido
-{floor} capacity +{#amount} => Capacidad del {floor} +{amount}
-{floor} capacity {#amount} => Capacidad del {floor} {amount}
+# {floor} = "Bottom floor" (capitalized), so the floor goes first
+{floor} capacity +{#amount} => {floor}: capacidad +{amount}
+{floor} capacity {#amount} => {floor}: capacidad {amount}
+Gained 1 pact shards, {#total} total => Ganas 1 Fragmento del Pacto, {total} en total
 Gained {#n} pact shards, {#total} total => Ganas {n} Fragmentos del Pacto, {total} en total
-Lost {#n} pact shards, {#left} left => Pierdes {n} Fragmentos del Pacto, quedan {left}
-Spent {#n} pact shards, {#left} left => Gastas {n} Fragmentos del Pacto, quedan {left}
+Lost 1 pact shards, {#left} left => Pierdes 1 Fragmento del Pacto, te quedan {left}
+Lost {#n} pact shards, {#left} left => Pierdes {n} Fragmentos del Pacto, te quedan {left}
+Spent 1 pact shards, {#left} left => Gastas 1 Fragmento del Pacto, te quedan {left}
+Spent {#n} pact shards, {#left} left => Gastas {n} Fragmentos del Pacto, te quedan {left}
+Used 1 pact shards => Usas 1 Fragmento del Pacto
 Used {#n} pact shards => Usas {n} Fragmentos del Pacto
 Gained {#n} gold, {#total} total => Ganas {n} de oro, {total} en total
-Spent {#n} gold, {#left} left => Gastas {n} de oro, quedan {left}
+Spent {#n} gold, {#left} left => Gastas {n} de oro, te quedan {left}
 
 # Patches/Screens/GameOverScreenPatches.cs
-Use arrow keys to navigate, Enter to select => Usa las flechas para navegar e Intro para seleccionar
-Hellforged Victory => Victoria de Forja Infernal
+Use arrow keys to navigate, Enter to select => Usa las flechas para moverte e Intro para elegir
+Hellforged Victory => Victoria en Forja Infernal
 Victory => Victoria
 Defeat => Derrota
-Run complete => Partida completada
+Run complete => Partida terminada
 # "{main} and {sub}" (clan pair) anchored on what precedes it, so no bare "{x} and {y}" rule is needed
 Victory! {main} and {sub} => ¡Victoria! {main} y {sub}
-Hellforged Victory! {main} and {sub} => ¡Victoria de Forja Infernal! {main} y {sub}
+Hellforged Victory! {main} and {sub} => ¡Victoria en Forja Infernal! {main} y {sub}
 Defeat. {main} and {sub} => Derrota. {main} y {sub}
-Run complete. {main} and {sub} => Partida completada. {main} y {sub}
+Run complete. {main} and {sub} => Partida terminada. {main} y {sub}
 Covenant {#n} => Pacto {n}
 1 battles won => 1 batalla ganada
 1 battle won => 1 batalla ganada
@@ -217,21 +232,29 @@ Covenant {#n} => Pacto {n}
 Score => Puntuación
 Gold => Oro
 Time => Tiempo
+1 hours 1 minutes => 1 hora 1 minuto
+1 hours {#m} minutes => 1 hora {m} minutos
+{#h} hours 1 minutes => {h} horas 1 minuto
 {#h} hours {#m} minutes => {h} horas {m} minutos
+1 minutes 1 seconds => 1 minuto 1 segundo
+1 minutes {#s} seconds => 1 minuto {s} segundos
+{#m} minutes 1 seconds => {m} minutos 1 segundo
 {#m} minutes {#s} seconds => {m} minutos {s} segundos
-Press F3 for the run summary => Pulsa F3 para el resumen de la partida
-Win streak increased => Racha de victorias aumentada
+Press F3 for the run summary => Pulsa F3 para oír el resumen de la partida
+# "Win streak increased! 2 to 3"
+Win streak increased => Aumenta tu racha de victorias
 {#from} to {#to} => de {from} a {to}
 Win streak => Racha de victorias
-{header} reached level {#level} => {header} alcanza el nivel {level}
+{header} reached level {#level} => {header} sube al nivel {level}
 Unlocked card => Carta desbloqueada
 Unlocked artifact => Artefacto desbloqueado
-Unlocked => Desbloqueado
+# "Unlocked: {feature}" - the feature's gender is unknown
+Unlocked => Desbloqueo
 New clan unlocked => Nuevo clan desbloqueado
 Covenant mode unlocked => Modo Pacto desbloqueado
 New covenant level unlocked => Nuevo nivel de Pacto desbloqueado
-Card mastery achieved => Maestría de carta conseguida
-Divine card mastery achieved => Maestría divina de carta conseguida
+Card mastery achieved => Dominio de carta conseguido
+Divine card mastery achieved => Dominio divino de carta conseguido
 Feature unlocked => Función desbloqueada
 Mastery card frame unlocked => Marco de carta de maestría desbloqueado
 Press Up arrow to view details => Pulsa flecha arriba para ver los detalles
@@ -243,6 +266,7 @@ Use arrows to navigate buttons => Usa las flechas para recorrer los botones
 Press F3 to read all screen text => Pulsa F3 para leer todo el texto de la pantalla
 
 # Screens/MapNavigator.cs
+# Ring: "Ring 3 of 8, traveled, left path taken, 4 stops". Stop: "Merchant, left path, visited, available. Stop 2 of 4"
 No stops on this ring => No hay paradas en este anillo
 Last stop on ring {#n} => Última parada del anillo {n}
 First stop on ring {#n} => Primera parada del anillo {n}
@@ -251,9 +275,9 @@ First ring => Primer anillo
 Last ring => Último anillo
 Ring {#n} of {#total} => Anillo {n} de {total}
 current position => posición actual
-traveled => recorrido
-left path taken => camino izquierdo elegido
-right path taken => camino derecho elegido
+traveled => ya recorrido
+left path taken => elegiste el camino izquierdo
+right path taken => elegiste el camino derecho
 branches left and right => se bifurca a izquierda y derecha
 requires {#n} pact shards => requiere {n} Fragmentos del Pacto
 1 stop => 1 parada
@@ -262,8 +286,10 @@ Stop {#i} of {#n} => Parada {i} de {n}
 both paths => ambos caminos
 left path => camino izquierdo
 right path => camino derecho
-visited => visitado
+# Follows a stop name of unknown gender ("Comerciante", "Batalla"): agrees with "parada"
+visited => parada visitada
 available => disponible
+# Always after "Battle" / "Boss battle: name"
 won => ganada
 end of ring {#n} => final del anillo {n}
 ring {#n} => anillo {n}
@@ -278,9 +304,10 @@ Divine => Divino
 
 # Screens/Readers/CardTextReader.cs
 # Summary: "[Upgraded ]Name, 2 ember, 5 attack, 10 health, size 2"; header: "[Upgraded ]Name (Rarity [Subtype] Type), Clan, 2 ember"
+# Type "Junk" is the game's Scourge card type (Azote).
 Card {#position} of {#total} => Carta {position} de {total}
 Unknown Card => Carta desconocida
-Upgraded {name} => Mejorada: {name}
+Upgraded {name} => {name}, con mejora
 1 ember => 1 brasa
 {#cost} ember => {cost} brasas
 {#n} attack => {n} de ataque
@@ -291,7 +318,7 @@ Lore => Historia
 Effect value => Valor del efecto
 Spell => Hechizo
 Blight => Plaga
-Junk => Basura
+Junk => Azote
 Common => Común
 Uncommon => Poco común
 Rare => Rara
@@ -301,32 +328,33 @@ Common Spell => Hechizo común
 Uncommon Spell => Hechizo poco común
 Rare Spell => Hechizo raro
 Starter Spell => Hechizo inicial
-Champion Spell => Hechizo de Campeón
+Champion Spell => Hechizo de campeón
 Common Unit => Unidad común
 Uncommon Unit => Unidad poco común
 Rare Unit => Unidad rara
 Starter Unit => Unidad inicial
-Champion Unit => Unidad Campeón
+Champion Unit => Unidad campeón
 Common {subtype} Unit => Unidad {subtype} común
 Uncommon {subtype} Unit => Unidad {subtype} poco común
 Rare {subtype} Unit => Unidad {subtype} rara
 Starter {subtype} Unit => Unidad {subtype} inicial
-Champion {subtype} Unit => Unidad {subtype} Campeón
+Champion {subtype} Unit => Unidad {subtype} campeón
 Common Blight => Plaga común
 Uncommon Blight => Plaga poco común
 Rare Blight => Plaga rara
 Starter Blight => Plaga inicial
-Common Junk => Basura común
-Uncommon Junk => Basura poco común
-Rare Junk => Basura rara
-Starter Junk => Basura inicial
+Common Junk => Azote común
+Uncommon Junk => Azote poco común
+Rare Junk => Azote raro
+Starter Junk => Azote inicial
 
 # Screens/Readers/GameModeOptionTextReader.cs
 # "Active run: Clan and Clan, champion Name, covenant 5, Ring 3..., pyre 150 of 200, 300 gold. Continue"
-Resume => Continuar
+# "Resume" / "Start" are fallbacks for the game's own button labels ("Reanudar")
+Resume => Reanudar
 Start => Empezar
-Active run => Partida activa
-Active run: {main} and {sub} => Partida activa: {main} y {sub}
+Active run => Partida en curso
+Active run: {main} and {sub} => Partida en curso: {main} y {sub}
 champion {name} => campeón {name}
 covenant {#n} => Pacto {n}
 pyre {#hp} of {#max} => pira {hp} de {max}
@@ -347,88 +375,90 @@ Press Enter to talk => Pulsa Intro para hablar
 # ======== part 2 ========
 # Rules for inventory chunk 2
 
-# Core/KeywordManager.cs (fallback keyword explanations; names follow the fan translation where it has them)
+# Core/KeywordManager.cs (fallback keyword explanations; names and wording follow the game's own keyword tooltips in GameText_es.txt.
+# The game shows the DLC "corruption" as Ecos Cargados, the Corrupt trait as Infundido and Corrupt Restricted as Extraer)
 Piercing: Damage ignores Armor and shields => Perforador: el daño ignora la Armadura y los escudos
 Magic Power: Boosts spell damage and healing => Poder Mágico: aumenta el daño y la curación de los hechizos
 Attuned: Multiplies Magic Power effects by 5 => En Sintonía: multiplica por 5 los efectos del Poder Mágico
 Doublestack: Status effect stacks added by this card are doubled => Pila Doble: se duplican las acumulaciones de efectos de estado que añade esta carta
-Offering: Played automatically if discarded => Oferta: se juega automáticamente si se descarta
+Offering: Played automatically if discarded => Oferta: si se descarta, se juega automáticamente
 Reserve: Triggers if card remains in hand at end of turn => Reserva: se activa si la carta sigue en la mano al final del turno
-Pyrebound: Only playable in Pyre Room or floor below => Pira Vínculo: solo se puede jugar en la Sala de la Pira o en el piso de debajo
-X Cost: Spends all remaining Ember, effect scales with amount => X Coste: gasta toda la Brasa restante, el efecto aumenta con la cantidad
+Pyrebound: Only playable in Pyre Room or floor below => Pira Vínculo: solo se puede jugar en la Sala de la Pira o en el piso de justo debajo
+X Cost: Spends all remaining Ember, effect scales with amount => X Coste: gasta todas las brasas que te quedan; cuantas más gastas, mayor es el efecto
 Unplayable: This card cannot be played => Injugable: esta carta no se puede jugar
-Spellchain: Creates a copy with +1 cost and Purge => Cadena de Hechizos: crea una copia con +1 de coste y Purga
-Infused: Floor gains 1 Echo when played => Infundido: el piso gana 1 Eco al jugarla
-Extract: Removes charged echoes when played => Extracto: elimina los ecos cargados al jugarla
-Ascend: Move up a floor to the back => Ascender: sube un piso, al fondo
-Descend: Move down a floor to the back => Descender: baja un piso, al fondo
-Reform: Return a defeated friendly unit to hand => Reforma: devuelve a la mano una unidad aliada derrotada
-Sacrifice: Kill a friendly unit to play this card => Sacrificio: mata a una unidad aliada para jugar esta carta
-Cultivate: Increase stats of lowest health friendly unit => Cultivar: mejora las estadísticas de la unidad aliada con menos salud
-Recover: Restores health to friendly units after combat => Recuperar: restaura la salud de las unidades aliadas tras el combate
-Enchant: Other friendly units on floor gain a bonus => Encantar: las demás unidades aliadas del piso obtienen una bonificación
-Eaten: Will be eaten by front unit after combat => Comido: la unidad del frente lo devorará tras el combate
+Spellchain: Creates a copy with +1 cost and Purge => Cadena de Hechizos: crea una copia que cuesta 1 más y tiene Purga
+Infused: Floor gains 1 Echo when played => Infundido: al jugarla, el piso gana 1 Eco Cargado
+Extract: Removes charged echoes when played => Extraer: al jugarla, elimina Ecos Cargados del piso
+Ascend: Move up a floor to the back => Ascender: sube un piso y se coloca al fondo
+Descend: Move down a floor to the back => Descender: baja un piso y se coloca al fondo
+Reform: Return a defeated friendly unit to hand => Reforma: devuelve a tu mano una unidad amiga derrotada
+Sacrifice: Kill a friendly unit to play this card => Sacrificio: mata a una unidad amiga para jugar esta carta
+Cultivate: Increase stats of lowest health friendly unit => Cultivar: aumenta el ataque y la salud de la unidad amiga con menos salud
+Recover: Restores health to friendly units after combat => Recuperar: restaura salud a las unidades amigas tras el combate
+Enchant: Other friendly units on floor gain a bonus => Encantar: las demás unidades amigas del piso ganan una bonificación
+Eaten: Will be eaten by front unit after combat => Comido: tras el combate, la unidad del frente se lo come
 Soul: Powers Devourer of Death's Extinguish ability => Alma: potencia la habilidad Extinguir del Devorador de Muerte
 Shard: Powers Solgard the Martyr's abilities => Fragmento: potencia las habilidades de Solgard el Mártir
-Buffet: Can be eaten multiple times => Bufé: se puede devorar varias veces
-Corrupt: Playing this card adds corruption to the floor => Corrupción: jugar esta carta añade corrupción al piso
+Buffet: Can be eaten multiple times => Bufé: se puede comer varias veces
+Corrupt: Playing this card adds corruption to the floor => Infundido: al jugar esta carta, el piso gana Ecos Cargados
 # Two sentences in one keyword: one rule per sentence
-Corrupt Restricted: Can only be played when floor has enough corruption => Restringido por corrupción: solo se puede jugar si el piso tiene suficiente corrupción
-Reduces corruption when played => Reduce la corrupción al jugarla
-Purify: Removes corruption from the floor => Purificar: elimina la corrupción del piso
-Echo: Copies the next spell played on this floor => Eco: copia el siguiente hechizo jugado en este piso
-Charged Echo: Stored echo charge that copies the next spell played => Eco cargado: carga de eco almacenada que copia el siguiente hechizo jugado
-Pyre Lock: Prevents the Pyre from being healed => Bloqueo de la Pira: impide curar la Pira
+Corrupt Restricted: Can only be played when floor has enough corruption => Extraer: solo se puede jugar si el piso tiene suficientes Ecos Cargados
+Reduces corruption when played => Al jugarla, el piso pierde Ecos Cargados
+Purify: Removes corruption from the floor => Purificar: elimina los Ecos Cargados del piso
+Echo: Copies the next spell played on this floor => Eco: copia el siguiente hechizo que se juegue en este piso
+Charged Echo: Stored echo charge that copies the next spell played => Eco Cargado: carga de eco almacenada que copia el siguiente hechizo que se juegue
+Pyre Lock: Prevents the Pyre from being healed => Bloqueo de la Pira: impide que la pira se cure
 Relentless: This unit attacks on every floor each turn => Implacable: esta unidad ataca en todos los pisos cada turno
-Holdover: This card returns to your hand at the end of each turn instead of being discarded => Retención: esta carta vuelve a tu mano al final de cada turno en lugar de descartarse
+Holdover: This card returns to your hand at the end of each turn instead of being discarded => Retención: al final de cada turno, esta carta vuelve a tu mano en lugar de descartarse
 Permafrost: This card stays in your hand between turns and cannot be discarded => Conservar: esta carta se queda en tu mano entre turnos y no se puede descartar
 
 # Help/Contexts/DialogHelp.cs
 Dialog => Diálogo
-Enter: Confirm or accept => Intro: confirmar o aceptar
-Escape: Cancel or dismiss => Escape: cancelar o cerrar
-F2: Re-read dialog text => F2: volver a leer el texto del diálogo
-Arrow keys: Navigate between buttons => Flechas: moverse entre los botones
+Enter: Confirm or accept => Intro: confirma o acepta
+Escape: Cancel or dismiss => Escape: cancela o cierra
+F2: Re-read dialog text => F2: vuelve a leer el texto del diálogo
+Arrow keys: Navigate between buttons => Flechas: muévete entre los botones
 
 # Help/Contexts/FloorReviewHelp.cs
-Floors: Up arrow climbs from your hand to the bottom floor, the middle floor, the top floor and the pyre room; Down arrow comes back => Pisos: la flecha arriba sube desde tu mano al piso inferior, el piso central, el piso superior y la Sala de la Pira; la flecha abajo vuelve
-Moving onto a floor also selects it in the game, like Page Up and Page Down, and reads it => Al moverte a un piso también se selecciona en el juego, como con Re Pág y Av Pág, y se lee
-Left and Right arrows: Step through what is on the floor in position order, your units back to front, then enemies front to back => Flechas izquierda y derecha: recorren lo que hay en el piso por orden de posición, tus unidades de detrás hacia delante y luego los enemigos de delante hacia detrás
+Floors: Up arrow climbs from your hand to the bottom floor, the middle floor, the top floor and the pyre room; Down arrow comes back => Pisos: la flecha arriba sube desde tu mano al piso inferior, al central, al superior y a la Sala de la Pira; la flecha abajo baja de vuelta
+Moving onto a floor also selects it in the game, like Page Up and Page Down, and reads it => Al llegar a un piso, también se selecciona en el juego, como con Re Pág y Av Pág, y se lee
+Left and Right arrows: Step through what is on the floor in position order, your units back to front, then enemies front to back => Flechas izquierda y derecha: recorre lo que hay en el piso por orden de posición: primero tus unidades, de atrás hacia delante, y luego los enemigos, de delante hacia atrás
 In the pyre room the pyre comes first => En la Sala de la Pira, la pira va primero
-At the ends the same unit is read again => En los extremos se vuelve a leer la misma unidad
-Enter or F2: Read the focused floor or unit with full details => Intro o F2: lee el piso o la unidad enfocada con todos los detalles
-Ctrl plus Up/Down: Review the focused item's details in the UI buffer, including keyword explanations; units and the pyre also fill the Creature buffer => Control más flecha arriba o abajo: revisa los detalles del elemento enfocado en la lista de interfaz, con las explicaciones de las palabras clave; las unidades y la pira también llenan la lista de criaturas
-Down arrow from the bottom floor: Back to your hand, where Left and Right move through the cards again => Flecha abajo desde el piso inferior: vuelve a tu mano, donde las flechas izquierda y derecha recorren de nuevo las cartas
-Number keys still pick a card, and F ends your turn => Las teclas numéricas siguen eligiendo una carta, y F termina tu turno
+At the ends the same unit is read again => En los extremos se repite la misma unidad
+Enter or F2: Read the focused floor or unit with full details => Intro o F2: lee el piso o la unidad enfocados con todos los detalles
+Ctrl plus Up/Down: Review the focused item's details in the UI buffer, including keyword explanations; units and the pyre also fill the Creature buffer => Control más flecha arriba o abajo: repasa en la lista Interfaz los detalles del elemento enfocado, con las explicaciones de las palabras clave; las unidades y la pira también llenan la lista Criatura
+Down arrow from the bottom floor: Back to your hand, where Left and Right move through the cards again => Flecha abajo desde el piso inferior: vuelve a tu mano, donde las flechas izquierda y derecha vuelven a recorrer las cartas
+Number keys still pick a card, and F ends your turn => Las teclas numéricas siguen eligiendo carta y F termina tu turno
 
 # Help/Contexts/SynthesisHelp.cs
 Unit Synthesis => Síntesis de unidades
-Arrow keys: Browse available units => Flechas: explorar las unidades disponibles
-Enter: Select unit for synthesis => Intro: elegir la unidad para la síntesis
-F2: Re-read current unit details => F2: volver a leer los detalles de la unidad actual
-F3: Read all available units => F3: leer todas las unidades disponibles
-Escape: Cancel synthesis => Escape: cancelar la síntesis
+Arrow keys: Browse available units => Flechas: recorre las unidades disponibles
+Enter: Select unit for synthesis => Intro: elige la unidad para la síntesis
+F2: Re-read current unit details => F2: vuelve a leer los detalles de la unidad actual
+F3: Read all available units => F3: lee todas las unidades disponibles
+Escape: Cancel synthesis => Escape: cancela la síntesis
 
 # Patches/CardEventPatches.cs
 Cannot play: {reason} => No se puede jugar: {reason}
 Cannot play card => No se puede jugar la carta
-Not enough ember => No hay suficientes brasas
+Not enough ember => No tienes suficientes brasas
 No valid targets => No hay objetivos válidos
 Floor is full => El piso está lleno
-Card is unplayable => La carta es injugable
+Card is unplayable => Esta carta es injugable
 Not your turn => No es tu turno
 Select a floor first => Primero elige un piso
 Cannot consume target => No se puede consumir el objetivo
 Deck shuffled => Mazo barajado
 +{#hp} health => +{#hp} de salud
 +{#atk} attack => +{#atk} de ataque
--{#cost} ember cost => -{#cost} al coste de brasas
-{cardName} upgraded => {cardName} mejorada
+-{#cost} ember cost => -{#cost} de coste
+# {cardName} is a card name of any gender: avoid "mejorada/mejorado"
+{cardName} upgraded => Mejora aplicada a {cardName}
 
 # Patches/CardTargetingPatches.cs
 Select target => Elige un objetivo
 {#n} targets => {#n} objetivos
-Left/Right to change => Izquierda o derecha para cambiar
+Left/Right to change => Flechas izquierda y derecha para cambiar
 Enter to confirm => Intro para confirmar
 Escape to cancel => Escape para cancelar
 Current: {target} => Actual: {target}
@@ -443,14 +473,14 @@ Champion Upgrade => Mejora de campeón
 Champion: {name} => Campeón: {name}
 {#n} upgrade paths available => {#n} caminos de mejora disponibles
 1 upgrade paths available => 1 camino de mejora disponible
-Left and Right to browse => Izquierda y derecha para explorar
-Enter to select => Intro para seleccionar
+Left and Right to browse => Recorre con las flechas izquierda y derecha
+Enter to select => Intro para elegir
 Press F1 for help => Pulsa F1 para ver la ayuda
-Arrow keys to browse units => Flechas para explorar las unidades
+Arrow keys to browse units => Flechas para recorrer las unidades
 
 # Patches/Screens/MapScreenPatch.cs
 Map => Mapa
-Ctrl plus arrows to browse the map => Control más flechas para explorar el mapa
+Ctrl plus arrows to browse the map => Control más flechas para recorrer el mapa
 Final boss ahead => Jefe final a la vista
 {#n} paths => {#n} caminos
 1 paths => 1 camino
@@ -465,9 +495,9 @@ Logbook => Bitácora
 Sections: Checklist, Cards, Champion Upgrades, Artifacts, Card Frames, and Statistics => Secciones: Lista de control, Cartas, Mejoras de campeón, Artefactos, Marcos de carta y Estadísticas
 Press Page Down or Enter to open the first section => Pulsa Av Pág o Intro para abrir la primera sección
 Page Up and Page Down to switch sections => Re Pág y Av Pág para cambiar de sección
-Left and Right arrows to turn pages => Flechas izquierda y derecha para pasar página
-F3 to read a summary of the current section => F3 para leer un resumen de la sección actual
-F1 for help => F1 para la ayuda
+Left and Right arrows to turn pages => Flechas izquierda y derecha para pasar de página
+F3 to read a summary of the current section => F3 para leer un resumen de esta sección
+F1 for help => F1 para ver la ayuda
 Escape to close => Escape para cerrar
 Q to close => Q para cerrar
 Checklist => Lista de control
@@ -479,44 +509,44 @@ Statistics => Estadísticas
 Your meta progression => Tu progreso general
 Arrow keys move between clans and progress meters => Las flechas recorren los clanes y los medidores de progreso
 F3 reads the full summary => F3 lee el resumen completo
-F switches to The Last Divinity page => F cambia a la página de The Last Divinity
-Stats Leaderboard page => Página de clasificación de estadísticas
-F switches between Stats Leaderboard and Personal Records => F alterna entre la clasificación de estadísticas y los Registros Personales
+F switches to The Last Divinity page => F cambia a la página de La Última Divinidad
+Stats Leaderboard page => Página de clasificación
+F switches between Stats Leaderboard and Personal Records => F alterna entre la clasificación y los Registros Personales
 F3 reads the visible entries => F3 lee las entradas visibles
 Page {#page} of {#count} => Página {#page} de {#count}
 Page {#page} => Página {#page}
-The Last Divinity progress page => Página de progreso de The Last Divinity
+The Last Divinity progress page => Página de progreso de La Última Divinidad
 Standard progress page => Página de progreso estándar
 Personal Records page => Página de Registros Personales
 F3 reads all records => F3 lee todos los registros
 Run History => Historial de partidas
-Use arrows to browse runs => Usa las flechas para explorar las partidas
+Use arrows to browse runs => Recorre las partidas con las flechas
 Challenge Details => Detalles del desafío
 Credits => Créditos
 Press Escape to return => Pulsa Escape para volver
-Monster Train is starting => Monster Train se está iniciando
+Monster Train is starting => Iniciando Monster Train
 Press any key to skip the intro => Pulsa cualquier tecla para saltar la introducción
 Intro video playing => Reproduciendo el vídeo de introducción
 Press any key to skip => Pulsa cualquier tecla para saltarlo
 Key Mapping => Asignación de teclas
-Use arrows to navigate => Usa las flechas para navegar
+Use arrows to navigate => Muévete con las flechas
 
 # Patches/Screens/StoryEventScreenPatch.cs
 Navigate choices with arrows => Recorre las opciones con las flechas
 Continue => Continuar
 
 # Screens/CardDraftAccessibility.cs
-Choose 1 of {#n} cards => Elige 1 de {#n} cartas
-Use arrows to browse => Usa las flechas para explorar
+Choose 1 of {#n} cards => Elige una de {#n} cartas
+Use arrows to browse => Recorre con las flechas
 Upgrade {cardName} => Mejorar {cardName}
 Choose from {#n} upgrades => Elige entre {#n} mejoras
-Choose from 1 upgrades => Elige entre 1 mejora
+Choose from 1 upgrades => Hay 1 mejora para elegir
 Remove a Card => Eliminar una carta
 Select a card to remove => Elige una carta para eliminar
 {#n} cards in deck => {#n} cartas en el mazo
 1 cards in deck => 1 carta en el mazo
 Duplicate a Card => Duplicar una carta
-Select a card to add a copy to your deck => Elige una carta para añadir una copia a tu mazo
+Select a card to add a copy to your deck => Elige una carta para añadir una copia al mazo
 Apply {enhancerName} => Aplicar {enhancerName}
 Select Card to Upgrade => Elige una carta para mejorar
 Select a card to upgrade and press Enter => Elige una carta para mejorar y pulsa Intro
@@ -525,8 +555,8 @@ Select a card to upgrade and press Enter => Elige una carta para mejorar y pulsa
 
 # Screens/Readers/BattleIntroTextReader.cs
 Fight: {battle} => Combate: {battle}
-Start Battle => Empezar batalla
-Boss Battles => Batallas Contra Jefes
+Start Battle => Empezar combate
+Boss Battles => Batallas contra jefes
 Press Enter => Pulsa Intro
 Press Enter to confirm => Pulsa Intro para confirmar
 Boss battles for this run => Batallas contra jefes de esta partida
@@ -535,16 +565,16 @@ Boss battles for this run => Batallas contra jefes de esta partida
 Enter to begin => Intro para empezar
 Ctrl plus Up reads each boss => Control más flecha arriba lee cada jefe
 Boss {#i} => Jefe {#i}
-Final Boss => Jefe Final
+Final Boss => Jefe final
 Ring {#ring} => Anillo {#ring}
 Boss Battle => Batalla contra jefe
 
 # Screens/Readers/ClanSelectionTextReader.cs
 Clan option => Opción de clan
 Primary clan: Random => Clan principal: aleatorio
-Select a random clan for this run => Elige un clan aleatorio para esta partida
+Select a random clan for this run => Se elegirá un clan al azar para esta partida
 Allied clan: Random => Clan aliado: aleatorio
-Select a random allied clan for this run => Elige un clan aliado aleatorio para esta partida
+Select a random allied clan for this run => Se elegirá un clan aliado al azar para esta partida
 Random clan option => Opción de clan aleatorio
 Primary clan: Locked => Clan principal: bloqueado
 Allied clan: Locked => Clan aliado: bloqueado
@@ -554,27 +584,27 @@ Allied clan: {name} => Clan aliado: {name}
 Locked => Bloqueado
 Unknown clan => Clan desconocido
 Use Left and Right arrows to change selection => Usa las flechas izquierda y derecha para cambiar la selección
-Clan level {#level} => Nivel de Clan {#level}
-XP {xp}/{total} => Experiencia {xp}/{total}
+Clan level {#level} => Nivel de clan {#level}
+XP {xp}/{total} => Experiencia: {xp} de {total}
 max level => nivel máximo
 Next unlock: {preview} => Próximo desbloqueo: {preview}
 Champion: Locked => Campeón: bloqueado
 Champion option => Opción de campeón
 Use Left and Right arrows to change champion => Usa las flechas izquierda y derecha para cambiar de campeón
 Stats => Estadísticas
-Starter card: {starter} => Carta inicial: {starter}
+Starter card: {starter} => Carta de inicio: {starter}
 {pre} and {post} covenant {#level} => {pre} y {post}, Pacto {#level}
 {text} covenant {#level} => {text}, Pacto {#level}
 Covenant: Locked => Pacto: bloqueado
-Win a run to unlock covenant ranks => Gana una partida para desbloquear los rangos del Pacto
-Covenant: Rank {#level} => Pacto: Rango {#level}
+Win a run to unlock covenant ranks => Gana una partida para desbloquear los rangos de Pacto
+Covenant: Rank {#level} => Pacto: rango {#level}
 Covenant: Off => Pacto: desactivado
 Covenant: {levelName} => Pacto: {levelName}
 Maximum unlocked: {#max} => Máximo desbloqueado: {#max}
 Use Left and Right arrows to change level => Usa las flechas izquierda y derecha para cambiar el nivel
-The Last Divinity: enabled => The Last Divinity: activado
-The Last Divinity: disabled => The Last Divinity: desactivado
-The Last Divinity: toggle => The Last Divinity: casilla
+The Last Divinity: enabled => La Última Divinidad: activado
+The Last Divinity: disabled => La Última Divinidad: desactivado
+The Last Divinity: toggle => La Última Divinidad: casilla
 
 # Screens/Readers/CompendiumTextReader.cs
 {#found} of {#total} discovered => {#found} de {#total} descubiertos
@@ -590,7 +620,7 @@ First page => Primera página
 Previous page => Página anterior
 Next page => Página siguiente
 Last page => Última página
-Jump to your rank => Saltar a tu rango
+Jump to your rank => Ir a tu posición
 
 # Utilities/ReflectionHelper.cs
 Floor {#floor} => Piso {#floor}
@@ -604,7 +634,7 @@ Gold: {#g} => Oro: {#g}
 Pyre: {#a} of {#b} => Pira: {#a} de {#b}
 Pyre Armor: {#a} => Armadura de la pira: {#a}
 Pyre Attack: {#a} => Ataque de la pira: {#a}
-Cards in hand: {#n} => Cartas en mano: {#n}
+Cards in hand: {#n} => Cartas en la mano: {#n}
 Pact shards: {#c} => Fragmentos del Pacto: {#c}
 Threat: None => Amenaza: ninguna
 Threat: Low => Amenaza: baja
@@ -612,109 +642,118 @@ Threat: Moderate => Amenaza: moderada
 Threat: Warning => Amenaza: alerta
 Threat: Danger => Amenaza: peligro
 Threat: {band} => Amenaza: {band}
-{#r} reached: The Last Divinity awaits beyond the final boss => {#r} alcanzados: The Last Divinity te espera tras el jefe final
-{#r} needed to face The Last Divinity => Se necesitan {#r} para enfrentarte a The Last Divinity
+{#r} reached: The Last Divinity awaits beyond the final boss => {#r} fragmentos conseguidos: La Última Divinidad te espera tras el jefe final
+{#r} needed to face The Last Divinity => Necesitas {#r} fragmentos para enfrentarte a La Última Divinidad
 wave {#t} => oleada {#t}
 no more waves => no quedan más oleadas
 1 wave remaining => queda 1 oleada
 {#r} waves remaining => quedan {#r} oleadas
 
 # Battle/UnitTargetingSystem.cs
-Targeting {target} => Apuntando a {target}
+Targeting {target} => Objetivo: {target}
 Spell cancelled => Hechizo cancelado
 1 available => 1 disponible
 {#n} available => {#n} disponibles
-Use arrows to cycle, number keys to select directly => Usa las flechas para cambiar y las teclas numéricas para elegir directamente
+Use arrows to cycle, number keys to select directly => Flechas para cambiar, teclas numéricas para elegir directamente
 Enter to confirm, Escape to cancel => Intro para confirmar, Escape para cancelar
 Target {#i} of {#n} => Objetivo {#i} de {#n}
 
 # Core/Buffers/BufferManager.cs
 Events => Eventos
-{name}: empty => {name}: vacía
+{name}: empty => {name}: sin elementos
 No information available => No hay información disponible
 1 item => 1 elemento
 {#n} items => {#n} elementos
 
 # Core/InputInterceptor.cs
+# Speed names are the SaveManager.GameSpeed enum: Normal, Fast, Ultra, Super Ultra, Instant
 Speed: Changed => Velocidad cambiada
+Speed: Normal => Velocidad: normal
 Speed: Fast => Velocidad: rápida
+Speed: Ultra => Velocidad: ultra
+Speed: Super Ultra => Velocidad: superultra
 Speed: Instant => Velocidad: instantánea
 Speed: {speed} => Velocidad: {speed}
 Not in battle => No estás en batalla
 Ember not available => Brasas no disponibles
 Gold not available => Oro no disponible
 Pyre health not available => Salud de la pira no disponible
-Pyre health {#hp} of {#max} => Salud de la pira {#hp} de {#max}
-Pyre health {#hp} => Salud de la pira {#hp}
+Pyre health {#hp} of {#max} => Salud de la pira: {#hp} de {#max}
+Pyre health {#hp} => Salud de la pira: {#hp}
 Pact shards not available => Fragmentos del Pacto no disponibles
 No floor selected => Ningún piso seleccionado
 
 # Help/Contexts/BattleTargetingHelp.cs
 Floor Targeting => Selección de piso
 Select a floor to play the card => Elige un piso para jugar la carta
-Page Up and Page Down: Cycle between floors => Re Pág y Av Pág: Cambiar de piso
-Up and Down arrows, or Page Up and Page Down: Cycle between floors => Flechas arriba y abajo, o Re Pág y Av Pág: cambian de piso
-Enter: Confirm and play card on selected floor => Intro: Confirmar y jugar la carta en el piso seleccionado
-Escape: Cancel card play => Escape: Cancelar la carta
+Page Up and Page Down: Cycle between floors => Re Pág y Av Pág: cambia de piso
+Up and Down arrows, or Page Up and Page Down: Cycle between floors => Flechas arriba y abajo, o Re Pág y Av Pág: cambia de piso
+Enter: Confirm and play card on selected floor => Intro: confirma y juega la carta en el piso seleccionado
+Escape: Cancel card play => Escape: cancela la jugada
 
 # Help/Contexts/CardDraftHelp.cs
-Card Draft => Elección de carta
-Left and Right arrows: Browse available cards => Flechas izquierda y derecha: Recorrer las cartas disponibles
-Enter: Select and add card to deck => Intro: Elegir la carta y añadirla al mazo
-F2: Read the focused card's full details => F2: Leer todos los detalles de la carta enfocada
-Ctrl plus Up: Step through the card's details in the Card buffer, one piece at a time => Control más flecha arriba: Recorrer los detalles de la carta en la lista Carta, de uno en uno
-Ctrl plus Down: Move back toward the top of the buffer => Control más flecha abajo: Volver hacia el principio de la lista
-Ctrl plus Left/Right: Switch review buffers => Control más flecha izquierda o derecha: Cambiar de lista de revisión
-F3: Read all available cards => F3: Leer todas las cartas disponibles
-Escape: Skip reward (if allowed) => Escape: Saltar la recompensa (si se permite)
+Card Draft => Selección de cartas
+Left and Right arrows: Browse available cards => Flechas izquierda y derecha: recorre las cartas disponibles
+Enter: Select and add card to deck => Intro: elige la carta y añádela al mazo
+F2: Read the focused card's full details => F2: lee todos los detalles de la carta enfocada
+Ctrl plus Up: Step through the card's details in the Card buffer, one piece at a time => Control más flecha arriba: recorre los detalles de la carta en la lista Carta, uno a uno
+Ctrl plus Down: Move back toward the top of the buffer => Control más flecha abajo: vuelve hacia el principio de la lista
+Ctrl plus Left/Right: Switch review buffers => Control más flecha izquierda o derecha: cambia de lista de revisión
+F3: Read all available cards => F3: lee todas las cartas disponibles
+Escape: Skip reward (if allowed) => Escape: omite la recompensa (si se puede)
 
 # Help/Contexts/EventHelp.cs
-Up and Down arrows: Browse event choices => Flechas arriba y abajo: Recorrer las opciones del evento
-Enter: Select choice => Intro: Elegir la opción
-F2: Re-read current choice and effects => F2: Releer la opción actual y sus efectos
-F3: Read full event text and all choices => F3: Leer el texto completo del evento y todas las opciones
+Up and Down arrows: Browse event choices => Flechas arriba y abajo: recorre las opciones del evento
+Enter: Select choice => Intro: elige la opción
+F2: Re-read current choice and effects => F2: vuelve a leer la opción actual y sus efectos
+F3: Read full event text and all choices => F3: lee el texto completo del evento y todas las opciones
 
 # Help/Contexts/GlobalHelp.cs
-F1: Open help for the current screen => F1: Abrir la ayuda de la pantalla actual
-F9: Accessibility settings: what gets announced, combat summary, verbosity, braille and every mod key => F9: Ajustes de accesibilidad: qué se anuncia, resumen de combate, nivel de detalle, braille y todas las teclas del mod
-Up and Down choose, Left, Right or Enter change, Escape closes => Flechas arriba y abajo eligen, izquierda, derecha o Intro cambian, Escape cierra
-Arrow keys move the game's focus, Enter selects, Escape goes back or opens the pause menu => Las flechas mueven el foco del juego, Intro selecciona, Escape vuelve atrás o abre el menú de pausa
-F2: Re-read the focused item => F2: Releer el elemento enfocado
-Cards, shop items and artifacts read their full details => Las cartas, los artículos de la tienda y los artefactos leen todos sus detalles
-F3: Read all text on the screen => F3: Leer todo el texto de la pantalla
-Tab: Read train stats: pyre health, gold and deck size => Tabulador: Leer las estadísticas del tren: salud de la pira, oro y tamaño del mazo
-F5: Gold => F5: Oro
-F6: Pyre health => F6: Salud de la pira
+F1: Open help for the current screen => F1: abre la ayuda de la pantalla actual
+F9: Accessibility settings: what gets announced, combat summary, verbosity, braille and every mod key => F9: ajustes de accesibilidad: qué se anuncia, resumen de combate, nivel de detalle, braille y todas las teclas del mod
+Up and Down choose, Left, Right or Enter change, Escape closes => Flechas arriba y abajo para elegir; izquierda, derecha o Intro para cambiar; Escape para cerrar
+Arrow keys move the game's focus, Enter selects, Escape goes back or opens the pause menu => Las flechas mueven el foco del juego, Intro selecciona y Escape vuelve atrás o abre el menú de pausa
+F2: Re-read the focused item => F2: vuelve a leer el elemento enfocado
+Cards, shop items and artifacts read their full details => En cartas, artículos de tienda y artefactos, lee todos los detalles
+F3: Read all text on the screen => F3: lee todo el texto de la pantalla
+Tab: Read train stats: pyre health, gold and deck size => Tabulador: lee las estadísticas del tren: salud de la pira, oro y tamaño del mazo
+F5: Gold => F5: oro
+F6: Pyre health => F6: salud de la pira
 F7: Pact shards and threat => F7: Fragmentos del Pacto y amenaza
-Ctrl plus Up: Read the next item in the review buffer => Control más flecha arriba: Leer el siguiente elemento de la lista de revisión
-The first press reads the newest item, more presses go back in time or deeper into details => La primera pulsación lee el elemento más reciente, las siguientes retroceden en el tiempo o profundizan en los detalles
-Ctrl plus Down: Move back toward the newest item => Control más flecha abajo: Volver hacia el elemento más reciente
-Ctrl plus Left and Right: Switch review buffers: UI, Events, Card, Creature, Artifact, Reward and Story, plus Hand, Floors, Units and Resources in battle => Control más flechas izquierda y derecha: Cambiar de lista de revisión: Interfaz, Eventos, Carta, Criatura, Artefacto, Recompensa y Relato, más Mano, Pisos, Unidades y Recursos en batalla
-The Events buffer keeps every combat event, so you can replay anything you missed => La lista Eventos guarda todos los eventos de combate, así que puedes repasar lo que te hayas perdido
-F4: Cycle verbosity => F4: Cambiar el nivel de detalle
+Ctrl plus Up: Read the next item in the review buffer => Control más flecha arriba: lee el siguiente elemento de la lista de revisión
+The first press reads the newest item, more presses go back in time or deeper into details => La primera pulsación lee el elemento más reciente; las siguientes retroceden en el tiempo o entran en más detalle
+Ctrl plus Down: Move back toward the newest item => Control más flecha abajo: vuelve hacia el elemento más reciente
+Ctrl plus Left and Right: Switch review buffers: UI, Events, Card, Creature, Artifact, Reward and Story, plus Hand, Floors, Units and Resources in battle => Control más flechas izquierda y derecha: cambia de lista de revisión: Interfaz, Eventos, Carta, Criatura, Artefacto, Recompensa y Relato, y en batalla también Mano, Pisos, Unidades y Recursos
+The Events buffer keeps every combat event, so you can replay anything you missed => La lista Eventos guarda todos los eventos de combate, para que repases lo que te hayas perdido
+F4: Cycle verbosity => F4: cambia el nivel de detalle
 
 # Help/HelpSystem.cs
 Keys available on every screen follow => A continuación, las teclas disponibles en todas las pantallas
 {context} help. No entries available => Ayuda: {context}. No hay entradas
 {context} help, 1 entries => Ayuda: {context}, 1 entrada
 {context} help, {#n} entries => Ayuda: {context}, {#n} entradas
-Down and Up arrows read entries, Home and End jump to the first and last => Flechas abajo y arriba leen las entradas, Inicio y Fin saltan a la primera y la última
+Down and Up arrows read entries, Home and End jump to the first and last => Las flechas abajo y arriba leen las entradas; Inicio y Fin saltan a la primera y a la última
 Press F1, Enter, or Escape to close => Pulsa F1, Intro o Escape para cerrar
 Help closed => Ayuda cerrada
 Unknown => Desconocido
-F1: Help => F1: Ayuda
-F2: Re-read current item => F2: Releer el elemento actual
-F3: Read all text on screen => F3: Leer todo el texto de la pantalla
-Arrow keys: Navigate => Flechas: Navegar
-Enter or Space: Activate => Intro o Espacio: Activar
-Escape: Back or cancel => Escape: Volver o cancelar
+F1: Help => F1: ayuda
+F2: Re-read current item => F2: vuelve a leer el elemento actual
+F3: Read all text on screen => F3: lee todo el texto de la pantalla
+Arrow keys: Navigate => Flechas: navega
+Enter or Space: Activate => Intro o Espacio: activa
+Escape: Back or cancel => Escape: vuelve atrás o cancela
 
 # Patches/Combat/DamagePatches.cs
-{attacker} hits the pyre for {#d}, {#hp} left => {attacker} golpea la pira por {#d}, quedan {#hp}
-Pyre takes {#d} damage, {#hp} left => La pira recibe {#d} de daño, quedan {#hp}
-{attacker} hits {target} for {#d} => {attacker} golpea a {target} por {#d}
+# {attacker}/{target} are unit names (game text, any gender): no articles or agreeing adjectives
+{attacker} hits the pyre for {#d}, 1 left => {attacker} inflige {#d} de daño a la pira, le queda 1
+{attacker} hits the pyre for {#d}, {#hp} left => {attacker} inflige {#d} de daño a la pira, le quedan {#hp}
+Pyre takes {#d} damage, 1 left => La pira recibe {#d} de daño, le queda 1
+Pyre takes {#d} damage, {#hp} left => La pira recibe {#d} de daño, le quedan {#hp}
+{attacker} hits {target} for {#d} => {attacker} inflige {#d} de daño a {target}
 {target} takes {#d} damage => {target} recibe {#d} de daño
-{#hp} HP left => quedan {#hp} PV
+1 HP left => le queda 1 de salud
+{#hp} HP left => le quedan {#hp} de salud
+1 left => queda 1
 {#hp} left => quedan {#hp}
 
 # Patches/Screens/DeckScreenPatch.cs
@@ -723,25 +762,26 @@ Card Purge => Purga de carta
 1 card => 1 carta
 {#n} cards => {#n} cartas
 Card Upgrade => Mejora de carta
-Select a card to apply it to => Elige una carta a la que aplicarla
-Select a card to enhance => Elige una carta para mejorar
+Select a card to apply it to => Elige una carta para aplicar la mejora
+Select a card to enhance => Elige una carta para mejorarla
 Spell Merge => Fusión de Hechizos
-Select a spell to merge => Elige un hechizo para fusionar
+Select a spell to merge => Elige un hechizo para fusionarlo
 Card Duplication => Duplicación de carta
-Select a card to copy => Elige una carta para copiar
+Select a card to copy => Elige una carta para copiarla
 Draw Pile => Pila de robo
 Discard Pile => Pila de descartes
 Exhausted Pile => Pila de consumidas
 Eaten Pile => Pila de devoradas
 Starting deck preview => Vista previa del mazo inicial
 Select a card => Elige una carta
-Arrow keys to browse cards => Flechas para recorrer las cartas
-{#v} ember cost => {#v} al coste de brasas
+Arrow keys to browse cards => Usa las flechas para recorrer las cartas
+# Signed upgrade stats ("-1 ember cost", "+1 capacity"): number first, like "+10 de ataque"
+{#v} ember cost => {#v} de coste
 {#v} capacity => {#v} de capacidad
 
 # Patches/Screens/VictoryUIPatch.cs
 Rewards to collect => Recompensas por recoger
-Press Enter to collect => Pulsa Intro para recoger
+Press Enter to collect => Pulsa Intro para recogerlas
 Battle complete => Batalla completada
 
 # Screens/MenuAccessibility.cs
@@ -754,13 +794,13 @@ off => desactivado
 Trial => Prueba
 Button => Botón
 Train Stats => Estadísticas del tren
-Pyre: {#a} of {#b} health => Pira: {#a} de {#b} de salud
+Pyre: {#a} of {#b} health => Salud de la pira: {#a} de {#b}
 Deck size: {#n} cards => Tamaño del mazo: {#n} cartas
-Stats panel not visible => Panel de estadísticas no visible
-Press TAB again to toggle => Pulsa Tabulador otra vez para mostrarlo u ocultarlo
+Stats panel not visible => El panel de estadísticas no está visible
+Press TAB again to toggle => Pulsa Tabulador otra vez para mostrarlo
 Could not read train stats => No se pudieron leer las estadísticas del tren
 Shards: {#c} => Fragmentos: {#c}
-No text found on screen => No se encontró texto en la pantalla
+No text found on screen => No hay texto en la pantalla
 Could not read screen text => No se pudo leer el texto de la pantalla
 Main Menu => Menú principal
 {key} for accessibility settings => {key} para los ajustes de accesibilidad
@@ -769,14 +809,15 @@ Unknown item => Elemento desconocido
 Nothing selected => Nada seleccionado
 
 # Screens/Readers/MapTextReader.cs
+# {directions} = lowercase "left", "center", "right" joined by ", " (each translated by the rules below)
 Left path => Camino izquierdo
 Right path => Camino derecho
 Path => Camino
-Map path option => Opción de camino del mapa
+Map path option => Opción de camino
 Left => Izquierda
 Right => Derecha
 Center => Centro
-Battle - {title} => Batalla - {title}
+Battle - {title} => Batalla: {title}
 Shop => Tienda
 Upgrade => Mejora
 Healing => Curación
@@ -789,22 +830,25 @@ Unknown node => Nodo desconocido
 Can go {directions} => Caminos posibles: {directions}
 
 # Screens/Readers/ShopTextReader.cs
-can afford => puedes pagarlo
+# Upgrade bonuses are signed ("+10 Attack", "-1 Ember cost") and joined with " and ",
+# so they keep the number first: the "{a} and +{b}" rules put the sign back in front of {b}
+can afford => oro suficiente
 not enough gold => oro insuficiente
 After selecting a card, press Enter to apply the upgrade => Tras elegir una carta, pulsa Intro para aplicar la mejora
 {#d} Attack => {#d} de ataque
 {#d} Magic Power => {#d} de Poder Mágico
 {#h} Health => {#h} de salud
-{#r} Ember cost => {#r} al coste de brasas
+{#r} Ember cost => {#r} de coste
 {#g} Gold => {#g} de oro
 {a} and +{b} => {a} y +{b}
 {a} and -{b} => {a} y -{b}
-{a} and Gain trigger: {t} => {a} y gana activador: {t}
+{a} and Gain trigger: {t} => {a} y gana el activador {t}
 {a} and Gain {b} => {a} y gana {b}
 {a} and Remove {b} => {a} y quita {b}
-Gain trigger: {t} => Gana activador: {t}
+Gain trigger: {t} => Gana el activador {t}
 Gain {name} => Gana {name}
 Remove {name} => Quita {name}
+# Trait and status names as the game's Spanish text writes them
 Doublestack => Pila Doble
 Consume => Consumir
 Innate => Primera Mano
@@ -816,6 +860,7 @@ Damage Shield => Escudo de Daño
 Rage => Furia
 Quick => Rápido
 Multistrike => Golpe Múltiple
+Regen => Regeneración
 Sap => Savia
 Dazed => Aturdido
 Rooted => Enraizado
@@ -829,25 +874,25 @@ Fragile => Frágil
 Heartless => Sin Corazón
 Spell Weakness => Hechizo Debilidad
 Melee Weakness => Debilidad Cuerpo a Cuerpo
-{#s} Armor => {#s} Armadura
-{#s} Damage Shield => {#s} Escudo de Daño
-{#s} Rage => {#s} Furia
+{#s} Armor => {#s} de Armadura
+{#s} Damage Shield => {#s} de Escudo de Daño
+{#s} Rage => {#s} de Furia
 {#s} Quick => {#s} Rápido
-{#s} Multistrike => {#s} Golpe Múltiple
-{#s} Regen => {#s} Regen
-{#s} Sap => {#s} Savia
+{#s} Multistrike => {#s} de Golpe Múltiple
+{#s} Regen => {#s} de Regeneración
+{#s} Sap => {#s} de Savia
 {#s} Dazed => {#s} Aturdido
 {#s} Rooted => {#s} Enraizado
-{#s} Frostbite => {#s} Congelación
-{#s} Spikes => {#s} Púas
-{#s} Lifesteal => {#s} Robo de Vida
-{#s} Stealth => {#s} Sigilo
-{#s} Burnout => {#s} Agotamiento
+{#s} Frostbite => {#s} de Congelación
+{#s} Spikes => {#s} de Púas
+{#s} Lifesteal => {#s} de Robo de Vida
+{#s} Stealth => {#s} de Sigilo
+{#s} Burnout => {#s} de Agotamiento
 {#s} Endless => {#s} Sin fin
 {#s} Fragile => {#s} Frágil
 {#s} Heartless => {#s} Sin Corazón
-{#s} Spell Weakness => {#s} Hechizo Debilidad
-{#s} Melee Weakness => {#s} Debilidad Cuerpo a Cuerpo
+{#s} Spell Weakness => {#s} de Hechizo Debilidad
+{#s} Melee Weakness => {#s} de Debilidad Cuerpo a Cuerpo
 Reroll => Relanzar
 Re-roll => Relanzar
 Purge Card => Purgar carta
@@ -855,24 +900,24 @@ Duplicate Card => Duplicar carta
 Upgrade Card => Mejorar carta
 Unleash => Desatar
 Remove a card from your deck => Elimina una carta de tu mazo
-Randomize and refresh the offered goods => Aleatorizar y refrescar las mercancías ofrecidas
+Randomize and refresh the offered goods => Renueva al azar los artículos a la venta
 Create a copy of a card in your deck => Crea una copia de una carta de tu mazo
 Restore health to your Pyre => Restaura la salud de tu pira
 Train Repair => Reparación del tren
 Repair your train => Repara tu tren
-Choose a Branded unit and unleash its power => Elige una unidad Marcada y desata su poder
+Choose a Branded unit and unleash its power => Elige una unidad de Marca y desata su poder
 Upgrade a card => Mejora una carta
 Upgrade Stone => Piedra de mejora
 Random Artifact => Artefacto aleatorio
 Random Card => Carta aleatoria
 Pyre Health => Salud de la Pira
-Crystal => Cristal
+Crystal => Fragmentos del Pacto
 Random Upgrade => Mejora aleatoria
 Artifact Choice => Elección de artefacto
 
 # Screens/Readers/TooltipTextReader.cs
-Costs 1 crystal => Cuesta 1 fragmento
-Costs {#c} crystals => Cuesta {#c} fragmentos
+Costs 1 crystal => Cuesta 1 Fragmento del Pacto
+Costs {#c} crystals => Cuesta {#c} Fragmentos del Pacto
 
 # ======== part 4 ========
 # Battle/FloorReader.cs
@@ -882,76 +927,79 @@ Top floor => Piso superior
 Unknown floor => Piso desconocido
 Enchantments => Encantamientos
 Floor status => Estado de los pisos
-{floor} ({#used}/{#max} capacity => {floor} ({#used}/{#max} de capacidad
-{#used}/{#max} capacity => {#used}/{#max} de capacidad
+{floor} ({#used}/{#max} capacity => {floor} ({used} de {max} de capacidad
+{#used}/{#max} capacity => {used} de {max} de capacidad
 Could not read floors => No se pudieron leer los pisos
-Enemy {name} {#atk} attack => Enemigo {name}, {#atk} de ataque
-{name} {#atk} attack => {name}, {#atk} de ataque
+Enemy {name} {#atk} attack => {name} (enemigo), {atk} de ataque
+{name} {#atk} attack => {name}, {atk} de ataque
 Attack => Ataque
-{#hp} of {#max} health => salud {#hp} de {#max}
-{#hp} health ({status} => {#hp} de salud ({status}
-{#hp} of {#max} health ({status} => salud {#hp} de {#max} ({status}
-{#hp} health on {floor} => {#hp} de salud en el {floor}
-{#hp} of {#max} health on {floor} => salud {#hp} de {#max} en el {floor}
-Corruption => Corrupción
-{#cur}/{#max} ({#perm} permanent => {#cur}/{#max} ({#perm} permanente
-{#perm} permanent => {#perm} permanente
+{#hp} of {#max} health => {hp} de {max} de salud
+{#hp} health ({status} => {hp} de salud ({status}
+{#hp} of {#max} health ({status} => {hp} de {max} de salud ({status}
+{#hp} health on {floor} => {hp} de salud en el {floor}
+{#hp} of {#max} health on {floor} => {hp} de {max} de salud en el {floor}
+Corruption => Ecos Cargados
+{#cur}/{#max} (1 permanent => {cur} de {max} (1 permanente
+{#cur}/{#max} ({#perm} permanent => {cur} de {max} ({perm} permanentes
+1 permanent => 1 permanente
+{#perm} permanent => {perm} permanentes
 1 enemy => 1 enemigo
-{#n} enemies => {#n} enemigos
+{#n} enemies => {n} enemigos
 Your 1 unit => 1 unidad tuya
-Your {#n} units => {#n} unidades tuyas
+Your {#n} units => {n} unidades tuyas
 
 # Battle/HandReader.cs
-Hand is empty => La mano está vacía
-Hand contains 1 cards => La mano tiene 1 carta
-Hand contains {#n} cards => La mano tiene {#n} cartas
+Hand is empty => No tienes cartas en la mano
+Hand contains 1 cards => Tienes 1 carta en la mano
+Hand contains {#n} cards => Tienes {n} cartas en la mano
 Could not read hand => No se pudo leer la mano
-unplayable => no jugable
-Upgraded {name} ({type} => {name} mejorada ({type}
+# ", unplayable" = the card costs more ember than you have (not the Unplayable trait)
+unplayable => brasas insuficientes
+Upgraded {name} ({type} => {name} ({type}, con mejora
 
 # Core/FocusContext.cs
-{context} is empty => {context}, sin elementos
+{context} is empty => {context}: sin elementos
 {context} contains 1 items => {context}: 1 elemento
-{context} contains {#n} items => {context}: {#n} elementos
+{context} contains {#n} items => {context}: {n} elementos
 
 # Core/ScreenReaderOutput.cs
 Monster Train Accessibility loaded => Accesibilidad de Monster Train cargada
 Using Windows speech => Usando la voz de Windows
 Using {reader} => Usando {reader}
-{#n} times => {#n} veces
-+{#n} gold => +{#n} de oro
+{#n} times => {n} veces
++{#n} gold => +{n} de oro
 
 # Help/Contexts/BattleHelp.cs
 Battle: enemies enter on the bottom floor and climb one floor after each round of combat => Batalla: los enemigos entran por el piso inferior y suben un piso tras cada ronda de combate
 The pyre sits above the top floor => La pira está encima del piso superior
 If the pyre runs out of health the run ends => Si la pira se queda sin salud, la partida termina
-Each of your turns starts with one line: your ember, how many cards are in your hand and how many enemy waves remain => Cada uno de tus turnos empieza con una línea: tus brasas, cuántas cartas tienes en la mano y cuántas oleadas enemigas quedan
+Each of your turns starts with one line: your ember, how many cards are in your hand and how many enemy waves remain => Cada turno empieza con una línea: tus brasas, cuántas cartas tienes en la mano y cuántas oleadas enemigas quedan
 Left and Right arrows: Move through your hand => Flechas izquierda y derecha: recorre tu mano
-Each card says its name, cost, stats and position, for example 2 of 5 => Cada carta dice su nombre, coste, estadísticas y posición, por ejemplo 2 de 5
-Number keys 1 to 9 and 0: Jump to a card in your hand => Teclas numéricas del 1 al 9 y el 0: salta a una carta de tu mano
+Each card says its name, cost, stats and position, for example 2 of 5 => Cada carta indica su nombre, coste, estadísticas y posición, por ejemplo, 2 de 5
+Number keys 1 to 9 and 0: Jump to a card in your hand => Teclas del 1 al 9 y el 0: salta a una carta de tu mano
 Enter or E: Play the focused card => Intro o E: juega la carta enfocada
-Units and floor spells then ask for a floor, targeted spells ask for a unit => Después, las unidades y los hechizos de piso piden un piso, y los hechizos con objetivo piden una unidad
+Units and floor spells then ask for a floor, targeted spells ask for a unit => Después, las unidades y los hechizos de piso piden un piso; los hechizos con objetivo piden una unidad
 F2: Full details of the focused card => F2: detalles completos de la carta enfocada
-Ctrl plus Up then steps through them one piece at a time, including keyword explanations => Luego Control más flecha arriba los recorre de uno en uno, incluidas las explicaciones de palabras clave
+Ctrl plus Up then steps through them one piece at a time, including keyword explanations => Luego, Control más flecha arriba recorre esos detalles uno a uno, incluidas las explicaciones de las palabras clave
 F: End your turn => F: termina tu turno
-Combat is then announced as it happens: attacks, deaths, trigger abilities such as Slay or Revenge, healing, enemies moving and pyre damage => Entonces el combate se anuncia a medida que ocurre: ataques, muertes, habilidades que se activan como Matanza o Venganza, curaciones, movimientos de enemigos y daño a la pira
+Combat is then announced as it happens: attacks, deaths, trigger abilities such as Slay or Revenge, healing, enemies moving and pyre damage => Después se anuncia el combate a medida que ocurre: ataques, muertes, habilidades que se activan como Asesino o Venganza, curaciones, movimientos de los enemigos y daño a la pira
 J: Read your hand => J: lee tu mano
 K: Read the selected floor => K: lee el piso seleccionado
 L: Read all floors => L: lee todos los pisos
 Shift plus L: Read all units with full detail => Mayúsculas más L: lee todas las unidades con todo detalle
-G: Read ember => G: lee las brasas
-Page Up and Page Down: Change the selected floor and read it => Re Pág y Av Pág: cambia el piso seleccionado y lo lee
-Up arrow: Climb from your hand to the bottom floor, the middle floor, the top floor and the pyre room; Down arrow comes back => Flecha arriba: sube desde tu mano al piso inferior, el piso central, el piso superior y la Sala de la Pira; la flecha abajo vuelve
-On a floor, Left and Right step through its units and the pyre, and Enter reads full details => En un piso, las flechas izquierda y derecha recorren sus unidades y la pira, e Intro lee todos los detalles
+G: Read ember => G: lee tus brasas
+Page Up and Page Down: Change the selected floor and read it => Re Pág y Av Pág: cambia de piso seleccionado y escucha su contenido
+Up arrow: Climb from your hand to the bottom floor, the middle floor, the top floor and the pyre room; Down arrow comes back => Flecha arriba: sube desde tu mano al piso inferior, al central, al superior y a la Sala de la Pira; la flecha abajo te hace volver
+On a floor, Left and Right step through its units and the pyre, and Enter reads full details => En un piso, usa las flechas izquierda y derecha para recorrer sus unidades y la pira, e Intro para leer todos los detalles
 N: Change game speed => N: cambia la velocidad del juego
-Game piles: Z deck, X draw pile, B eaten pile => Pilas del juego: Z mazo, X pila de robo, B pila de devoradas
-Escape or Q closes a pile view => Escape o Q cierra la vista de una pila
-Ctrl plus Left or Right to the Events buffer, then Ctrl plus Up, replays the combat log => Control más flecha izquierda o derecha hasta la lista Eventos y luego Control más flecha arriba repasa el registro de combate
+Game piles: Z deck, X draw pile, B eaten pile => Pilas del juego: Z, mazo; X, pila de robo; B, pila de devoradas
+Escape or Q closes a pile view => Escape o Q cierran la vista de una pila
+Ctrl plus Left or Right to the Events buffer, then Ctrl plus Up, replays the combat log => Para repasar el registro de combate, ve a la lista Eventos con Control más flecha izquierda o derecha y pulsa Control más flecha arriba
 
 # Help/Contexts/MainMenuHelp.cs
 Up and Down arrows: Navigate menu options => Flechas arriba y abajo: recorre las opciones del menú
-Enter: Select highlighted option => Intro: selecciona la opción resaltada
-Right arrow, then Up: Move to The Last Divinity toggle, which enables or disables the DLC for your next run => Flecha derecha y luego flecha arriba: ve al interruptor de The Last Divinity, que activa o desactiva el DLC para tu próxima partida
+Enter: Select highlighted option => Intro: elige la opción resaltada
+Right arrow, then Up: Move to The Last Divinity toggle, which enables or disables the DLC for your next run => Flecha derecha y luego flecha arriba: ve al interruptor de La Última Divinidad, que activa o desactiva el DLC para tu próxima partida
 Enter switches it, and the toggle announces its current state => Intro lo cambia y el interruptor anuncia su estado actual
 Left arrow: Return to the menu options => Flecha izquierda: vuelve a las opciones del menú
 F2: Re-read current option => F2: vuelve a leer la opción actual
@@ -960,38 +1008,40 @@ Escape: Exit game or go back => Escape: sal del juego o vuelve atrás
 
 # Help/Contexts/MapHelp.cs
 Map screen: each ring has one or two paths with stops such as merchants, events and upgrades, and ends with a battle => Pantalla del mapa: cada anillo tiene uno o dos caminos con paradas como comerciantes, eventos y mejoras, y termina con una batalla
-When a ring has two paths, Left and Right arrows choose between them and each path lists its stops => Cuando un anillo tiene dos caminos, las flechas izquierda y derecha eligen entre ellos y cada camino enumera sus paradas
-Enter picks the path => Intro elige el camino
-After choosing, the arrow keys move between map stops => Después de elegir, las flechas se mueven entre las paradas del mapa
-The game moves spatially, so a press can jump to the next ring's battle => El juego se mueve en el espacio, así que una pulsación puede saltar a la batalla del siguiente anillo
-Every stop says its name, path, ring and whether you can visit it now => Cada parada dice su nombre, camino y anillo, y si puedes visitarla ahora
+When a ring has two paths, Left and Right arrows choose between them and each path lists its stops => Si un anillo tiene dos caminos, elige uno con las flechas izquierda y derecha; cada camino enumera sus paradas
+Enter picks the path => Pulsa Intro para elegir el camino
+After choosing, the arrow keys move between map stops => Después de elegir, las flechas recorren las paradas del mapa
+The game moves spatially, so a press can jump to the next ring's battle => El juego se mueve según la posición en pantalla, así que una pulsación puede saltar a la batalla del siguiente anillo
+Every stop says its name, path, ring and whether you can visit it now => Cada parada indica su nombre, camino y anillo, y si puedes visitarla ahora
 Enter: Visit the focused stop or start the battle => Intro: visita la parada enfocada o empieza la batalla
-Virtual map cursor, for reading the whole map without moving anything: Ctrl plus Up and Down move between rings, Ctrl plus Left and Right step through a ring's stops => Cursor virtual del mapa, para leer todo el mapa sin mover nada: Control más flechas arriba y abajo cambian de anillo, Control más flechas izquierda y derecha recorren las paradas de un anillo
+Virtual map cursor, for reading the whole map without moving anything: Ctrl plus Up and Down move between rings, Ctrl plus Left and Right step through a ring's stops => Cursor virtual del mapa, para leer todo el mapa sin mover nada: Control más flecha arriba o abajo cambia de anillo y Control más flecha izquierda o derecha recorre las paradas del anillo
 Each ring announces its number, whether you are there, the battle at its end and how many stops it has => Cada anillo anuncia su número, si estás en él, la batalla del final y cuántas paradas tiene
 F2: Re-read the focused stop => F2: vuelve a leer la parada enfocada
 Tab: Train stats => Tabulador: estadísticas del tren
 
 # Help/Contexts/RelicDraftHelp.cs
 Artifact Draft => Selección de artefactos
-Left and Right arrows: Browse available artifacts => Flechas izquierda y derecha: explora los artefactos disponibles
-Enter: Select artifact and add to collection => Intro: elige el artefacto y lo añade a tu colección
+Left and Right arrows: Browse available artifacts => Flechas izquierda y derecha: recorre los artefactos disponibles
+Enter: Select artifact and add to collection => Intro: elige el artefacto para añadirlo a tu colección
 F2: Read the focused artifact's full details => F2: lee los detalles completos del artefacto enfocado
 Ctrl plus Up: Step through the artifact's description and keywords in the Artifact buffer => Control más flecha arriba: recorre la descripción y las palabras clave del artefacto en la lista Artefacto
 F3: Read all available artifacts => F3: lee todos los artefactos disponibles
-Escape: Skip reward (if allowed => Escape: omite la recompensa (si se permite
+Escape: Skip reward (if allowed => Escape: omite la recompensa (si se puede
 
 # Help/Contexts/ShopHelp.cs
 Shop Controls => Controles de la tienda
-Arrow keys: Browse shop items => Flechas: explora los artículos de la tienda
+Arrow keys: Browse shop items => Flechas: recorre los artículos de la tienda
 Enter: Purchase selected item => Intro: compra el artículo seleccionado
 F2: Read the focused item's full details and price => F2: lee los detalles completos y el precio del artículo enfocado
 Ctrl plus Up: Step through the item's details in the review buffer => Control más flecha arriba: recorre los detalles del artículo en la lista de revisión
-F5: Read current gold => F5: lee el oro actual
+F5: Read current gold => F5: lee tu oro
 Escape: Leave shop => Escape: sal de la tienda
 
 # Patches/Combat/CombatMiscPatches.cs
-Pyre takes {#dmg} damage => La pira recibe {#dmg} de daño
-{#hp} health remaining => quedan {#hp} de salud
+# "Pyre takes 5 damage! 30 health remaining"
+Pyre takes {#dmg} damage! {#hp} health remaining => ¡La pira recibe {dmg} de daño! Le quedan {hp} de salud
+Pyre takes {#dmg} damage => La pira recibe {dmg} de daño
+{#hp} health remaining => le quedan {hp} de salud
 Merchant says => El comerciante dice
 
 # Patches/Screens/BattleIntroScreenPatch.cs
@@ -1016,104 +1066,114 @@ Press Enter to fight => Pulsa Intro para luchar
 Press Enter to confirm or Escape to cancel => Pulsa Intro para confirmar o Escape para cancelar
 
 # Patches/Screens/MerchantScreenPatches.cs
-You have {#gold} gold => Tienes {#gold} de oro
+# "You have 120 gold. 3 cards, 2 artifacts, 1 upgrades available." The last item
+# carries "available": "a la venta" covers the whole list in Spanish.
+You have {#gold} gold => Tienes {gold} de oro
 1 artifacts => 1 artefacto
-{#n} artifacts => {#n} artefactos
+{#n} artifacts => {n} artefactos
 1 upgrades => 1 mejora
-{#n} upgrades => {#n} mejoras
-1 other items => 1 objeto más
-{#n} other items => {#n} objetos más
-1 artifacts available => 1 artefacto disponible
-{#n} artifacts available => {#n} artefactos disponibles
-1 upgrades available => 1 mejora disponible
-{#n} upgrades available => {#n} mejoras disponibles
-1 other items available => 1 objeto más disponible
-{#n} other items available => {#n} objetos más disponibles
+{#n} upgrades => {n} mejoras
+1 other items => 1 objeto de otro tipo
+{#n} other items => {n} objetos de otro tipo
+1 artifacts available => 1 artefacto a la venta
+{#n} artifacts available => {n} artefactos a la venta
+1 upgrades available => 1 mejora a la venta
+{#n} upgrades available => {n} mejoras a la venta
+1 other items available => 1 objeto de otro tipo a la venta
+{#n} other items available => {n} objetos de otro tipo a la venta
 
 # Patches/Screens/RelicDraftScreenPatch.cs
 Escape to skip => Escape para omitir
 
 # Screens/BattleAccessibility.cs
-Battle started => Batalla iniciada
+# Unit and card names are game text of unknown gender and number: the
+# templates put them after a verb or a colon, never after an article.
+Battle started => Empieza la batalla
 Your turn => Tu turno
 1 card in hand => 1 carta en la mano
-{#n} cards in hand => {#n} cartas en la mano
+{#n} cards in hand => {n} cartas en la mano
 drew 1 card => robas 1 carta
-drew {#n} cards => robas {#n} cartas
+drew {#n} cards => robas {n} cartas
 {unit} intent => Intención de {unit}
 Battle won => Batalla ganada
-The pyre has been destroyed => La pira ha sido destruida
+The pyre has been destroyed => Han destruido la pira
 Drew => Robas
 Drew {cards} => Robas {cards}
 Card played => Carta jugada
 Discarded {card} => Descartas {card}
-{source} deals {#dmg} to {target} => {source} inflige {#dmg} a {target}
-Enemy {unit} died on pyre room => Enemigo {unit} muere en la Sala de la Pira
-Your {unit} died on pyre room => Tu {unit} muere en la Sala de la Pira
-Enemy {unit} died on {floor} => Enemigo {unit} muere en el {floor}
-Your {unit} died on {floor} => Tu {unit} muere en el {floor}
-Enemy {unit} died => Enemigo {unit} muere
-Your {unit} died => Tu {unit} muere
-{unit} gains {effect} {#stacks} => {unit} gana {effect} {#stacks}
-Enemy {unit} enters on the battlefield => Enemigo {unit} entra en el campo de batalla
-Enemy {unit} enters on pyre room => Enemigo {unit} entra en la Sala de la Pira
-Enemy {unit} enters on {floor} => Enemigo {unit} entra en el {floor}
+{source} deals {#dmg} to {target} => {source} inflige {dmg} de daño a {target}
+Enemy {unit} died on pyre room => Muere un enemigo en la Sala de la Pira: {unit}
+Your {unit} died on pyre room => Muere tu {unit} en la Sala de la Pira
+Enemy {unit} died on {floor} => Muere un enemigo en el {floor}: {unit}
+Your {unit} died on {floor} => Muere tu {unit} en el {floor}
+Enemy {unit} died => Muere un enemigo: {unit}
+Your {unit} died => Muere tu {unit}
+{unit} gains {effect} {#stacks} => {unit} gana {effect} {stacks}
+Enemy {unit} enters on the battlefield => Llega un enemigo al campo de batalla: {unit}
+Enemy {unit} enters on pyre room => Llega un enemigo a la Sala de la Pira: {unit}
+Enemy {unit} enters on {floor} => Llega un enemigo al {floor}: {unit}
 {unit} summoned on the battlefield => Invocas {unit} en el campo de batalla
 {unit} summoned on pyre room => Invocas {unit} en la Sala de la Pira
 {unit} summoned on {floor} => Invocas {unit} en el {floor}
 Gained 1 ember => Ganas 1 brasa
-Gained {#n} ember => Ganas {#n} brasas
-{#n} total => {#n} en total
-{unit} gains {#n} attack => {unit} gana {#n} de ataque
-{unit} loses {#n} attack => {unit} pierde {#n} de ataque
+Gained {#n} ember => Ganas {n} brasas
+{#n} total => {n} en total
+{unit} gains {#n} attack => {unit} gana {n} de ataque
+{unit} loses {#n} attack => {unit} pierde {n} de ataque
 Your {unit} moves up to the pyre room => Tu {unit} sube a la Sala de la Pira
 Your {unit} moves up to {floor} => Tu {unit} sube al {floor}
 Your {unit} moves down to {floor} => Tu {unit} baja al {floor}
-{unit} healed for {#n} => {unit} se cura {#n}
-{#hp} HP => {#hp} PV
-{card} added to your hand => {card} se añade a tu mano
-{card} added to your discard pile => {card} se añade a tu pila de descartes
-{card} added to the consumed pile => {card} se añade a la pila de consumidas
-{card} added to the eaten pile => {card} se añade a la pila de devoradas
-{card} added to your draw pile => {card} se añade a tu pila de robo
-Enemies ascend => Los enemigos ascienden
-{enemy} ascends to pyre room => {enemy} asciende a la Sala de la Pira
-{enemy} ascends to {floor} => {enemy} asciende al {floor}
-{enemy} descends to {floor} => {enemy} desciende al {floor}
+# "Name healed for 3, 10 HP" (like "gains 2 attack, 7 total")
+{unit} healed for {#n} => {unit} recupera {n} de salud
+{#hp} HP => {hp} en total
+{card} added to your hand => Se añade {card} a tu mano
+{card} added to your discard pile => Se añade {card} a tu pila de descartes
+{card} added to the consumed pile => Se añade {card} a la pila de consumidas
+{card} added to the eaten pile => Se añade {card} a la pila de devoradas
+{card} added to your draw pile => Se añade {card} a tu pila de robo
+Enemies ascend => Los enemigos suben
+{enemy} ascends to pyre room => {enemy} sube a la Sala de la Pira
+{enemy} ascends to {floor} => {enemy} sube al {floor}
+{enemy} descends to {floor} => {enemy} baja al {floor}
 {speaker} says => {speaker} dice
-Combat => ¡Combate
-{relic} triggered => {relic} se activa
+Combat! => ¡Combate!
+Combat => Combate
+{relic} triggered => Se activa {relic}
 {feeder} eats {morsel} => {feeder} devora {morsel}
 {card} consumed => Se consume {card}
-Pyre healed for {#n} => La pira se cura {#n}
-{unit} loses {#stacks} {effect} => {unit} pierde {#stacks} de {effect}
+# "Pyre healed for 5. 40 health"
+Pyre healed for {#n}. {#hp} health => La pira recupera {n} de salud, {hp} en total
+Pyre healed for {#n} => La pira recupera {n} de salud
+{unit} loses {#stacks} {effect} => {unit} pierde {stacks} de {effect}
 {unit} loses {effect} => {unit} pierde {effect}
-{unit} gains {#n} max health => {unit} gana {#n} de salud máxima
-All enemies defeated => Todos los enemigos derrotados
+{unit} gains {#n} max health => {unit} gana {n} de salud máxima
+All enemies defeated => Has derrotado a todos los enemigos
 Combat summary => Resumen del combate
 
 # Screens/MapAccessibility.cs
 Choose your path => Elige tu camino
-{#n} paths available => {#n} caminos disponibles
-Use arrows to browse, Enter to select => Usa las flechas para explorar e Intro para elegir
-One path available => Un camino disponible
+{#n} paths available => {n} caminos disponibles
+Use arrows to browse, Enter to select => Usa las flechas para recorrerlos e Intro para elegir
+One path available => Un solo camino disponible
 Merchant Shop => Tienda del comerciante
-{#cost} gold ({extra} => {#cost} de oro ({extra}
-cannot afford => no te llega el oro
+{#cost} gold ({extra} => {cost} de oro ({extra}
+cannot afford => oro insuficiente
 Leave Shop => Salir de la tienda
-{#n} items for sale => {#n} objetos en venta
-{#n} choices available => {#n} opciones disponibles
+1 items for sale => 1 objeto a la venta
+{#n} items for sale => {n} objetos a la venta
+1 choices available => 1 opción disponible
+{#n} choices available => {n} opciones disponibles
 Fight Boss => Luchar contra el jefe
 Face {boss} => Enfréntate a {boss}
 Press Enter to begin the boss battle => Pulsa Intro para empezar la batalla contra el jefe
 Selected {item} => Seleccionado: {item}
 Selected => Seleccionado
-Purchased {item} for {#cost} gold => Compras {item} por {#cost} de oro
-Leaving shop => Saliendo de la tienda
+Purchased {item} for {#cost} gold => Compras {item} por {cost} de oro
+Leaving shop => Sales de la tienda
 Starting boss battle => Empieza la batalla contra el jefe
 Press Escape to open menu => Pulsa Escape para abrir el menú
-You must choose an option => Debes elegir una opción
-You must face the boss => Debes enfrentarte al jefe
+You must choose an option => Tienes que elegir una opción
+You must face the boss => Tienes que enfrentarte al jefe
 
 # Screens/Readers/EventTextReader.cs
 Event choice => Opción del evento
@@ -1125,49 +1185,55 @@ Your unit => Tu unidad
 Enemy => Enemigo
 No units on the train => No hay unidades en el tren
 Could not read units => No se pudieron leer las unidades
-Status => Estado
+Status => Estados
 Intent => Intención
 Ability => Habilidad
 Unknown enemy => Enemigo desconocido
 Does not attack => No ataca
-Extinguish => Extinción
-Resolve => Resolución
-Summon => Invocación
+# Trigger names (fallback when the game's keyword text is missing): the named
+# triggers use the game's own Spanish names, the rest are descriptions
+Extinguish => Extinguir
+Resolve => Resolver
+Summon => Invocar
 Strike => Golpe
-Slay => Asesinato
-On hit => Al recibir un golpe
+Slay => Asesino
+On hit => Al recibir daño
 On heal => Al curarse
-On team turn begin => Al empezar el turno del equipo
-On turn begin => Al empezar el turno
+On team turn begin => Al empezar el turno de su equipo
+On turn begin => Al empezar su turno
 Pre-combat => Antes del combate
-After ascending => Tras ascender
-After descending => Tras descender
+After ascending => Tras subir de piso
+After descending => Tras bajar de piso
 After combat healing => Curación tras el combate
 On spell played => Al jugar un hechizo
 On unit played => Al jugar una unidad
-On corrupt played => Al jugar una carta de corrupción
+On corrupt played => Al jugar una carta infundida
 On card consumed => Al consumir una carta
 On corruption added => Al añadir corrupción
-On armor added => Al añadir Armadura
-On morsel spawn => Al aparecer un bocado
+On armor added => Al recibir Armadura
+On morsel spawn => Al invocar un Aperitivo
 End of turn => Fin del turno
-On feed => Al alimentar
+On feed => Al comer una unidad
 On eaten => Al ser devorado
 On burnout => Al agotarse
 On hatched => Al eclosionar
 End of combat => Fin del combate
-After spawn enchant => Tras el encantamiento de aparición
+After spawn enchant => Encantar
 On enemy death on floor => Al morir un enemigo en el piso
 On friendly death on floor => Al morir un aliado en el piso
 On any unit death on floor => Al morir cualquier unidad en el piso
-Treasure unit (drops reward on kill) => Unidad tesoro (suelta una recompensa al morir)
+Treasure unit (drops reward on kill) => Unidad tesoro (da una recompensa al matarla)
 Treasure unit => Unidad tesoro
-Winged (enters random floor) => Alada (entra en un piso aleatorio)
+Winged (enters random floor) => Alado (entra en un piso aleatorio)
 Flees => Huye
 Flees after combat round => Huye tras la ronda de combate
-Will attack for {#n} damage => Atacará por {n} de daño
+Will attack for {#n} damage => Atacará con {n} de daño
 Healer/Support unit => Unidad sanadora o de apoyo
-targeting {floor} => apuntando a {floor}
+targeting pyre room => apunta a la Sala de la Pira
+targeting bottom floor => apunta al piso inferior
+targeting middle floor => apunta al piso central
+targeting top floor => apunta al piso superior
+targeting {floor} => apunta al {floor}
 {#n} damage => {n} de daño
 
 # Battle/FloorTargetingSystem.cs
@@ -1189,71 +1255,74 @@ Size {#s} => Tamaño {s}
 Rewards => Recompensas
 
 # Core/SettingsMenu.cs
-Combat summary instead of live combat narration => Resumen del combate en lugar de narración en directo
+# Item labels are spoken as "label: value. N of M"; key labels may end in
+# ", battle" / ", with Shift" / ", optional" (separate segments)
+Combat summary instead of live combat narration => Resumen del combate en vez de narración en directo
 Announce damage => Anunciar daño
 Announce deaths => Anunciar muertes
-Announce units entering and being summoned => Anunciar unidades que entran y son invocadas
+Announce units entering and being summoned => Anunciar llegadas e invocaciones de unidades
 Announce status effects => Anunciar efectos de estado
 Announce card draws => Anunciar cartas robadas
 Announce artifact triggers => Anunciar activaciones de artefactos
 Announce unit and merchant chatter => Anunciar diálogos de unidades y comerciantes
-Scene descriptions: game launch, run start, rings, bosses, run end => Descripciones de escenas: inicio del juego, inicio de partida, anillos, jefes, fin de partida
+Scene descriptions: game launch, run start, rings, bosses, run end => Descripciones de escenas: inicio del juego, inicio de partida, anillos, jefes y fin de partida
 Scene descriptions => Descripciones de escenas
-Braille output => Salida braille
+Braille output => Salida en braille
 Help key => Tecla de ayuda
 Settings key => Tecla de ajustes
-Re-read focused item key => Tecla de releer el elemento enfocado
-Read all screen text key => Tecla de leer todo el texto de la pantalla
-Cycle verbosity key => Tecla de cambiar el nivel de detalle
-Read gold key => Tecla de leer el oro
-Read pyre health key => Tecla de leer la salud de la pira
-Read pact shards key => Tecla de leer los Fragmentos del Pacto
-Read hand key => Tecla de leer la mano
-Read selected floor key => Tecla de leer el piso seleccionado
-Read all floors key => Tecla de leer todos los pisos
-Read all units key => Tecla de leer todas las unidades
-Read ember key => Tecla de leer las brasas
-Extra map node key => Tecla extra de nodo del mapa
-Extra run summary key => Tecla extra de resumen de la partida
+Re-read focused item key => Tecla para releer el elemento enfocado
+Read all screen text key => Tecla para leer todo el texto de la pantalla
+Cycle verbosity key => Tecla para cambiar el nivel de detalle
+Read gold key => Tecla para leer el oro
+Read pyre health key => Tecla para leer la salud de la pira
+Read pact shards key => Tecla para leer los Fragmentos del Pacto
+Read hand key => Tecla para leer la mano
+Read selected floor key => Tecla para leer el piso seleccionado
+Read all floors key => Tecla para leer todos los pisos
+Read all units key => Tecla para leer todas las unidades
+Read ember key => Tecla para leer las brasas
+Extra map node key => Tecla adicional para el nodo del mapa
+Extra run summary key => Tecla adicional para el resumen de la partida
+# "battle" is shadowed by the earlier "Battle => Batalla" rule (same match, first wins)
 battle => batalla
 with Shift => con Mayúsculas
 optional => opcional
 Accessibility settings => Ajustes de accesibilidad
 1 settings => 1 ajuste
 {#n} settings => {n} ajustes
-Up and Down choose, Left, Right or Enter change => Flechas arriba y abajo eligen, izquierda, derecha o Intro cambian
+Up and Down choose, Left, Right or Enter change => Flechas arriba y abajo para elegir; izquierda, derecha o Intro para cambiar
 {key} reads the description => {key} lee la descripción
 Escape closes => Escape cierra
-Changes are saved right away => Los cambios se guardan al momento
+Changes are saved right away => Los cambios se guardan al instante
 Settings closed => Ajustes cerrados
 No description => Sin descripción
 Press Enter, then the new key => Pulsa Intro y luego la nueva tecla
-Press the new key for {label} => Pulsa la nueva tecla para {label}
+Press the new key for {label} => Pulsa la nueva tecla: {label}
 Escape cancels => Escape cancela
 Backspace clears it => Retroceso la borra
 This setting can only be changed in the config file => Este ajuste solo se puede cambiar en el archivo de configuración
 Cancelled => Cancelado
 Cleared => Borrada
-This key can't be empty => Esta tecla no puede quedar vacía
-{key} is one of the game's own keys => {key} es una tecla del propio juego
+This key can't be empty => Esta tecla no se puede dejar vacía
+{key} is one of the game's own keys => {key} es una tecla del juego
 choose another => elige otra
-Press Enter to try again => Pulsa Intro para volver a intentarlo
-Set to {key} => Asignada a {key}
-Also used by {clash} => También la usa {clash}
+Press Enter to try again => Pulsa Intro para intentarlo de nuevo
+Set to {key} => Tecla asignada: {key}
+Also used by {clash} => También la usa: {clash}
 none => ninguna
 Backquote => Acento grave
 
 # Help/Contexts/BattleIntroHelp.cs
 Battle Intro => Presentación de la batalla
 Battle Intro screen => Pantalla de presentación de la batalla
-Preview enemies before fighting => Consulta los enemigos antes de luchar
-Left/Right arrows: Navigate between enemy previews and Fight button => Flechas izquierda y derecha: muévete entre las vistas previas de enemigos y el botón de luchar
-Enter: On Fight button, start the battle => Intro: en el botón de luchar, empieza la batalla
+Preview enemies before fighting => Revisa los enemigos antes de luchar
+Left/Right arrows: Navigate between enemy previews and Fight button => Flechas izquierda y derecha: muévete entre los enemigos y el botón Lucha
+Enter: On Fight button, start the battle => Intro: en el botón Lucha, empieza la batalla
 On enemy, hear details => En un enemigo, escucha sus detalles
-F2: Re-read current selection => F2: vuelve a leer la selección actual
-F3: Read all screen text including battle name and enemies => F3: lee todo el texto de la pantalla, incluidos el nombre de la batalla y los enemigos
+F2: Re-read current selection => F2: relee la selección actual
+F3: Read all screen text including battle name and enemies => F3: lee todo el texto de la pantalla, con el nombre de la batalla y los enemigos
 This screen shows which enemies will appear on each floor => Esta pantalla muestra qué enemigos aparecerán en cada piso
-Boss battles display a larger boss preview => Las batallas contra jefes muestran una vista previa más grande del jefe
+Boss battles display a larger boss preview => En las batallas contra jefes, el jefe se muestra en grande
 Escape: Return to map without fighting => Escape: vuelve al mapa sin luchar
 
 # Help/Contexts/ChampionUpgradeHelp.cs
@@ -1264,17 +1333,17 @@ Ctrl plus Up: Step through the upgrade's details in the review buffer => Control
 F3: Read all upgrade options => F3: lee todas las opciones de mejora
 
 # Help/Contexts/CompendiumHelp.cs
-Page Up and Page Down: Switch sections: Checklist, Cards, Champion Upgrades, Artifacts, Card Frames, Statistics => Re Pág y Av Pág: cambia de sección: Lista de control, Cartas, Mejoras de campeón, Artefactos, Marcos de carta, Estadísticas
-Left and Right arrows: Turn pages within a section => Flechas izquierda y derecha: pasa las páginas de una sección
+Page Up and Page Down: Switch sections: Checklist, Cards, Champion Upgrades, Artifacts, Card Frames, Statistics => Re Pág y Av Pág: cambia de sección: Lista de control, Cartas, Mejoras de campeón, Artefactos, Marcos de carta y Estadísticas
+Left and Right arrows: Turn pages within a section => Flechas izquierda y derecha: pasa de página dentro de la sección
 Arrow keys: Move between items on the page => Flechas: muévete entre los elementos de la página
 F3: Read a full summary of the Checklist or Statistics section => F3: lee un resumen completo de la sección Lista de control o Estadísticas
-F: On the Checklist, switch between standard progress and The Last Divinity page => F: en la Lista de control, alterna entre el progreso estándar y la página de The Last Divinity
-On Statistics, switch between Stats Leaderboard and Personal Records => En Estadísticas, alterna entre la Clasificación de estadísticas y los Récords personales
-On the Checklist: clan rows announce name and level; their XP, champion unlocks, victories per allied clan, and card collection go to the review buffer => En la Lista de control: las filas de clan anuncian el nombre y el nivel; su XP, los campeones desbloqueados, las victorias por clan aliado y la colección de cartas van a la lista de revisión
-F2: Re-read the focused item with full details => F2: vuelve a leer el elemento enfocado con todos los detalles
+F: On the Checklist, switch between standard progress and The Last Divinity page => F: en la Lista de control, alterna entre el progreso del juego base y la página de La Última Divinidad
+On Statistics, switch between Stats Leaderboard and Personal Records => En Estadísticas, alterna entre la clasificación de estadísticas y los Registros personales
+On the Checklist: clan rows announce name and level; their XP, champion unlocks, victories per allied clan, and card collection go to the review buffer => En la Lista de control, cada clan anuncia su nombre y nivel; su XP, sus campeones desbloqueados, sus victorias por clan aliado y su colección de cartas van a la lista de revisión
+F2: Re-read the focused item with full details => F2: relee el elemento enfocado con todos los detalles
 Ctrl plus Up and Down: Step through the focused item's details => Control más flechas arriba y abajo: recorre los detalles del elemento enfocado
 Ctrl plus Left and Right: Switch review buffers => Control más flechas izquierda y derecha: cambia de lista de revisión
-On the Statistics section: Covenant Rank, Score, Wins, and Win Streak buttons change the leaderboard sort => En la sección Estadísticas: los botones Rango de Pacto, Puntuación, Victorias y Racha de victorias cambian el orden de la clasificación
+On the Statistics section: Covenant Rank, Score, Wins, and Win Streak buttons change the leaderboard sort => En la sección Estadísticas, los botones Rango de Pacto, Puntuación, Victorias y Racha de victorias cambian el orden de la clasificación
 Clan buttons filter by clan => Los botones de clan filtran por clan
 Escape: Close the logbook => Escape: cierra la Bitácora
 Q or Backspace: Close the logbook => Q o Retroceso: cierra la Bitácora
@@ -1284,43 +1353,44 @@ Escape opens the pause menu => Escape abre el menú de pausa
 Arrow keys: Browse rewards => Flechas: explora las recompensas
 Enter: Collect selected reward => Intro: recoge la recompensa seleccionada
 F2: Read the focused reward's full details => F2: lee todos los detalles de la recompensa enfocada
-Ctrl plus Up: Step through the reward's details in the review buffer, one piece at a time => Control más flecha arriba: recorre los detalles de la recompensa en la lista de revisión, de uno en uno
-Ctrl plus Left/Right: Switch review buffers, such as Card or Reward => Control más flecha izquierda o derecha: cambia de lista de revisión, como Carta o Recompensa
+Ctrl plus Up: Step through the reward's details in the review buffer, one piece at a time => Control más flecha arriba: recorre los detalles de la recompensa en la lista de revisión, uno a uno
+Ctrl plus Left/Right: Switch review buffers, such as Card or Reward => Control más flecha izquierda o derecha: cambia de lista de revisión, por ejemplo a Carta o Recompensa
 F3: Read all rewards => F3: lee todas las recompensas
-Escape: Skip remaining rewards (if allowed) => Escape: omite las recompensas restantes (si se permite)
+Escape: Skip remaining rewards (if allowed) => Escape: omite las recompensas restantes (si se puede)
 
 # Help/Contexts/TutorialHelp.cs
 Press Enter or click to continue => Pulsa Intro o haz clic para continuar
-Press Escape to dismiss => Pulsa Escape para descartar
-Tutorial popup is showing => Se muestra una ventana del tutorial
+Press Escape to dismiss => Pulsa Escape para cerrar
+Tutorial popup is showing => Ventana del tutorial abierta
 
 # Patches/Combat/CombatPhaseChangePatch.cs
 Enemy turn => Turno enemigo
-Combat ended => Combate terminado
+Combat ended => Fin del combate
 Boss action => Acción del jefe
 {boss} action => Acción de {boss}
-{boss} freezes {floor} => {boss} congela {floor}
+{boss} freezes {floor} => {boss} congela el {floor}
 {boss} acts => {boss} actúa
 Deal {#n} damage => Inflige {n} de daño
 Deal damage => Inflige daño
-Heal Pyre for {#n} => Cura {n} a la pira
+Heal Pyre for {#n} => Cura {n} de salud a la pira
 Heal Pyre => Cura la pira
 Heal {#n} => Cura {n}
-Apply {#n} {status} => Aplica {n} {status}
-Buff {#n} => Potencia {n}
-Buff units => Potencia unidades
-Kill unit => Mata una unidad
+Apply {#n} {status} => Aplica {status} {n}
+Buff {#n} => Refuerza {n}
+Buff units => Refuerza a las unidades
+Kill unit => Mata a una unidad
 Spawn unit => Genera una unidad
-Adjust ember by {#n} => Ajusta las brasas en {n}
+Adjust ember by {#n} => Modifica las brasas en {n}
 Modify ember => Modifica las brasas
 Draw 1 cards => Roba 1 carta
 Draw {#n} cards => Roba {n} cartas
 Draw cards => Roba cartas
 Discard cards => Descarta cartas
-Adjust room capacity by {#n} => Ajusta la capacidad del piso en {n}
+Adjust room capacity by {#n} => Modifica la capacidad del piso en {n}
 Modify room capacity => Modifica la capacidad del piso
 
 # Patches/Combat/EnemyMovementPatches.cs
+Pyre room frozen => Sala de la Pira congelada
 {floor} frozen => {floor} congelado
 
 # Patches/Combat/StatusEffectPatches.cs
@@ -1332,12 +1402,12 @@ Enemy artifact => Artefacto enemigo
 Enemy artifacts => Artefactos enemigos
 1 reward => 1 recompensa
 {#n} rewards => {n} recompensas
-Navigate with arrows => Navega con las flechas
+Navigate with arrows => Muévete con las flechas
 Enter to collect => Intro para recoger
 
 # Screens/Readers/MetaProgressReader.cs
-The Last Divinity progress => Progreso de The Last Divinity
-Progress summary => Resumen de progreso
+The Last Divinity progress => Progreso de La Última Divinidad
+Progress summary => Resumen del progreso
 Covenant Rank => Rango de Pacto
 Clanless cards => Cartas sin clan
 Covenant {#b} and up => Pacto {b} o superior
@@ -1347,36 +1417,37 @@ divine victory => victoria divina
 completed => completado
 not completed => no completado
 Challenges completed => Desafíos completados
-Progress {#p} of {#n} => Progreso {p} de {n}
+Progress {#p} of {#n} => Progreso: {p} de {n}
 Level {#l} of {#m} => Nivel {l} de {m}
 {#x} of {#n} XP to the next level => {x} de {n} XP para el siguiente nivel
 Champion {#i} => Campeón {i}
-{name} unlocked => {name} desbloqueado
-{name} locked => {name} bloqueado
+{name} unlocked => {name}: desbloqueado
+{name} locked => {name}: bloqueado
 Champions => Campeones
 with {sub}: best Covenant {#n} => con {sub}: mejor Pacto {n}
-with {sub}: not yet won => con {sub}: aún sin victoria
+with {sub}: not yet won => con {sub}: aún sin victorias
 Victories => Victorias
-won with {#w} of {#n} allied clans => ganada con {w} de {n} clanes aliados
-won with 1 of 1 allied clans => ganada con 1 de 1 clan aliado
+won with 1 of 1 allied clans => con 1 de 1 clan aliado
+won with {#w} of 1 allied clans => con {w} de 1 clan aliado
+won with {#w} of {#n} allied clans => con {w} de {n} clanes aliados
 {#m} mastered => {m} dominadas
-{title} Last Divinity cards => Cartas de The Last Divinity de {title}
+{title} Last Divinity cards => Cartas de {title} de La Última Divinidad
 Divine victories => Victorias divinas
-The Last Divinity defeated with {#w} of {#t} clan combinations => The Last Divinity derrotada con {w} de {t} combinaciones de clanes
+The Last Divinity defeated with {#w} of {#t} clan combinations => La Última Divinidad derrotada con {w} de {t} combinaciones de clanes
 Stats Leaderboard => Clasificación de estadísticas
 sorted by {stat} => ordenada por {stat}
-No leaderboard entries loaded yet => Aún no se han cargado entradas de la clasificación
+No leaderboard entries loaded yet => Aún no se ha cargado ninguna entrada de la clasificación
 Wins => Victorias
 Win Streak => Racha de victorias
-Personal Records => Récords personales
+Personal Records => Registros personales
 
 # Screens/Readers/SettingsTextReader.cs
 Background => Fondo
-Sound Effects => Efectos de sonido
+Sound Effects => Efectos sonoros
 Interface => Interfaz
-Trial toggle => Interruptor de prueba
+Trial toggle => Interruptor de la Prueba
 ON => ACTIVADO
 OFF => DESACTIVADO
 You will gain additional reward => Obtendrás una recompensa adicional
-Enable to gain additional reward => Actívalo para obtener una recompensa adicional
-Press Enter to toggle => Pulsa Intro para alternar
+Enable to gain additional reward => Actívala para obtener una recompensa adicional
+Press Enter to toggle => Pulsa Intro para activarla o desactivarla

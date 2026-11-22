@@ -22,7 +22,7 @@ namespace MonsterTrainAccessibility.Core.Translation
     /// start the longest matching rule wins (on a tie, the one with more literal
     /// text); uncovered text is kept, then "~" phrase rules replace
     /// whole words in it (icon words like "gold" inside game text). Hole contents
-    /// are translated recursively. Only the first letter is matched without case,
+    /// are translated recursively; a hole a rule starts with never crosses a separator. Only the first letter is matched without case,
     /// and the output's first letter takes the input's case. A single trailing
     /// period is ignored on both sides (help items arrive with periods stripped).
     /// Game text is already in the target language and matches no rule.
@@ -55,6 +55,7 @@ namespace MonsterTrainAccessibility.Core.Translation
 
         private static readonly Regex SeparatorRe = new Regex(@"[,.:;!?]\s+|\n|\(|\s-\s", RegexOptions.Compiled);
         private static readonly Regex HoleRe = new Regex(@"\{(#?)([A-Za-z_][A-Za-z0-9_]*)\}", RegexOptions.Compiled);
+        private const string LeadingHole = @"((?:(?![,.:;!?]\s|\n|\(|\s-\s).)+?)";
         private const string EndBoundary = @"(?=$|[,.:;!?)\r\n]|(?<=[,.:;!?])\s|\s\(|\s-\s)";
 
         public static bool IsLoaded => _rules != null && _rules.Count > 0;
@@ -144,10 +145,14 @@ namespace MonsterTrainAccessibility.Core.Translation
             {
                 if (m.Index > pos) AddLiteral(rule, sb, en.Substring(pos, m.Index - pos), ref anyLetters);
                 bool numeric = m.Groups[1].Value == "#";
-                if (rule.Literals.Count == 0 && rule.HoleNames.Count == 0) rule.FirstLiteral = null;
+                bool leading = rule.Literals.Count == 0 && rule.HoleNames.Count == 0;
+                if (leading) rule.FirstLiteral = null;
                 rule.HoleNames.Add(m.Groups[2].Value);
                 rule.HoleNumeric.Add(numeric);
-                sb.Append(numeric ? @"([-+]?\d+(?:[.,]\d+)?)" : "(.+?)");
+                // A leading hole stays inside its own segment: otherwise "{who} at {#hp} of {#max}"
+                // swallows the list before it ("killed Imp, Guard, your Guard at 3 of 5" -> who =
+                // "Guard, your Guard"). Text it can't reach is kept as is, so names with commas survive.
+                sb.Append(numeric ? @"([-+]?\d+(?:[.,]\d+)?)" : leading ? LeadingHole : "(.+?)");
                 pos = m.Index + m.Length;
             }
             if (pos < en.Length) AddLiteral(rule, sb, en.Substring(pos), ref anyLetters);
