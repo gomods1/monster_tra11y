@@ -55,13 +55,9 @@ A comprehensive accessibility mod for Monster Train that enables totally blind p
 
 ## Playing in Spanish / Jugar en español
 
-The mod ships a fan-made Spanish translation of the game's text and a Spanish version of everything the mod says (announcements, F1 help, F9 settings, scene descriptions). Nothing in the game's files changes: the translation lives in `BepInEx\plugins\Spanish` and is applied while the game runs.
+The mod adds Spanish to the game's own language list: a fan-made translation of the game's text (completed for the current game version) and a Spanish version of everything the mod says (announcements, F1 help, F9 settings, scene descriptions). Nothing in the game's files changes: the translation lives in `BepInEx\plugins\Spanish`.
 
-1. Keep the game's language on English (the default).
-2. Press F9. The first setting is "Language, Idioma". Press Enter to switch it to Español.
-3. Close the list with Escape and restart the game.
-
-Or set `Language = Spanish` in `BepInEx\config\com.accessibility.monstertrain.cfg`. Any game text changed by an update after the translation was made (2024) stays in English, so card numbers are never out of date. Full instructions in Spanish: `jugar_en_español.txt` in the download.
+In the game, open Settings, the Other tab, and pick **Español** in the Language dropdown (the last option). The game and the mod switch right away. The mod always speaks the game's language; to force one, set `ModLanguage` in `BepInEx\config\com.accessibility.monstertrain.cfg`. Full instructions in Spanish: `jugar_en_español.txt` in the download.
 
 ## Keyboard Controls
 

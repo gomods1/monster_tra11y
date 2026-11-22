@@ -6758,3 +6758,317 @@ InkLoc-0321	<style="Keyword"><align="center">You pressed the snow icon.</align><
 InkLoc-0170	<style="Body"><color="red">Shards of the Pyre</color>, remnants of the once great beacon of Hell, are strewn about.	<style="Body"><color="red">Fragmentos de la Pira</color>, restos del que fuera el gran faro del Infierno.
 InkLoc-0005	You don't often make offerings to unknown beasts, but you consider making an exception for this cave.</style>	No sueles hacer ofrendas a bestias desconocidas, pero consideras hacer una excepción con esta cueva.</style>
 InkLoc-0316	<style="Body">Malicka appears before you once more, exerting as much <color=#8700b3>unseen pressure</color> as per usual. You find it oddly comforting this time around.	<style="Body">Malicka aparece ante ti una vez más, ejerciendo tanta <color=#8700b3>presión invisible</color> como de costumbre. Esta vez te resulta extrañamente reconfortante.
+# Terms the 2024 translation lacked, translated for the current game version (8.4.0)
+ScenarioData_waveMessageKey-00ce4fab437d4038-0d371765c2c723f4099827bdf0096bc0-v2	[respite]	[respite]
+TextFormat_TimeSpan_MinutesSeconds	{0}m {1}s	{0}m {1}s
+CharacterChatterData_locKey-3eccb3cc91345821-af0da8e1e3ebe6843a53deda465ac040-v2	Meep meep.	Meep meep.
+CharacterChatterData_locKey-c21cf32dbd6ce378-720370a4c5e6196478e09c935dc5252d-v2	Bzzzt bzt bzt bzzzzzzzt.	Bzzzt bzt bzt bzzzzzzzt.
+ScenarioData_waveMessageKey-32e3208cd864900b-5cabbd1ac8063314085c2c84682f5c22-v2	[respite]	[respite]
+MapRegion_Title_10	[crystal]	[crystal]
+ScenarioData_waveMessageKey-c768e6b1e29fdf3d-b64da36064afd3c408655677029a5ed1-v2	[respite]	[respite]
+CardData_nameKey-4d6b89d3f35cd2d1-0a8521d528e582d49b7cf2ac5e41dde3-v2	Wicklash	Latigazo de Mecha
+ScoreEvent_NotificationFormat_AddPoints	+[codeint0]	+[codeint0]
+CardUI_XCostLabel	X	X
+AttackFormat	{0}[attack]	{0}[attack]
+CardData_nameKey-6d5de62d50f070ab-13d2fc4da8b510146b390968e888b048-v2	Kindle	Avivar
+ScenarioData_waveMessageKey-cdd30de33d9149df-019da63a729c6aa43b83ebadc47461f4-v2	[respite]	[respite]
+ReplacementStringsData__replacement-51de1aca4952f4b2-54cd63e248504b84185143a1d93acb06-v2	<sprite name="ChargedEchoes">	<sprite name="ChargedEchoes">
+CharacterChatterData_locKey-0309082b38361858-720370a4c5e6196478e09c935dc5252d-v2	Bzt.	Bzt.
+CardUpgradeData_upgradeDescriptionKey-a3cab5582f37ecb2-7072dbf73767e3a4e9c241a3e7dc7dc5-v2	-2[ember].	-2[ember].
+ScenarioData_waveMessageKey-5a3bf208a8df66a0-ba29027417d6d8e4588ecd4cd4785af6-v2	[respite]	[respite]
+ScenarioData_waveMessageKey-27c2f9a8b598252b-06b03454d542651468284de851201979-v2	[respite]	[respite]
+StatusEffectsDisplayData_key-dc8544cc47efa02a-af158a87c9fe96941a56cc4dced8ac01-v2	[hittriggered]	[hittriggered]
+StatusEffectsDisplayData_key-09c998d150ec9030-af158a87c9fe96941a56cc4dced8ac01-v2	[harvesttriggered]	[harvesttriggered]
+StatusEffectsDisplayData_key-60171b81845ca7a6-af158a87c9fe96941a56cc4dced8ac01-v2	[slaytriggered]	[slaytriggered]
+Achievement_Title_DefeatBigBoss1VariantEarly	Ta-ta Talos	Adiós, Talos
+CardData_nameKey-4f29a74e95a3ccca-055676ae525e96343aadc1b604de109d-v2	Terror	Terror
+CardData_nameKey-e8c5d35496f7eb9c-9a04d7ad84d2eb045b12d424615fd059-v2	Ensnare	Atrapar
+GameSpeedUI_GameSpeed_SuperUltra	Super Ultra	Súper Ultra
+CharacterChatterData_locKey-9cacd97e3167e9bd-ce546150ffdd4ae4a8d95bc7672f05fc-v2	Hmph.	Hmph.
+CardUpgradeData_descriptionKey-18bf5f002f0a4c9d-37421bb148eb97a49b1cbec41105f5fd-v2	+[effect0.upgrade.bonusdamage][attack].	+[effect0.upgrade.bonusdamage][attack].
+SubtypesData_Wurm	Kin	Kin
+CardEffectSacrifice_TooltipTitle	[sacrifice]	[sacrifice]
+TextFormat_TimeSpan_Minutes	{0}m	{0}m
+CardUpgradeData_descriptionKey-cdc17828ee54ed05-001b80fa9d87a5548b74224c47e61f3b-v2	+[effect0.upgrade.bonusdamage][attack].	+[effect0.upgrade.bonusdamage][attack].
+CapacityFormat	{0}[capacity]	{0}[capacity]
+KeyCode_A	A	A
+KeyCode_B	B	B
+KeyCode_C	C	C
+KeyCode_D	D	D
+KeyCode_E	E	E
+KeyCode_F	F	F
+KeyCode_G	G	G
+KeyCode_H	H	H
+KeyCode_I	I	I
+KeyCode_J	J	J
+KeyCode_K	K	K
+KeyCode_L	L	L
+KeyCode_M	M	M
+KeyCode_N	N	N
+KeyCode_O	O	O
+KeyCode_P	P	P
+KeyCode_Q	Q	Q
+CharacterData_descriptionKey-8bda0bd9f88b60f5-7ac03f5eedc72f24287fc5c4bf811771-v2	+3[attack].	+3[attack].
+KeyCode_R	R	R
+KeyCode_S	S	S
+KeyCode_T	T	T
+KeyCode_U	U	U
+KeyCode_V	V	V
+KeyCode_W	W	W
+KeyCode_X	X	X
+KeyCode_Y	Y	Y
+KeyCode_Z	Z	Z
+CardUpgradeData_descriptionKey-85b281f842c9a923-19f88c426d1679c48b24752017b8b69d-v2	+[effect0.upgrade.bonusdamage][attack].	+[effect0.upgrade.bonusdamage][attack].
+ScenarioData_waveMessageKey-aaccad590ad8155b-de58df12bfadb4f459040beb59ec2268-v2	[respite]	[respite]
+Trigger_CorruptionAdded_CardText	Inspire	Inspire
+MutatorData_relicActivatedKey-5a8e20e0119329fc-d53e20c95b8c5cb498ec9fee2470656d-v2	+[effect0.power][crystal]	+[effect0.power][crystal]
+CardUpgrade_AttackDamage	+{0}[attack]	+{0}[attack]
+ReplacementStringsData__replacement-3daa540220d65195-54cd63e248504b84185143a1d93acb06-v2	<sprite name="PyreHealth">	<sprite name="PyreHealth">
+CardUpgrade_BonusHP	+{0}[health].	+{0}[health].
+CharacterChatterData_locKey-875656906edc803f-c0385252aab2f164d807b88c29a8cb2a-v2	Nononononono...	Nononononono...
+Message_ErrorCode	Error: {0}	Error: {0}
+CardTraitScalingBuffDamage_CurrentScaling_CardText	<nobr><i>([codeint0] [attack])</i></nobr>	<nobr><i>([codeint0] [attack])</i></nobr>
+CharacterChatterData_locKey-a014d1edaf474c90-1dfb162fdb8ef8f488b19ff4a7d3ec05-v2	Meepuh...	Meepuh...
+CharacterData_BasicLvl2AE_Name	AE lmao	AE lmao
+CharacterData_ExploderLvl3_Name	Boom Boom	Bum Bum
+CharacterChatterData_locKey-3892ec396464392d-af0da8e1e3ebe6843a53deda465ac040-v2	Grrrrr.	Grrrrr.
+CharacterData_nameKey-de9a82211e36eb8f-e463b9805c203784bb74006b5fd36a22-v2	Cuttlehex	Cuttlehex
+CharacterData_nameKey-d506f4f505585e8c-aeaaf31b62556d54fb47acbc2981644f-v2	Dreg	Escoria
+Test_ExtraChars	a	a
+ReplacementStringsData__replacement-b10640add81faf0f-54cd63e248504b84185143a1d93acb06-v2	<sprite name="PactShards">	<sprite name="PactShards">
+CardUpgradeData_descriptionKey-fcb0445c914cc032-6070ddee90d9e9c4fb0fd823d1ded009-v2	+[effect0.upgrade.bonusdamage][attack].	+[effect0.upgrade.bonusdamage][attack].
+CharacterChatterData_locKey-c86a0c629e476e84-f6f12c46584585c46ab2c876863b6c9e-v2	urgh...	urgh...
+ScenarioData_waveMessageKey-c91bcc45817dcb25-03f58b7fed1080f499a8a32f26027bda-v2	[respite]	[respite]
+ScreenReward_GoldForSkipFormat	 (+{0}[coin])	 (+{0}[coin])
+CardUpgradeData_descriptionKey-cfcd51f92e35417a-4c8eee840663766478ee15f94e5d76c3-v2	+[effect0.upgrade.bonusdamage][attack]	+[effect0.upgrade.bonusdamage][attack]
+CharacterChatterData_locKey-b7186e22235023f5-af0da8e1e3ebe6843a53deda465ac040-v2	Meep Meep.	Meep Meep.
+CharacterData_descriptionKey-a18ba4f58ca11b43-1871d5d88e32047478c0e3c189257e5e-v2	+5[attack].	+5[attack].
+CardUpgradeData_upgradeDescriptionKey-3b101790ad97c0d4-09abeeee4003aa44a85b35832f1a4c1c-v2	+3 [magicpower].	+3 [magicpower].
+CharacterChatterData_locKey-29f1553a08c1e679-8aa9fc055060e3840a0166ff88062e5d-v2	Hmmmm.	Hmmmm.
+CharacterChatterData_locKey-5593c6cc7f0b1c8e-1dfb162fdb8ef8f488b19ff4a7d3ec05-v2	Sighhh... meep.	Ayyy... meep.
+TextFormat_TimeSpan_HoursMinutes	{0}h {1}m	{0}h {1}m
+CardEffectGainEnergy_Activated	+{0}[ember]	+{0}[ember]
+CardData_descriptionKey-7603404a75491c7a-69b303f167fb6624981514b55d044984-v2	+[effect0.power][coin].	+[effect0.power][coin].
+StatusEffectsDisplayData_key-ce4321338ad437cf-af158a87c9fe96941a56cc4dced8ac01-v2	[extinguishtriggered]	[extinguishtriggered]
+CollectableRelicData_relicActivatedKey-2636bcff7875433f-294d815b112c64b408a218944e56bb37-v2	+1[ember]	+1[ember]
+EmberFormat	{0}[ember]	{0}[ember]
+ReplacementStringsData__replacement-549f2ae228d477ea-54cd63e248504b84185143a1d93acb06-v2	<sprite name="Gold">	<sprite name="Gold">
+CardUpgradeData_descriptionKey-45f39cfe222bd297-08f5b09b9f99fa54fb06e679fab33bac-v2	+[effect0.upgrade.bonusdamage][attack].	+[effect0.upgrade.bonusdamage][attack].
+ScenarioData_waveMessageKey-85f979a9fed812af-2ff48a1fffa30114e9dbe6e5afefecbf-v2	[respite]	[respite]
+CardState_DamageText_Multistrike	{0}<size=55%>x</size><size=65%>{1}</size>	{0}<size=55%>x</size><size=65%>{1}</size>
+DialogConfirmation_Button2	No	No
+DialogNotification_Button	OK	Aceptar
+StatusEffectsDisplayData_key-2b2dd7fb3c4f6667-af158a87c9fe96941a56cc4dced8ac01-v2	[harvesttriggered]	[harvesttriggered]
+GameSpeedUI_GameSpeed_Normal	Normal	Normal
+CharacterChatterData_locKey-1d65441df5d6c749-6a56a2c43292d344491c4c40e7e0df27-v2	Mmm Mmmmm.	Mmm Mmmmm.
+StatusEffectScorchState_Activated	-{0}[ember]	-{0}[ember]
+CardUpgradeData_descriptionKey-118f3193b1956198-1d542877ec04a1645bf6c4d70d95845e-v2	+[effect0.upgrade.bonusdamage][attack].	+[effect0.upgrade.bonusdamage][attack].
+CharacterData_nameKey-d24b1712ab5166e5-9f502c0f32fc7b240b43372ea2a7b9f2-v2	Wyldenten	Wyldenten
+CardEffectSacrifice_AsTrait_WithSubtype	<nobr><b>[sacrifice] {0}</b></nobr>	<nobr><b>[sacrifice] {0}</b></nobr>
+CharacterChatterData_locKey-4d658d2e5c51719d-c0385252aab2f164d807b88c29a8cb2a-v2	Nononononono...	Nononononono...
+CharacterChatterData_locKey-d78084f77043f950-bc4bcfae5c340d4499c0867407db9663-v2	...taaaaalooooos...	...taaaaalooooos...
+Filter_CardRarity_Common	C	C
+Filter_CardRarity_Rare	R	R
+Filter_CardRarity_Starter	S	S
+Filter_CardRarity_Uncommon	U	U
+CharacterChatterData_locKey-e386ecd89042d571-419d8cd2ce3094745aeedbadd1235e55-v2	Tkkt tkkt.	Tkkt tkkt.
+HudNotification_TreasureHeroTriggered	+[codeint0][coin]	+[codeint0][coin]
+HudNotification_TreasureHeroTriggeredNegative	-[codeint0][coin]	-[codeint0][coin]
+ScenarioData_waveMessageKey-23f78f27dc48469f-00b882db88aa62344b70a09cb80daf8f-v2	[respite]	[respite]
+ScreenSettings_VSyncOption	VSync	VSync
+CardUI_XCostPlusBonusLabel	X+{0}	X+{0}
+StatusEffectsDisplayData_key-1cc69543ccff6f79-af158a87c9fe96941a56cc4dced8ac01-v2	[onturnbegintriggered]	[onturnbegintriggered]
+CharacterData_descriptionKey-c52cf84f299f6ad3-0125d85fca9248b40a1dfd86873b7548-v2	+1[coin]	+1[coin]
+CharacterChatterData_locKey-066bfbfaf764e9f1-fb201e19e4a340740a51eba5ddc13c16-v2	Hmmmmph.	Hmmmmph.
+CharacterChatterData_locKey-1743eebd8a2a339c-436c0a90feb08c84599f0c766f9f2d16-v2	Grrrrrglllllrrr...	Grrrrrglllllrrr...
+ScenarioData_waveMessageKey-aa3b68eb9e7ffc60-91d082021a16a54408eed946fac846a2-v2	[respite]	[respite]
+CardUpgradeData_upgradeDescriptionKey-74802ff7174aca7c-6b8d163932bd9214d8da3c2944e5b146-v2	-1[capacity].	-1[capacity].
+CharacterChatterData_locKey-934fb647f9d49fce-ce546150ffdd4ae4a8d95bc7672f05fc-v2	urgh...	urgh...
+ScreenGame_Victory_Total	Total	Total
+ScreenSettings_ColorBlindness_BlueYellow	Tritanopia	Tritanopía
+TextFormat_DivideFractional	<u>{0}</u><br>{1}	<u>{0}</u><br>{1}
+ReplacementStringsData__replacement-e746b5db7f800803-54cd63e248504b84185143a1d93acb06-v2	<sprite name="Xcost">	<sprite name="Xcost">
+CharacterChatterData_locKey-398727dc0a50048a-bc4bcfae5c340d4499c0867407db9663-v2	...sooooolgaaaaard...	...sooooolgaaaaard...
+CharacterChatterData_locKey-373057881adc27da-bc4bcfae5c340d4499c0867407db9663-v2	...failllll...	...fracasarrrrr...
+MutatorData_nameKey-fdd4557363f9e811-6d798c33a13bcb541bfbbb7fdd513a02-v2	Yeetpocalypse	Yeetpocalipsis
+MapRegion_Name1	Limbo	Limbo
+CharacterChatterData_locKey-e0bc548e4e4c692b-436c0a90feb08c84599f0c766f9f2d16-v2	Grrrrrglllllrrr...	Grrrrrglllllrrr...
+No	No	No
+CardUpgradeData_descriptionKey-287b2731b2a4496e-14bad2a24ab347e4ab8ee4fe1850e477-v2	+20[attack].	+20[attack].
+CollectableRelicData_relicActivatedKey-00051db8f766ceed-23f009ca895815f4d9a80672ae6a4c0e-v2	-1[attack]	-1[attack]
+CharacterChatterData_locKey-7365e89d0508e058-af0da8e1e3ebe6843a53deda465ac040-v2	Meep.	Meep.
+CardUpgradeData_upgradeDescriptionKey-7575e283e8e73c84-4c12c2a9b6b61bc4d8b2706d6745b741-v2	-4[ember].	-4[ember].
+CharacterData_descriptionKey-3ae21bd4270cca36-d12e27b33d6c5c848b9f4a9ff82d845e-v2	+[effect0.upgrade.bonusdamage][attack].	+[effect0.upgrade.bonusdamage][attack].
+CollectableRelicData_relicActivatedKey-c7744f879617ab87-c45d0829b04acdb429ab1f6ca8ddca0d-v2	+{0} [magicpower]	+{0} [magicpower]
+CharacterChatterData_locKey-4a7b979da5d0567b-bc4bcfae5c340d4499c0867407db9663-v2	...faaaaaaadeeee...	...desvaneceeeerrr...
+CharacterChatterData_locKey-93c4139767dcd5f8-f6f12c46584585c46ab2c876863b6c9e-v2	.....mmmmm....	.....mmmmm....
+TextFormat_Multiply	x{0}	x{0}
+CardUpgradeData_upgradeDescriptionKey-2800da117b9a0eb6-ad6fec6edc72a9b458dc36bbe7ddb61f-v2	WIP	En desarrollo
+CharacterChatterData_locKey-9b90ca412143e341-bc4bcfae5c340d4499c0867407db9663-v2	...aaaaaarchusssss...	...aaaaaarchusssss...
+CharacterChatterData_locKey-68032e253d5e60c6-ce546150ffdd4ae4a8d95bc7672f05fc-v2	urgh...	urgh...
+TextFormat_TimeSpan_HoursMinutesSeconds	{0}h {1}m {2}s	{0}h {1}m {2}s
+CharacterChatterData_locKey-40e70fcd9f508ec4-419d8cd2ce3094745aeedbadd1235e55-v2	Tkkt tktkt tk.	Tkkt tktkt tk.
+CollectableRelicData_relicActivatedKey-dc8fa509d1e51d8d-693624a3123aed943b9dc2951273f011-v2	+{0}[capacity]	+{0}[capacity]
+CharacterChatterData_locKey-9f933db9386f9d7c-cadc1f8577adaf74babaa2deca6241b7-v2	MMM MMMMM.	MMM MMMMM.
+CollectableRelicData_relicActivatedKey-ee452a295278a579-336856177ac3f7a43a0a76e2b84acc81-v2	+{0}[ember]	+{0}[ember]
+CardUpgradeData_descriptionKey-a45324720af64d83-458ffffcac57af44cb801c4c1950ccec-v2	+[effect0.upgrade.bonusdamage][attack].	+[effect0.upgrade.bonusdamage][attack].
+ScreenSettings_AudioOption	Audio	Audio
+ScreenSettings_Header_Audio	Audio	Audio
+GameSpeed_SuperUltra	Super Ultra	Súper Ultra
+ScenarioData_waveMessageKey-82fd79f1c70001bc-4f747a37004b2df4abdda9ed421926e2-v2	[respite]	[respite]
+CardUpgradeData_descriptionKey-a1800e5d1f95a790-62c7de58b20b4334f9899af61c86be60-v2	+5[attack].	+5[attack].
+ClassData_titleLoc-1be5deae1e19b5ef-95d2dfc28d9a06846a6e49425df682a0-v2	Wurmkin	Wurmkin
+CollectableRelicData_nameKey-03d1d0ff1343b1e2-999145cdc28aaa54d971e1c6d2529260-v2	Wurmtooth	Diente de Wurm
+CountFormat	x{0}	x{0}
+ScenarioData_waveMessageKey-fd689713b6d83f1b-8d8a789e58e63af4da7f1608078d7f89-v2	[respite]	[respite]
+StatusEffectsDisplayData_key-7cb0ae3e54af577a-af158a87c9fe96941a56cc4dced8ac01-v2	[rallytriggered]	[rallytriggered]
+StatusEffect_Regen_CardText	Regen	Regeneración
+CharacterData_descriptionKey-56e780e2ca77aaad-b3529d0c210895749be35161c29a89c8-v2	+1[attack].	+1[attack].
+CovenantData_relicActivatedKey-d8e744a5e72a362c-4ab232da5a388f64f89087fd521cf4ae-v2	{0}[capacity]	{0}[capacity]
+Leaderboard_All	Global	Global
+StoryCharacterData_displayNameKey-9d363a89d49834b1-c8a56706dcc826641a75b9d4545c353f-v2	Heph	Heph
+StoryCharacterData_displayNameKey-b3026a8a2823f4e5-13f3c1e6464619b4ebf8140672d1df27-v2	AAAH	AAAH
+CharacterChatterData_locKey-383c5dd649f55653-436c0a90feb08c84599f0c766f9f2d16-v2	Rrrggg...	Rrrggg...
+Toggle_Off	Off	Desactivado
+Toggle_On	On	Activado
+BuildNumberFormat	Build #{0}	Compilación n.º {0}
+CharacterChatterData_locKey-7dc04311724fba09-bc4bcfae5c340d4499c0867407db9663-v2	...failllll...	...fracasarrrrr...
+ScreenMerchant_BuyCrystalsLabel	+{0} [crystal]	+{0} [crystal]
+CardEffectAdjustMaxHealth_Activated	+{0}[health]	+{0}[health]
+CardEffectBuffDamage_Activated	{0}[attack]	{0}[attack]
+CardUpgradeData_descriptionKey-030f8546ec3495f5-8e26f6dfcce9e5d4c9868c2077345e3f-v2	+[effect0.upgrade.bonusdamage][attack].	+[effect0.upgrade.bonusdamage][attack].
+CardUpgradeData_descriptionKey-919833bc2deff88b-c68aed0837f4ac448a763b139e7deb6b-v2	+[effect0.upgrade.bonusdamage][attack].	+[effect0.upgrade.bonusdamage][attack].
+CollectableRelicData_relicActivatedKey-85853aa667dca404-74e6360ce6edc55419e74c8d0358a3d7-v2	+{0}[health]	+{0}[health]
+CardEffectSacrifice_AsTrait	[sacrifice]	[sacrifice]
+CharacterData_nameKey-4a78de58f1080e84-4ad178dee60fe804ba1599d86dda9757-v2	Glugsider	Glugsider
+Trigger_OnHatched_CardText	[hatched]	[hatched]
+GameSpeed_Normal	Normal	Normal
+GameSpeed_Ultra	Ultra	Ultra
+CardData_nameKey-25023a728ef2d57a-149ef4e078837864c8fdd678441b9459-v2	CharacterData_Gatekeeper_Name	CharacterData_Gatekeeper_Name
+CardData_nameKey-925f0ec58efdb539-9ca1a5226e0bb9443ba9d6a9c6e4676f-v2	CharacterData_Ghoul_Name	CharacterData_Ghoul_Name
+CollectableRelicData_relicActivatedKey-9ff39ebcb8dc046f-f0f90aab7740bc840886c8908c874604-v2	+{0}[capacity]	+{0}[capacity]
+CardData_nameKey-7c7bfc4972a718ec-5bb2071122deea94ba6855eda9a5ab38-v2	CharacterData_Monstrosity_Name	CharacterData_Monstrosity_Name
+PreviewString_WillDie	X	X
+CardData_nameKey-6588d034bd27bc59-e0ae52d5cc24f77459f11db8c8db22e9-v2	CharacterData_Phantom_Name	CharacterData_Phantom_Name
+CardData_nameKey-eed41f7b0da2fcef-603ccbb89d259dc40bd235b513ed79fa-v2	CharacterData_Specter_Name	CharacterData_Specter_Name
+CardData_nameKey-ac59d4009a024426-a05bfacf46f9e9a41bd857f67591371e-v2	CharacterData_GatekeeperIncarnate_Name	CharacterData_GatekeeperIncarnate_Name
+CardData_nameKey-ecbdd912eaf34a95-ea4f320e1d656954988c263b4b888f4c-v2	CharacterData_Poltergeist_Name	CharacterData_Poltergeist_Name
+CharacterChatterData_locKey-4fe0400b72755938-1dfb162fdb8ef8f488b19ff4a7d3ec05-v2	Meh meep.	Meh meep.
+CardUpgradeData_upgradeDescriptionKey-6896444018e5bef7-fdbccea001531c043b23173a8d272d7d-v2	-3[capacity].	-3[capacity].
+PreviewString_WillBurnout	<sprite name="StatusEphemeralPreview">	<sprite name="StatusEphemeralPreview">
+CardUpgradeData_upgradeDescriptionKey-2dc29504c8fb2676-ceb62447e515967478bbe98da86a5306-v2	-1[capacity].	-1[capacity].
+CardData_nameKey-06f9bba5787be0d8-82b5df425338ac3498e60d63a0986c1d-v2	Grovel	Postrarse
+SizeNotificationText	{0}[capacity]	{0}[capacity]
+CardData_nameKey-0cc048750988fedf-8d1f59b6c641f3142b7a9847f6e22c10-v2	CharacterData_CombativeSiren_Name	CharacterData_CombativeSiren_Name
+CardUpgradeData_descriptionKey-ffb6f489392a31e4-65d296f9d4f5d654abeb5d73d61d3690-v2	+[effect0.upgrade.bonusdamage][attack].	+[effect0.upgrade.bonusdamage][attack].
+GameSpeedUI_GameSpeed_Ultra	Ultra	Ultra
+CardData_nameKey-88b78c7b62d223dc-b1af09035a6f94f4e92db1a1d2dc9a5e-v2	CharacterData_EnlightenedSiren_Name	CharacterData_EnlightenedSiren_Name
+StatusEffect_Hatch_CardText	[hatch]	[hatch]
+StatusEffect_Hatch_Stack_CardText	<nobr>[hatch] {0}</nobr>	<nobr>[hatch] {0}</nobr>
+CardUpgradeData_upgradeDescriptionKey-d7991b1638c04a24-6eebb46f1e146fb4a88e33acc2b411e2-v2	-1[ember].	-1[ember].
+StatusEffectsDisplayData_key-2fcb4a98450821a4-af158a87c9fe96941a56cc4dced8ac01-v2	[rejuvenatetriggered]	[rejuvenatetriggered]
+StatusEffectsDisplayData_key-3a3450298959c84c-af158a87c9fe96941a56cc4dced8ac01-v2	[gorgetriggered]	[gorgetriggered]
+ReplacementStringsData__replacement-d7c32429ef56872d-54cd63e248504b84185143a1d93acb06-v2	<sprite name="CorruptionSlot">	<sprite name="CorruptionSlot">
+ScoreEvent_NotificationFormat_MultiplyPoints	x[codeint0]}	x[codeint0]}
+ScenarioData_waveMessageKey-f6a6df540d605337-9e3b1ebdecc2452408d6b7dbdbb73512-v2	[respite]	[respite]
+LanguageName_es	Español	Español
+CardUpgradeData_upgradeDescriptionKey-4772efbaf951722d-f50f97ca07ef6314190e6fa95ab25c85-v2	+20[attack].	+20[attack].
+ScenarioData_waveMessageKey-cc8f08bafb17a83c-db2c82e1b31280647a0f5788705e2174-v2	[respite]	[respite]
+CardData_nameKey-795f54f86efcba7e-250076515ad4c12458a78941994b450d-v2	Plink	Plink
+CardUpgradeData_upgradeDescriptionKey-d0178e16dda8ee9f-b1d366f110a09b2438a5c10277c4b71a-v2	+30[health].	+30[health].
+Discord_BotCommand_Clan	clan	clan
+CardData_nameKey-677bc31b218dfb38-08b4cd2e3d143754095e47b4da964836-v2	Memento Mori	Memento Mori
+ScenarioData_waveMessageKey-afd6a2caea2d59f3-c96a061da73590046bcf3124d036ce78-v2	[respite]	[respite]
+EventChoice_Umbra	Umbra	Umbra
+StatusEffectsDisplayData_key-e03fdfc6baa53d57-af158a87c9fe96941a56cc4dced8ac01-v2	[striketriggered]	[striketriggered]
+CharacterChatterData_locKey-c05e43247fc214ba-ce546150ffdd4ae4a8d95bc7672f05fc-v2	Mooomph.	Mooomph.
+CharacterChatterData_locKey-609e22e3150a648e-ce546150ffdd4ae4a8d95bc7672f05fc-v2	Mmhm.	Mmhm.
+CardEffectCopyCardUpgradesToUnits_TooltipTitle	[enhance]	[enhance]
+CardEffectBuffMaxHealth_Activated	+{0}[health]	+{0}[health]
+Hud_LivePresence_Health	HP	Salud
+CardUpgradeData_descriptionKey-1794e24bf70bcb1c-f416304a50be42b4d9cd5cdfa25db713-v2	+[effect0.upgrade.bonusdamage][attack].	+[effect0.upgrade.bonusdamage][attack].
+CollectableRelicData_relicActivatedKey-29b8285219df2ac1-a4dbd9cdc7e8610499e01492fb4d42b8-v2	+5[coin]	+5[coin]
+CharacterData_nameKey-c8974e656cd84d1e-f83d8a195ea0adf4697455f4280b567c-v2	Kinhost Pupa	Kinhost Pupa
+ReplacementStringsData__replacement-3e06207f0c09bb2e-54cd63e248504b84185143a1d93acb06-v2	<sprite name="Capacity">	<sprite name="Capacity">
+CollectableRelicData_descriptionKey-dadd09f235e55c5f-79fbc72c357424747a5fafd50753328b-v2	+[effect0.power] [magicpower].	+[effect0.power] [magicpower].
+HealthFormat	{0}[health]	{0}[health]
+ScreenKeyMapping_UnsetKey	<Unset>	<Sin asignar>
+ReplacementStringsData__replacement-82c35246231bf0f2-54cd63e248504b84185143a1d93acb06-v2	<size=50%><br><br></size>	<size=50%><br><br></size>
+KeyCode_Escape_Short	Esc	Esc
+CharacterChatterData_locKey-173d53110d6fe07d-bc4bcfae5c340d4499c0867407db9663-v2	...wyldennnnntennnnn...	...wyldennnnntennnnn...
+CardUpgradeData_upgradeDescriptionKey-a77e2ce983dfe575-d5c1a432c90e2de4c8746cd0a727f927-v2	+30 [magicpower].	+30 [magicpower].
+CharacterChatterData_locKey-fcfcb1a4c7d7e405-436c0a90feb08c84599f0c766f9f2d16-v2	Rrrggg...	Rrrggg...
+CharacterChatterData_locKey-15a8477cb67cda73-419d8cd2ce3094745aeedbadd1235e55-v2	Tkkt tkkt.	Tkkt tkkt.
+CardUpgradeData_upgradeDescriptionKey-86e21c05de122ff1-3d19706006aaa5d4fa2cdcaa953231a9-v2	[endless].	[endless].
+CardUpgradeData_upgradeDescriptionKey-8bce3a1cef52134c-62f06c0b0835a514f91786c7de75ae1b-v2	+10[attack].	+10[attack].
+CardData_nameKey-c5bc5672390c8730-74ef074d1031c1844bd18fc2668ed2db-v2	AAATestEffectsCard	AAATestEffectsCard
+ScenarioData_waveMessageKey-7cff19db83103b14-23eec486508e31a4b8ec313ff225dd27-v2	[respite]	[respite]
+ScenarioData_waveMessageKey-e5d8d86a2288dc4e-a70b69f5cc5369743a76311aa27e6c4f-v2	[respite]	[respite]
+ScenarioData_waveMessageKey-2d09f892a729359c-d42831e382ec5b44bbd4ce9e911b6ad2-v2	[respite]	[respite]
+ScenarioData_waveMessageKey-d881a833f3861e14-c0ab0d7198bf1f64ab905788f0079afd-v2	[respite]	[respite]
+SubtypesData_Topsider	Fen	Marisma
+Compendium_Filter_Class	Clan	Clan
+CardUpgradeData_upgradeDescriptionKey-2607c559464da0dc-b98afc80c95830444be4cff0e8ca3ed8-v2	WIP	En desarrollo
+SubtypesData_Animus_c0f95969-ae86-4477-9458-57bb235d965b	Animus	Ánimo
+CardEffectDebuffMaxHealth_Activated	-{0}[health]	-{0}[health]
+SubtypesData_Totem_7c4e7151-d042-49e2-9700-29e7c760b691	Totem	Tótem
+SpellMerge_UpgradeTooltipIcon	 [tooltipUpgradeIcon] 	 [tooltipUpgradeIcon] 
+OK	OK	Aceptar
+ReplacementStringsData__replacement-9381799d666796b0-54cd63e248504b84185143a1d93acb06-v2	<sprite name="Ember">	<sprite name="Ember">
+ScenarioData_waveMessageKey-be7c4da44351aa0b-b93cb6d0de527fa43be9bc2c80b06c84-v2	[respite]	[respite]
+ReplacementStringsData__replacement-097dc4900e60a6ca-54cd63e248504b84185143a1d93acb06-v2	<sprite name="Attack">	<sprite name="Attack">
+ReplacementStringsData__replacement-a82db51046fe29f7-54cd63e248504b84185143a1d93acb06-v2	<sprite name="Health">	<sprite name="Health">
+ReplacementStringsData__replacement-0f1d7299bbeddf73-54cd63e248504b84185143a1d93acb06-v2	<b>Regen</b>	<b>Regeneración</b>
+CharacterData_descriptionKey-347bb067a2974455-a3b2410ff2680074b91757e67d14be61-v2	+2[attack].	+2[attack].
+RoomStateFriendlyDamagePerCorruptionModifier	Bogdweller	Morador de la Ciénaga
+StatusEffectsDisplayData_key-9dbf9c4c38c9b439-af158a87c9fe96941a56cc4dced8ac01-v2	[incanttriggered]	[incanttriggered]
+CharacterData_descriptionKey-ae75b6fbc56315b6-b3529d0c210895749be35161c29a89c8-v2	+3[attack].	+3[attack].
+CardUpgradeData_upgradeTitleKey-152447f8c146a10f-5893c0723a904ef4b864594651e70f88-v2	Healy	Curativo
+CharacterChatterData_locKey-a985e2943da0f887-ce546150ffdd4ae4a8d95bc7672f05fc-v2	Hmmph.	Hmmph.
+SubtypesData_Dante	Dante	Dante
+GoldFormat	{0}[coin]	{0}[coin]
+CardUpgradeData_upgradeDescriptionKey-54febc89da04cdb9-b62bd9aeb96a82849a77956e662bfa23-v2	+10[attack].	+10[attack].
+CardUpgradeData_upgradeDescriptionKey-f6084955bf8e72b9-8e645919c114c734eabe051fe2a209df-v2	+25[health].	+25[health].
+StatusEffectsDisplayData_key-a2f23d3e30001114-af158a87c9fe96941a56cc4dced8ac01-v2	[resolvetriggered]	[resolvetriggered]
+CardUpgradeData_upgradeDescriptionKey-e34452d737c8b50f-d5424552e1234274bb9949f9bd9a97c8-v2	+3[attack]	+3[attack]
+CardUpgradeData_upgradeDescriptionKey-b029af5583e78adc-f71b94db6ca88564797e1a793fb2b468-v2	+4[attack]	+4[attack]
+CardUpgradeData_upgradeDescriptionKey-18b66887895ce8d5-7c21edcfcd992cc4281c6577100a6251-v2	+6[health]	+6[health]
+CardUpgradeData_upgradeDescriptionKey-ce9763d81751af31-2fc22800b210a444d9c15e46d3e5dcda-v2	+10[health]	+10[health]
+TextFormat_Colon_Nonbreaking	{0}<nobr>: {1}</nobr>	{0}<nobr>: {1}</nobr>
+CardUpgradeData_upgradeDescriptionKey-11217f673e6e0e5b-540196578c3d6f742864d533cacf7ccb-v2	-1[ember].	-1[ember].
+ScenarioData_waveMessageKey-2964230151f517fb-924e889d40571e348a27343ba735d2eb-v2	[respite]	[respite]
+CardUpgradeData_upgradeDescriptionKey-7c7ceaded2c2df33-bb414ca5314b2414c84b8227fe0c7793-v2	<nobr>+1[capacity]</nobr>, +15[attack], +40[health].	<nobr>+1[capacity]</nobr>, +15[attack], +40[health].
+ScenarioData_waveMessageKey-e84c2de1b89cee07-de0906f6d1c051840a70caebc8b2f04e-v2	[respite]	[respite]
+ScenarioData_waveMessageKey-9f17d9103a0a7290-e63cc8bbd63736e4e839377fa340fff6-v2	[respite]	[respite]
+CardData_nameKey-20683f18f33c3a7f-49cf195192624e74c822889c66d7e420-v2	Bramble Lash	Látigo de Zarzas
+ReplacementStringsData__replacement-c3add5b4f3952fef-54cd63e248504b84185143a1d93acb06-v2	Animus	Ánimo
+ReplacementStringsData__replacement-0e5a6cec751bed29-54cd63e248504b84185143a1d93acb06-v2	<sprite name="Capacity">	<sprite name="Capacity">
+CardTraitCorruptState_CardText	[infused]	[infused]
+CardUpgradeData_upgradeDescriptionKey-fc1426021b09a587-87a0e0124dea70345a51b2d8df18d9de-v2	[endless].	[endless].
+PreviewString_WillBeEaten	<sprite name="OnEatenPreview">	<sprite name="OnEatenPreview">
+CardEffectSacrifice_NoSubtype_TooltipTitle	[sacrifice]	[sacrifice]
+CardEffectBump_Up_TooltipTitle	[ascend]	[ascend]
+CardEffectBump_Down_TooltipTitle	[descend]	[descend]
+CardEffectAddTempCardUpgradeToUnits_TooltipTitle	[enhance]	[enhance]
+CardUpgradeData_upgradeDescriptionKey-e4f6f3e89abdf735-29fc77bcfc5bba34fa2d52c5406ba87f-v2	+10 [magicpower].	+10 [magicpower].
+CardUpgradeData_descriptionKey-4327674c30f42727-759078416cc6b234595c78a02d4fb543-v2	+5[attack].	+5[attack].
+CharacterChatterData_locKey-df758edb54fc5eb6-1dfb162fdb8ef8f488b19ff4a7d3ec05-v2	Meepuh...	Meepuh...
+CharacterData_descriptionKey-54572a3ac3c3299d-9d6838a0070331c46a6f355ef5e5e77e-v2	+1[attack].	+1[attack].
+CollectableRelicData_relicActivatedKey-c088223338b694c3-7b7400965069f0d4a851f05fcd3d2894-v2	-25[coin]	-25[coin]
+CharacterData_descriptionKey-6dbcd1fc17c3082e-4834dd190672177429a719136c12d90d-v2	+[effect0.upgrade.bonusdamage][attack].	+[effect0.upgrade.bonusdamage][attack].
+ClassData_titleLoc-2e445261f0cc3308-6f37f31f362b3c44e96df0656095657a-v2	Umbra	Umbra
+CardUpgradeData_upgradeDescriptionKey-07202cf9eb621562-50cb816590012a74fb43ade5db597fcd-v2	[armor] 30.	[armor] 30.
+CharacterData_nameKey-0d77bd0e843582a5-c3d87d4c5a8d72a45978159dc1587496-v2	Penumbra	Penumbra
+CharacterChatterData_locKey-389a6d2ce2fbfe24-419d8cd2ce3094745aeedbadd1235e55-v2	Tkkt.	Tkkt.
+EventChoice_Wurmkin	Wurmkin	Wurmkin
+CharacterData_descriptionKey-8b19c62b8a5dc65c-7ac03f5eedc72f24287fc5c4bf811771-v2	+1[attack].	+1[attack].
+CharacterChatterData_locKey-30de56a444fc6c20-1dfb162fdb8ef8f488b19ff4a7d3ec05-v2	Meh meep.	Meh meep.
+CardUpgradeData_upgradeDescriptionKey-2b80ea460e316ebb-ad0817d95e87c334285f2b46a2a22586-v2	[quick].	[quick].
+ScenarioData_waveMessageKey-b87f47c5a92ecf86-86dab0bd3bc44a34db99a9b9cead4279-v2	[respite]	[respite]
+RoomStateSelfDamageWhenCorruptionModifier	Bogdweller	Morador de la Ciénaga
+CardUI_XCostReduceBonusLabel	X-{0}	X-{0}
+CardUpgradeData_descriptionKey-77a89bb2b082491c-0dbdd189430530448931657bac2af911-v2	+[effect0.upgrade.bonusdamage][attack].	+[effect0.upgrade.bonusdamage][attack].
+CardUpgradeData_upgradeDescriptionKey-b94cb7bdd03b0984-14bad2a24ab347e4ab8ee4fe1850e477-v2	[extinguish]: +20[attack].	[extinguish]: +20[attack].
+Achievement_Title_DefeatBigBoss1Early	Dead-alus	Dédalo difunto
+InkLoc-0198	<style="Class5">Umbra</style>	<style="Class5">Umbra</style>
+InkLoc-0266	<style="Class6">Wurmkin</style>	<style="Class6">Wurmkin</style>

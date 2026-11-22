@@ -271,6 +271,10 @@ namespace MonsterTrainAccessibility.Core
                         Write(sc == null ? $"> scenetest {arg}: no such scenario" : $"> scenetest {arg}\n" + SceneDescriptions.Describe(sc));
                     }
                     break;
+                case "dumpterms":
+                    Write("> dumpterms " + Translation.GameTextTranslation.DumpTerms(
+                        Path.Combine(Path.GetDirectoryName(_outPath) ?? "", "accessibility_terms_dump.txt")));
+                    break;
                 case "dumpscenes":
                     Write("> dumpscenes " + DumpSceneData());
                     break;

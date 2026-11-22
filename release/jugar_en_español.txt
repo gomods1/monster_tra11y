@@ -1,14 +1,14 @@
 JUGAR A MONSTER TRAIN EN ESPAÑOL
 ================================
 
-Este mod de accesibilidad incluye una traducción al español de Monster Train
-hecha por fans, y la traducción al español de todo lo que dice el propio mod
-(anuncios, ayuda, ajustes y descripciones de escenas).
+Este mod de accesibilidad añade el español a la lista de idiomas de Monster
+Train. Incluye la traducción del juego hecha por fans, completada con los textos
+que faltaban, y la traducción de todo lo que dice el propio mod (anuncios,
+ayuda, ajustes y descripciones de escenas).
 
 No hace falta instalar nada más ni tocar los archivos del juego: la traducción
-viene dentro del mod (carpeta BepInEx\plugins\Spanish) y se aplica mientras el
-juego está abierto. Si un día quieres volver al inglés, basta con cambiar el
-ajuste otra vez.
+viene dentro del mod (carpeta BepInEx\plugins\Spanish). La traducción antigua
+(Traducir.bat con UnityEX) ya no hace falta.
 
 
 CÓMO ACTIVARLO
@@ -17,23 +17,19 @@ CÓMO ACTIVARLO
 1. Instala el mod como siempre (con el instalador o descomprimiendo el zip en
    la carpeta del juego).
 
-2. Deja el idioma del juego en inglés (English). Es el idioma por defecto; si
-   lo cambiaste en las opciones del juego, vuelve a ponerlo en English. La
-   traducción sustituye al texto en inglés, así que con otro idioma del juego
-   no se aplica.
+2. Abre el juego. En el menú principal entra en Ajustes, pestaña Otros.
 
-3. Abre el juego y pulsa F9. Se abre la lista de ajustes del mod. El primer
-   ajuste es "Language, Idioma".
+3. En el desplegable de idioma (Language), elige "Español". Es la última
+   opción de la lista, después del chino.
 
-4. Pulsa Intro (o flecha derecha) para cambiarlo a "Español".
+El juego y el mod cambian a español en el momento, y el juego lo recuerda
+para las próximas veces. Para volver al inglés, elige English en el mismo
+desplegable.
 
-5. Pulsa Escape para cerrar la lista y reinicia el juego. Al cambiar el
-   ajuste, buena parte del texto cambia en el momento, pero algunas pantallas
-   ya cargadas siguen en inglés hasta que reinicias.
-
-Otra forma: con el juego cerrado, abre el archivo
-BepInEx\config\com.accessibility.monstertrain.cfg con el Bloc de notas, busca
-la línea "Language = English" y cámbiala por "Language = Spanish".
+Si prefieres que el mod hable en otro idioma que el juego, con el juego cerrado
+abre BepInEx\config\com.accessibility.monstertrain.cfg con el Bloc de notas y
+cambia "ModLanguage = Auto" por "ModLanguage = English" o "ModLanguage =
+Spanish". Auto sigue el idioma del juego.
 
 
 QUÉ ESTÁ TRADUCIDO
@@ -46,19 +42,14 @@ QUÉ ESTÁ TRADUCIDO
   de escenas.
 
 
-LIMITACIONES
-------------
+SI USASTE LA TRADUCCIÓN ANTIGUA
+-------------------------------
 
-- La traducción del juego se hizo en 2024. Si una actualización posterior del
-  juego cambió algún texto (por ejemplo los números de una carta), ese texto
-  se queda en inglés en lugar de mostrar una traducción vieja con datos
-  incorrectos.
-- Es una traducción de fans y algunos términos pueden sonar raros. Algunos
-  nombres de teclas y textos poco frecuentes del mod pueden seguir en inglés.
-- Si alguna vez usaste la traducción antigua (Traducir.bat con UnityEX), ya no
-  hace falta. Esa traducción modificaba los archivos del juego; para
-  deshacerla, en Steam haz clic derecho en Monster Train, Propiedades,
-  Archivos instalados, "Verificar integridad de los archivos del juego".
+La traducción antigua modificaba los archivos del juego y ponía el español en
+lugar del inglés. Para deshacerla, en Steam haz clic derecho en Monster Train,
+Propiedades, Archivos instalados, "Verificar integridad de los archivos del
+juego". Después elige Español en el desplegable de idioma como se explica
+arriba.
 
 
 PROBLEMAS

@@ -18,6 +18,18 @@ Victory! Battle won => ¡Victoria! Batalla ganada
 Enemy {name} => Enemigo {name}
 UI => Interfaz
 Discord button => Botón de Discord
+Language => Idioma
+Global volume => Volumen general
+Music volume => Volumen de la música
+SFX volume => Volumen de los efectos
+Main Menu Screen => Menú principal
+Game Speed => Velocidad del juego
+Preview => Vista previa
+Background mute => Silenciar en segundo plano
+Lore tooltips => Descripciones de historia
+Tip tooltips => Consejos
+Drag to scroll => Arrastrar para desplazar
+Scroll sensitivity => Sensibilidad del desplazamiento
 
 # Icon words the mod puts into game text ("+2[attack]" reads "+2 attack",
 # TextUtilities.MapSpriteName); the Spanish card text around them is the game's.

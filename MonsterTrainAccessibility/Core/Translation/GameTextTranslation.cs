@@ -8,83 +8,85 @@ using I2.Loc;
 namespace MonsterTrainAccessibility.Core.Translation
 {
     /// <summary>
-    /// Shows the game's own text in a language the game doesn't ship (Spanish),
-    /// at runtime, without touching the game's files. Monster Train localizes
-    /// through I2 Localization: every lookup ends in
-    /// LanguageSourceData.TryGetTranslation, which this patches. While the game
-    /// language is English, a term found in the table (Spanish/GameText_es.txt,
-    /// built from a fan translation) answers with its translation instead of the
-    /// English column; plurals and parameters are applied by the game afterwards
-    /// as usual.
+    /// Adds Spanish to the game as a real language, at runtime, without touching
+    /// the game's files. Monster Train localizes with I2 Localization: each
+    /// LanguageSourceData (I2Languages, I2LanguagesInk) holds a language list and,
+    /// per term, one text column per language. This adds a "Spanish" (es) column
+    /// to every source and fills it from Spanish/GameText_es.txt, so Spanish shows
+    /// up in the game's own Settings > Language list (LanguageManager.Init builds
+    /// that list from the main source's languages) and everything the game draws
+    /// comes from I2 as for any official language: plurals, parameters, fonts.
     ///
-    /// Safety: each entry stores the English it was translated from, and is only
-    /// used while the live English text still equals it. A game update that
-    /// changes a card's numbers therefore falls back to the new English text
-    /// instead of reading stale Spanish.
+    /// Story events work unchanged: the game maps an Ink line's English text to its
+    /// InkLoc key through the English column, which stays English, and the key then
+    /// resolves to the Spanish column.
     ///
-    /// Story events: the game finds an Ink line's translation key by looking up
-    /// its English text in a dictionary built from the English column
-    /// (InkLocalizationHelper.Init). Translation is suspended while that runs so
-    /// the dictionary stays English; the keys then resolve to Spanish.
+    /// Each entry stores the English it was translated from. If a game update
+    /// changes a term's English, that term shows the new English (never Spanish with
+    /// outdated numbers) and the log lists it, so the table can be updated.
+    /// Non-text terms (fonts, sprites) copy the English column.
     /// </summary>
     public static class GameTextTranslation
     {
+        public const string LanguageName = "Spanish";
+        public const string LanguageCode = "es";
+
         private sealed class Entry
         {
             public List<string> English = new List<string>(1);
             public string Translated;
-            public bool Checked;
-            public string Resolved;   // null = live English differs, keep the game's text
         }
 
         private static readonly Dictionary<string, Entry> _table = new Dictionary<string, Entry>(StringComparer.Ordinal);
-        private static int _suspend;
-        private static int _stale;
+        private static readonly HashSet<LanguageSourceData> _injected = new HashSet<LanguageSourceData>();
+        private static bool _loaded;
         private static bool _patched;
 
-        public static bool Active { get; private set; }
         public static int EntryCount => _table.Count;
 
         public static void TryPatch(Harmony harmony)
         {
             if (_patched) return;
+            _patched = true;
             try
             {
-                var target = AccessTools.Method(typeof(LanguageSourceData), nameof(LanguageSourceData.TryGetTranslation), new[]
-                {
-                    typeof(string), typeof(string).MakeByRefType(), typeof(TermData).MakeByRefType(),
-                    typeof(string), typeof(string), typeof(bool), typeof(bool)
-                });
-                if (target == null)
-                {
-                    MonsterTrainAccessibility.LogError("Game translation: LanguageSourceData.TryGetTranslation not found");
-                    return;
-                }
-                harmony.Patch(target, prefix: new HarmonyMethod(typeof(GameTextTranslation), nameof(TryGetTranslationPrefix)));
+                var updateSources = AccessTools.Method(typeof(LocalizationManager), nameof(LocalizationManager.UpdateSources));
+                if (updateSources != null)
+                    harmony.Patch(updateSources, postfix: new HarmonyMethod(typeof(GameTextTranslation), nameof(InjectAll)));
 
-                var inkInit = AccessTools.Method(typeof(InkLocalizationHelper), nameof(InkLocalizationHelper.Init));
-                if (inkInit != null)
-                {
-                    harmony.Patch(inkInit,
-                        prefix: new HarmonyMethod(typeof(GameTextTranslation), nameof(SuspendPrefix)),
-                        finalizer: new HarmonyMethod(typeof(GameTextTranslation), nameof(SuspendFinalizer)));
-                }
-                _patched = true;
-                MonsterTrainAccessibility.LogInfo("Game translation patches applied");
+                // The game's language list is built here: Spanish must already be in the sources
+                var languageInit = AccessTools.Method(typeof(LanguageManager), "Init");
+                if (languageInit != null)
+                    harmony.Patch(languageInit, prefix: new HarmonyMethod(typeof(GameTextTranslation), nameof(BeforeLanguageList)));
+
+                MonsterTrainAccessibility.LogInfo("Spanish language patches applied");
+                InjectAll();
             }
             catch (Exception ex)
             {
-                MonsterTrainAccessibility.LogError($"Game translation patch failed: {ex.Message}");
+                MonsterTrainAccessibility.LogError($"Spanish language patch failed: {ex.Message}");
             }
         }
 
-        public static void Load(string path)
+        public static void BeforeLanguageList()
+        {
+            try { LocalizationManager.InitializeIfNeeded(); } catch { }
+            InjectAll();
+        }
+
+        private static void EnsureLoaded()
+        {
+            if (_loaded) return;
+            _loaded = true;
+            Load(ModLanguage.SpanishPath("GameText_es.txt"));
+        }
+
+        private static void Load(string path)
         {
             _table.Clear();
-            _stale = 0;
             if (!File.Exists(path))
             {
-                MonsterTrainAccessibility.LogWarning($"Game translation not found: {path}");
+                MonsterTrainAccessibility.LogWarning($"Spanish game text not found: {path}");
                 return;
             }
             foreach (string line in File.ReadAllLines(path, Encoding.UTF8))
@@ -103,26 +105,107 @@ namespace MonsterTrainAccessibility.Core.Translation
                 }
                 entry.English.Add(en);
             }
-            MonsterTrainAccessibility.LogInfo($"Game translation loaded: {_table.Count} terms ({path})");
+            MonsterTrainAccessibility.LogInfo($"Spanish game text loaded: {_table.Count} terms ({path})");
         }
 
-        public static void SetActive(bool active)
-        {
-            Active = active && _table.Count > 0;
-        }
-
-        /// <summary>Re-localize the labels already on screen (after a live language change).</summary>
-        public static void RefreshGameText()
+        /// <summary>Add and fill the Spanish column in every loaded source (once per source).</summary>
+        public static void InjectAll()
         {
             try
             {
-                LocalizationManager.LocalizeAll(true);
+                var sources = LocalizationManager.Sources;
+                if (sources == null || sources.Count == 0) return;
+                EnsureLoaded();
+                if (_table.Count == 0) return;
+                foreach (var source in sources)
+                {
+                    if (source == null || _injected.Contains(source)) continue;
+                    _injected.Add(source);
+                    Inject(source);
+                }
             }
             catch (Exception ex)
             {
-                MonsterTrainAccessibility.LogWarning($"LocalizeAll failed: {ex.Message}");
+                MonsterTrainAccessibility.LogError($"Spanish language injection failed: {ex}");
             }
         }
+
+        private static void Inject(LanguageSourceData source)
+        {
+            int en = source.GetLanguageIndex(LocalizationUtil.EnglishLanguage, false, false);
+            if (en < 0) return;
+            if (source.GetLanguageIndex(LanguageName, false, false) < 0)
+                source.AddLanguage(LanguageName, LanguageCode);
+            int es = source.GetLanguageIndex(LanguageName, false, false);
+            if (es < 0) return;
+
+            int translated = 0, changed = 0, missing = 0;
+            foreach (var term in source.mTerms)
+            {
+                if (term?.Languages == null) continue;
+                if (term.Languages.Length <= es) Array.Resize(ref term.Languages, source.mLanguages.Count);
+                if (term.Flags == null || term.Flags.Length <= es) Array.Resize(ref term.Flags, source.mLanguages.Count);
+                string english = term.Languages[en];
+                string text = null;
+                if (term.TermType == eTermType.Text && _table.TryGetValue(term.Term, out var entry))
+                {
+                    string live = Normalize(english);
+                    foreach (var src in entry.English)
+                        if (Normalize(src) == live) { text = entry.Translated; break; }
+                    if (text == null)
+                    {
+                        changed++;
+                        if (changed <= 30)
+                            MonsterTrainAccessibility.LogInfo($"Spanish: English text changed for {term.Term}, showing English");
+                    }
+                }
+                else if (term.TermType == eTermType.Text && !string.IsNullOrEmpty(english))
+                {
+                    missing++;
+                }
+                if (text != null) translated++;
+                term.Languages[es] = text ?? english;
+                term.Flags[es] = term.Flags[en];
+            }
+
+            // The language list shows LanguageName_<code> in each language
+            if (source == LocalizationUtil.GetMainLanguageSource())
+            {
+                string key = LocalizationUtil.GetLanguageNameKey(LanguageCode);
+                var nameTerm = source.GetTermData(key) ?? source.AddTerm(key);
+                for (int i = 0; i < nameTerm.Languages.Length; i++)
+                    nameTerm.Languages[i] = "Español";
+            }
+            source.UpdateDictionary(true);
+            MonsterTrainAccessibility.LogInfo($"Spanish added to {source.ownerObject?.name ?? "source"}: {translated} translated, {changed} changed since translation, {missing} without translation");
+        }
+
+        /// <summary>Debug bridge: every text term with its live English, for updating the table.</summary>
+        public static string DumpTerms(string path)
+        {
+            int n = 0;
+            using (var w = new StreamWriter(path, false, new UTF8Encoding(false)))
+            {
+                foreach (var source in LocalizationManager.Sources)
+                {
+                    int en = source.GetLanguageIndex(LocalizationUtil.EnglishLanguage, false, false);
+                    if (en < 0) continue;
+                    string name = source.ownerObject?.name ?? "source";
+                    foreach (var term in source.mTerms)
+                    {
+                        if (term?.Languages == null || term.TermType != eTermType.Text) continue;
+                        w.Write(name); w.Write('\t');
+                        w.Write(term.Term); w.Write('\t');
+                        w.Write(Escape(term.Languages[en] ?? "")); w.Write('\n');
+                        n++;
+                    }
+                }
+            }
+            return $"{n} terms written to {path}";
+        }
+
+        private static string Escape(string s) =>
+            s.Replace("\\", "\\\\").Replace("\r", "\\r").Replace("\n", "\\n").Replace("\t", "\\t");
 
         private static string Unescape(string s)
         {
@@ -149,56 +232,5 @@ namespace MonsterTrainAccessibility.Core.Translation
         }
 
         private static string Normalize(string s) => s?.Replace("\r\n", "\n").Replace("\r", "\n").Trim();
-
-        public static void SuspendPrefix() => _suspend++;
-
-        public static Exception SuspendFinalizer(Exception __exception)
-        {
-            if (_suspend > 0) _suspend--;
-            return __exception;
-        }
-
-        public static bool TryGetTranslationPrefix(LanguageSourceData __instance, string term, ref string Translation,
-            ref TermData data, string overrideLanguage, ref bool __result)
-        {
-            if (!Active || _suspend > 0 || term == null) return true;
-            try
-            {
-                if (!_table.TryGetValue(term, out var entry)) return true;
-                string language = overrideLanguage ?? LocalizationManager.CurrentLanguage;
-                if (language != LocalizationUtil.EnglishLanguage) return true;
-
-                var termData = __instance.GetTermData(term);
-                if (termData == null) return true;
-
-                if (!entry.Checked)
-                {
-                    int idx = __instance.GetLanguageIndex(LocalizationUtil.EnglishLanguage, false, false);
-                    if (idx < 0 || termData.Languages == null || idx >= termData.Languages.Length) return true;
-                    string live = Normalize(termData.Languages[idx]);
-                    entry.Checked = true;
-                    foreach (var en in entry.English)
-                    {
-                        if (Normalize(en) == live) { entry.Resolved = entry.Translated; break; }
-                    }
-                    if (entry.Resolved == null)
-                    {
-                        _stale++;
-                        if (_stale <= 20)
-                            MonsterTrainAccessibility.LogInfo($"Game translation: English text changed for {term}, keeping the game's text");
-                    }
-                }
-                if (entry.Resolved == null) return true;
-
-                Translation = entry.Resolved;
-                data = termData;
-                __result = true;
-                return false;
-            }
-            catch (Exception)
-            {
-                return true;
-            }
-        }
     }
 }
