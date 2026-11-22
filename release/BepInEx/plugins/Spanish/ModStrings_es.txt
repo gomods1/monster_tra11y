@@ -30,6 +30,20 @@ Lore tooltips => Descripciones de historia
 Tip tooltips => Consejos
 Drag to scroll => Arrastrar para desplazar
 Scroll sensitivity => Sensibilidad del desplazamiento
+Sound Effects volume => Volumen de los efectos
+High quality => Alta calidad
+Resolution => Resolución
+Fullscreen => Pantalla completa
+V-Sync => Sincronización vertical
+Target framerate => Fotogramas por segundo
+Video player => Reproductor de vídeo
+Tip tooltip => Consejos
+Background Scroll => Desplazamiento del fondo
+Screen Shake => Temblor de pantalla
+Colorblind mode => Modo para daltónicos
+Interface Scale => Escala de la interfaz
+Hide player names => Ocultar nombres de jugadores
+Googly eyes => Ojos saltones
 
 # Icon words the mod puts into game text ("+2[attack]" reads "+2 attack",
 # TextUtilities.MapSpriteName); the Spanish card text around them is the game's.
@@ -442,7 +456,10 @@ Final boss ahead => Jefe final a la vista
 
 # Patches/Screens/SimpleScreenPatches.cs
 Settings => Ajustes
+Pause menu => Menú de pausa
+Settings, {name} tab => Ajustes, pestaña {name}
 Press Tab to switch between tabs => Pulsa Tabulador para cambiar de pestaña
+{name} tab => Pestaña {name}
 Logbook => Bitácora
 Sections: Checklist, Cards, Champion Upgrades, Artifacts, Card Frames, and Statistics => Secciones: Lista de control, Cartas, Mejoras de campeón, Artefactos, Marcos de carta y Estadísticas
 Press Page Down or Enter to open the first section => Pulsa Av Pág o Intro para abrir la primera sección
@@ -451,6 +468,7 @@ Left and Right arrows to turn pages => Flechas izquierda y derecha para pasar p�
 F3 to read a summary of the current section => F3 para leer un resumen de la sección actual
 F1 for help => F1 para la ayuda
 Escape to close => Escape para cerrar
+Q to close => Q para cerrar
 Checklist => Lista de control
 Cards => Cartas
 Champion Upgrades => Mejoras de campeón
@@ -700,6 +718,7 @@ Pyre takes {#d} damage, {#hp} left => La pira recibe {#d} de daño, quedan {#hp}
 # Patches/Screens/DeckScreenPatch.cs
 Card Purge => Purga de carta
 1 cards => 1 carta
+1 card => 1 carta
 {#n} cards => {#n} cartas
 Card Upgrade => Mejora de carta
 Select a card to apply it to => Elige una carta a la que aplicarla
@@ -978,6 +997,10 @@ Trial is ON => Prueba activada
 Additional rule => Regla adicional
 You will gain an additional reward => Obtendrás una recompensa adicional
 Trial is OFF => Prueba desactivada
+Trial on => Prueba activada
+Trial off => Prueba desactivada
+Trial: on => Prueba: activada
+Trial: off => Prueba: desactivada
 If enabled, additional rule => Si la activas, regla adicional
 Enable trial to gain additional reward => Activa la prueba para obtener una recompensa adicional
 Press F to toggle trial => Pulsa F para activar o desactivar la prueba
@@ -1251,6 +1274,8 @@ Ctrl plus Left and Right: Switch review buffers => Control más flechas izquierd
 On the Statistics section: Covenant Rank, Score, Wins, and Win Streak buttons change the leaderboard sort => En la sección Estadísticas: los botones Rango de Pacto, Puntuación, Victorias y Racha de victorias cambian el orden de la clasificación
 Clan buttons filter by clan => Los botones de clan filtran por clan
 Escape: Close the logbook => Escape: cierra la Bitácora
+Q or Backspace: Close the logbook => Q o Retroceso: cierra la Bitácora
+Escape opens the pause menu => Escape abre el menú de pausa
 
 # Help/Contexts/RewardsHelp.cs
 Arrow keys: Browse rewards => Flechas: explora las recompensas

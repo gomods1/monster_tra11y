@@ -336,6 +336,13 @@ namespace MonsterTrainAccessibility.Screens
                 // Get the BattleIntroScreen's trial data
                 var screenType = battleIntroScreen.GetType();
 
+                // Only the trial switch itself (its focusable child is "Toggle button
+                // input area"); other battle intro elements are not the toggle
+                var toggleButton = screenType.GetField("trialToggleButton", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public)
+                    ?.GetValue(battleIntroScreen) as Component;
+                if (toggleButton == null || !go.transform.IsChildOf(toggleButton.transform))
+                    return null;
+
                 // Get trialEnabled field
                 var trialEnabledField = screenType.GetField("trialEnabled", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
                 bool trialEnabled = false;
@@ -394,8 +401,8 @@ namespace MonsterTrainAccessibility.Screens
 
                 // Build the announcement
                 var sb = new StringBuilder();
-                sb.Append("Trial toggle: ");
-                sb.Append(trialEnabled ? "ON" : "OFF");
+                sb.Append("Trial: ");
+                sb.Append(trialEnabled ? "on" : "off");
                 sb.Append(". ");
 
                 if (trialEnabled)

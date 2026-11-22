@@ -307,6 +307,12 @@ namespace MonsterTrainAccessibility.Screens
         {
             try
             {
+                // The hand in battle has 3+ CardUIs and hidden "Choose a card to return"
+                // prompt text, which made this guess fire at every battle start
+                if (MonsterTrainAccessibility.BattleHandler?.IsInBattle == true ||
+                    Help.ScreenStateTracker.CurrentScreen == Help.GameScreen.Battle)
+                    return;
+
                 // Look for upgrade selection screen indicators
                 var rootObjects = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();
 
@@ -929,6 +935,9 @@ namespace MonsterTrainAccessibility.Screens
 
             GameObject currentSelected = EventSystem.current.currentSelectedGameObject;
 
+            if (currentSelected == null)
+                FocusSomethingOnArrow();
+
             // Selection changed?
             if (currentSelected != _lastSelectedObject)
             {
@@ -948,7 +957,9 @@ namespace MonsterTrainAccessibility.Screens
                 }
                 _pendingInvisible = null;
 
+                var previousSelected = _lastSelectedObject;
                 _lastSelectedObject = currentSelected;
+                _changeIsPlayerMove = ComputePlayerMove(currentSelected);
 
                 // Reset scroll content tracking when selection changes
                 _lastScrollContent = null;
@@ -958,11 +969,37 @@ namespace MonsterTrainAccessibility.Screens
 
                 if (currentSelected != null && IsActuallyVisible(currentSelected))
                 {
-                    // Check if this is floor targeting mode (Tower Selectable = floor selection for playing cards)
+                    // Tooltip-only stops (ember counter, run stat icons...) add nothing
+                    // the player can act on: step over them in the arrow's direction
+                    if (SkipInfoOnlyStop(currentSelected, previousSelected))
+                    {
+                        _lastSelectedText = null;
+                        return;
+                    }
+
+                    // The game parks focus on a screen's root object for a frame while
+                    // a dialog closes or a screen opens ("Main Menu Screen"): not a stop
+                    if (currentSelected.GetComponent<UIScreen>() != null)
+                    {
+                        _lastSelectedText = null;
+                        return;
+                    }
+
+                    // Tower Selectable: the floors. With a card picked up it is floor
+                    // targeting; without one the game is in its "view the floors" mode
                     if (currentSelected.name.Contains("Tower") && currentSelected.name.Contains("Selectable"))
                     {
-                        // Activate floor targeting system
-                        ActivateFloorTargeting();
+                        _lastSelectedText = null;
+                        if (IsCardPickedUp())
+                        {
+                            // Unit-targeted spells focus the tower too; CardTargetingPatches speaks those
+                            if (!Patches.CardTargetingPatches.HasCharacterTargets(_cardSelection))
+                                ActivateFloorTargeting();
+                        }
+                        else if (!IsAutomatedCombatFocusChange())
+                        {
+                            AnnounceTowerView();
+                        }
                         return;
                     }
 
@@ -980,7 +1017,9 @@ namespace MonsterTrainAccessibility.Screens
                     // During automated combat the game moves the selection around
                     // on its own (hand hidden, HUD elements selected); stay quiet
                     // unless the player is actually navigating
-                    if (IsAutomatedCombatFocusChange() || IsUnrequestedBattleHudFocus(currentSelected))
+                    bool forced = Time.unscaledTime < _forceAnnounceUntil;
+                    _forceAnnounceUntil = 0f;
+                    if (!forced && (IsAutomatedCombatFocusChange() || IsUnrequestedBattleHudFocus(currentSelected)))
                     {
                         _lastSelectedText = null;
                         return;
@@ -988,6 +1027,26 @@ namespace MonsterTrainAccessibility.Screens
 
                     string text = GetTextFromGameObject(currentSelected);
                     _lastSelectedText = null;
+
+                    // While a screen fades back in, its buttons' labels are not readable
+                    // yet and the name fallback lands on the screen itself ("Main Menu
+                    // Screen" for the Settings button): retry until the label is there
+                    if (IsScreenNameFallback(currentSelected, text))
+                    {
+                        if (_pendingLabel != currentSelected)
+                        {
+                            _pendingLabel = currentSelected;
+                            _pendingLabelSince = Time.unscaledTime;
+                        }
+                        if (Time.unscaledTime - _pendingLabelSince < 1.5f)
+                        {
+                            _lastSelectedObject = previousSelected;
+                            return;
+                        }
+                        text = null; // never became readable: say nothing rather than the screen name
+                    }
+                    _pendingLabel = null;
+
                     if (!string.IsNullOrEmpty(text))
                     {
                         // Clean sprite tags before announcing
@@ -999,7 +1058,11 @@ namespace MonsterTrainAccessibility.Screens
                         _lastFocusSpoken = text;
                         _lastFocusSpokenTime = Time.unscaledTime;
                         if (!repeat)
+                        {
+                            if (Core.DebugBridge.Enabled)
+                                MonsterTrainAccessibility.LogInfo($"Focus spoken: {DescribePath(currentSelected)} -> {text}");
                             MonsterTrainAccessibility.ScreenReader?.AnnounceFocus(text);
+                        }
 
                         // Feed the contextual review buffers (UI, Card, Artifact, Reward)
                         Core.Buffers.FocusBuffers.OnFocusAnnounced(currentSelected, text, _lastFocusDomain, _lastFocusDetails);
@@ -1308,9 +1371,241 @@ namespace MonsterTrainAccessibility.Screens
         /// battle loads and after it ends; players only reach the HUD on purpose
         /// (Tab or arrows), so HUD focus without recent navigation stays quiet.
         /// </summary>
+        /// <summary>
+        /// Selectables that only show a tooltip whose information the player already
+        /// gets elsewhere: spoken when the screen opens, by a hotkey, or in the
+        /// focused item next to them. Arrow navigation steps over them.
+        /// </summary>
+        internal static bool IsInfoOnlyStop(GameObject go)
+        {
+            if (go == null) return false;
+            string name = go.name;
+            var parent = go.transform.parent;
+            string parentName = parent != null ? parent.name : "";
+            // Battle: the ember counter (turn start line, G key)
+            if (name == "Energy count" && parentName == "Energy container")
+                return true;
+            // Battle: the floor capacity tooltip (K key, floor review); it also
+            // reads "reached the unit limit" on empty floors
+            if (name == "Room UI tooltip target")
+                return true;
+            // Battle intro: the trial reward panel; the screen announcement and the
+            // trial switch next to it both say the rule and the reward
+            if (name == "Trial reward container")
+                return true;
+            // Main menu run dialog: ring and clan icons, already in the Resume line
+            if ((name == "RunDistanceUI" || name == "Class Icons UI") && parentName == "Run stats")
+                return true;
+            return false;
+        }
+
+        private static Selectable FindNeighbor(Selectable from, KeyCode direction)
+        {
+            switch (direction)
+            {
+                case KeyCode.UpArrow: return from.FindSelectableOnUp();
+                case KeyCode.DownArrow: return from.FindSelectableOnDown();
+                case KeyCode.LeftArrow: return from.FindSelectableOnLeft();
+                case KeyCode.RightArrow: return from.FindSelectableOnRight();
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// When focus lands on an info-only stop: keep going in the direction of the
+        /// arrow that brought it there, or go back to where it came from at a dead
+        /// end. Focus the game moved there on its own is just not announced.
+        /// Returns true when the stop was handled (nothing to announce).
+        /// </summary>
+        private bool SkipInfoOnlyStop(GameObject current, GameObject previous)
+        {
+            if (!IsInfoOnlyStop(current)) return false;
+            try
+            {
+                KeyCode dir = KeyInput.LastNavKey;
+                bool arrow = dir == KeyCode.UpArrow || dir == KeyCode.DownArrow ||
+                             dir == KeyCode.LeftArrow || dir == KeyCode.RightArrow;
+                if (!arrow || !_changeIsPlayerMove)
+                    return true;
+
+                GameObject target = null;
+                var visited = new HashSet<GameObject> { current };
+                var cur = current.GetComponent<Selectable>();
+                for (int i = 0; i < 8 && cur != null; i++)
+                {
+                    var next = FindNeighbor(cur, dir);
+                    if (next == null || !visited.Add(next.gameObject)) break;
+                    if (next.isActiveAndEnabled && next.IsInteractable() && !IsInfoOnlyStop(next.gameObject))
+                    {
+                        target = next.gameObject;
+                        break;
+                    }
+                    cur = next;
+                }
+                if (target == null && previous != null && previous.activeInHierarchy && !IsInfoOnlyStop(previous))
+                    target = previous;
+                if (target == null)
+                    return true;
+
+                // Re-announce the item when focus goes back to it
+                _redirectTarget = target;
+                EventSystem.current.SetSelectedGameObject(target);
+                // Dead end: back where the arrow started, as quiet as the game's own
+                // edges (re-reading a long item on every press at an edge was noise)
+                if (target == previous)
+                    _lastSelectedObject = target;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MonsterTrainAccessibility.LogError($"Error skipping info-only stop: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Re-read the focused item's text into the baseline without speaking, after
+        /// a caller already announced the change itself (the trial switch).
+        /// </summary>
+        public void RefreshFocusBaseline()
+        {
+            var go = EventSystem.current?.currentSelectedGameObject;
+            if (go == null || go != _lastSelectedObject) return;
+            string text = GetTextFromGameObject(go);
+            if (!string.IsNullOrEmpty(text))
+                _lastSelectedText = TextUtilities.CleanSpriteTagsForSpeech(text);
+        }
+
+        /// <summary>Make the next selection poll announce the focused item even if unchanged.</summary>
+        public void ForgetFocus()
+        {
+            _lastSelectedObject = null;
+            _lastFocusSpoken = null;
+            _forceAnnounceUntil = Time.unscaledTime + 1f;
+        }
+
+        private float _forceAnnounceUntil;
+
+        private GameObject _pendingLabel;
+        private float _pendingLabelSince;
+
+        /// <summary>True when the text found for a control is just the name of the screen it sits on.</summary>
+        private static bool IsScreenNameFallback(GameObject go, string text)
+        {
+            if (go == null || string.IsNullOrEmpty(text)) return false;
+            for (var t = go.transform; t != null; t = t.parent)
+            {
+                if (t.GetComponent<UIScreen>() == null) continue;
+                return string.Equals(UITextHelper.CleanGameObjectName(t.name), text.Trim(), StringComparison.OrdinalIgnoreCase);
+            }
+            return false;
+        }
+
+        private static string DescribePath(GameObject go)
+        {
+            var names = new List<string>();
+            for (var t = go.transform; t != null && names.Count < 6; t = t.parent)
+                names.Add(t.name);
+            names.Reverse();
+            return string.Join("/", names.ToArray());
+        }
+
+        private float _lastNullFocusFix;
+
+        /// <summary>
+        /// The logbook's front page has no default focus, so the arrows did nothing.
+        /// On an arrow press with nothing focused there, focus the first section tab.
+        /// </summary>
+        private void FocusSomethingOnArrow()
+        {
+            try
+            {
+                if (Help.ScreenStateTracker.CurrentScreen != Help.GameScreen.Compendium) return;
+                KeyCode k = KeyInput.LastNavKey;
+                if (k != KeyCode.UpArrow && k != KeyCode.DownArrow && k != KeyCode.LeftArrow && k != KeyCode.RightArrow) return;
+                if (!KeyInput.NavKeyPressedWithin(0.5f) || KeyInput.LastNavKeyTime <= _lastNullFocusFix) return;
+                _lastNullFocusFix = KeyInput.LastNavKeyTime;
+                CompendiumTab first = null;
+                foreach (var tab in UnityEngine.Object.FindObjectsOfType<CompendiumTab>())
+                {
+                    if (!tab.isActiveAndEnabled) continue;
+                    var sel = tab.GetComponent<Selectable>();
+                    if (sel == null || !sel.IsInteractable()) continue;
+                    if (first == null || tab.section < first.section) first = tab;
+                }
+                if (first != null)
+                    EventSystem.current.SetSelectedGameObject(first.gameObject);
+            }
+            catch (Exception ex)
+            {
+                MonsterTrainAccessibility.LogError($"Error focusing logbook tab: {ex.Message}");
+            }
+        }
+
+        private static CardSelectionBehaviour _cardSelection;
+
+        /// <summary>True while the player holds a card picked up for playing.</summary>
+        private static bool IsCardPickedUp()
+        {
+            try
+            {
+                if (_cardSelection == null)
+                    _cardSelection = UnityEngine.Object.FindObjectOfType<CardSelectionBehaviour>();
+                // Unknown: keep the old behaviour (the tower meant floor targeting)
+                if (_cardSelection == null) return true;
+                return _cardSelection.IsCardSelected() || _cardSelection.IsPlayingCard();
+            }
+            catch
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Focus on the floors without a card: the game's floor viewing mode.
+        /// Say which floor is selected and what is on it.
+        /// </summary>
+        private void AnnounceTowerView()
+        {
+            var battle = MonsterTrainAccessibility.BattleHandler;
+            if (battle == null) return;
+            int floor = battle.GetSelectedFloor();
+            if (floor < 0 || floor > 3) floor = 0;
+            string floorName = BattleAccessibility.RoomIndexToFloorName(floor);
+            string summary = battle.GetFloorSummary(floor);
+            string text = string.IsNullOrEmpty(summary) ? $"Floors, {floorName}" : $"Floors, {floorName}. {summary}";
+            _lastFocusSpoken = text;
+            _lastFocusSpokenTime = Time.unscaledTime;
+            MonsterTrainAccessibility.ScreenReader?.AnnounceFocus(text);
+        }
+
+        // Whether the selection change being handled came from the player's arrows
+        private static bool _changeIsPlayerMove;
+        private static float _lastSelectionChangeTime = -100f;
+        private GameObject _redirectTarget;
+
+        /// <summary>
+        /// A selection change is the player's when a navigation key went down after the
+        /// previous change (and recently), or an arrow is held (the EventSystem repeats
+        /// held arrows), or it is where the mod redirected an arrow press. A change with
+        /// no new key press since the last one is the game moving focus by itself
+        /// (End Turn hands focus to the HUD, the hand hides during combat).
+        /// </summary>
+        private bool ComputePlayerMove(GameObject current)
+        {
+            float now = Time.realtimeSinceStartup;
+            bool held = KeyInput.GetKey(KeyCode.UpArrow) || KeyInput.GetKey(KeyCode.DownArrow) ||
+                        KeyInput.GetKey(KeyCode.LeftArrow) || KeyInput.GetKey(KeyCode.RightArrow);
+            bool fresh = KeyInput.LastNavKeyTime > _lastSelectionChangeTime && KeyInput.NavKeyPressedWithin(0.75f);
+            bool redirected = current != null && current == _redirectTarget;
+            _redirectTarget = null;
+            _lastSelectionChangeTime = now;
+            return fresh || held || redirected;
+        }
+
         private static bool IsUnrequestedBattleHudFocus(GameObject go)
         {
-            if (go == null || KeyInput.NavKeyPressedWithin(1f)) return false;
+            if (go == null || _changeIsPlayerMove) return false;
             for (var t = go.transform; t != null; t = t.parent)
                 if (t.name == "Battle Hud") return true;
             return false;
@@ -1329,7 +1624,7 @@ namespace MonsterTrainAccessibility.Screens
                 return false;
             // Only navigation counts: the F that ends the turn also makes the
             // game move the selection, and that jump is not the player's doing
-            return !KeyInput.NavKeyPressedWithin(1f);
+            return !_changeIsPlayerMove;
         }
 
         /// <summary>
@@ -1345,6 +1640,10 @@ namespace MonsterTrainAccessibility.Screens
             yield return new WaitForSecondsRealtime(0.2f);
             var now = EventSystem.current?.currentSelectedGameObject;
             if (now != selected || now == null || !now.activeInHierarchy)
+                yield break;
+            // No baseline: the item was spoken by a special path (the floors, a
+            // skipped stop) or kept silent on purpose ("Game Screen" after a spell)
+            if (_lastSelectedText == null)
                 yield break;
             string text = GetTextFromGameObject(now);
             if (string.IsNullOrEmpty(text))
@@ -1393,6 +1692,15 @@ namespace MonsterTrainAccessibility.Screens
                 _lastFocusDetails = openingReadout.Details;
                 _lastFocusFullText = openingReadout.FullText;
                 return openingReadout.Summary;
+            }
+
+            // Logbook section tabs are icon-only ("Compendium Screen" otherwise)
+            var compendiumTab = go.GetComponent<CompendiumTab>();
+            if (compendiumTab != null)
+            {
+                string section = Patches.CompendiumSectionPatch.SectionToName(compendiumTab.section.ToString());
+                if (!string.IsNullOrEmpty(section))
+                    return $"{section} tab";
             }
 
             // Check for dialog buttons (Yes/No buttons inside Dialog popups)
@@ -1520,6 +1828,12 @@ namespace MonsterTrainAccessibility.Screens
             }
 
             // 2. Check for settings screen elements (dropdowns, sliders, toggles with SettingsEntry parent)
+            // The battle intro's trial switch (before the generic settings reader,
+            // which read it as "Button: off")
+            text = SettingsTextReader.GetTrialToggleText(go);
+            if (!string.IsNullOrEmpty(text))
+                return text;
+
             text = SettingsTextReader.GetSettingsElementText(go);
             if (!string.IsNullOrEmpty(text))
             {
@@ -1635,6 +1949,15 @@ namespace MonsterTrainAccessibility.Screens
             if (!string.IsNullOrEmpty(text))
             {
                 return text;
+            }
+
+            // 3.85 Battle HUD buttons: label only, tooltip text to the UI buffer
+            var hudReadout = TooltipTextReader.GetBattleHudButtonReadout(go);
+            if (hudReadout != null)
+            {
+                _lastFocusDetails = hudReadout.Details;
+                _lastFocusFullText = hudReadout.FullText;
+                return hudReadout.Summary;
             }
 
             // 3.9 Check for buttons with LocalizedTooltipProvider (mutator options, etc.)
@@ -2384,6 +2707,11 @@ namespace MonsterTrainAccessibility.Screens
             MonsterTrainAccessibility.LogInfo("Main menu entered");
             _isActive = true;
             _lastSelectedObject = null;
+
+            // Quitting a battle to the main menu (pause menu, Back to Main Menu)
+            // never reaches StopCombat, so battle state would stay on
+            if (MonsterTrainAccessibility.BattleHandler?.IsInBattle == true)
+                MonsterTrainAccessibility.BattleHandler.OnBattleExited();
 
             // Announce that we're at the main menu
             MonsterTrainAccessibility.ScreenReader?.AnnounceScreen(

@@ -41,7 +41,14 @@ namespace MonsterTrainAccessibility
         /// <summary>Realtime of the last navigation key press (arrows, Tab).</summary>
         public static float LastNavKeyTime { get; private set; } = -100f;
 
-        public static void MarkNavKeyPressed() => LastNavKeyTime = Time.realtimeSinceStartup;
+        /// <summary>The last navigation key pressed (arrow or Tab).</summary>
+        public static KeyCode LastNavKey { get; private set; } = KeyCode.None;
+
+        public static void MarkNavKeyPressed(KeyCode key = KeyCode.None)
+        {
+            LastNavKeyTime = Time.realtimeSinceStartup;
+            LastNavKey = key;
+        }
 
         public static bool NavKeyPressedWithin(float seconds) => Time.realtimeSinceStartup - LastNavKeyTime <= seconds;
 

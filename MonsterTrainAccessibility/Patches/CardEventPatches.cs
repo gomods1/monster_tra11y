@@ -480,9 +480,12 @@ namespace MonsterTrainAccessibility.Patches
                 var saveManager = Utilities.ReflectionHelper.FindManager("SaveManager") as SaveManager;
                 if (saveManager == null) return true;
                 if (saveManager.PreviewMode) return false;
+                // The logbook builds upgraded preview cards for its card pages
+                if (Help.ScreenStateTracker.CurrentScreen == Help.GameScreen.Compendium) return false;
                 if (MonsterTrainAccessibility.BattleHandler?.IsInBattle == true) return true;
                 var deck = saveManager.GetDeckState();
-                if (deck == null) return true;
+                // No run loaded (main menu, logbook): nothing real to upgrade
+                if (deck == null || deck.Count == 0) return false;
                 foreach (var c in deck)
                     if (ReferenceEquals(c, card)) return true;
                 return false;

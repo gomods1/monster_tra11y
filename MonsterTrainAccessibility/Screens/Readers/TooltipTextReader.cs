@@ -768,6 +768,48 @@ namespace MonsterTrainAccessibility.Screens
         /// <summary>
         /// Get text for buttons with LocalizedTooltipProvider (mutator options, challenges, etc.)
         /// </summary>
+        /// <summary>"12 cards" for the battle HUD's draw and discard pile buttons.</summary>
+        private static string GetBattlePileCount(GameObject go)
+        {
+            try
+            {
+                var parent = go.transform.parent;
+                if (parent == null) return null;
+                bool draw = go.name == "Deck button" && parent.name == "Deck button container";
+                bool discard = go.name == "Discard button" && parent.name == "Discard button container";
+                if (!draw && !discard) return null;
+                var cardManager = ReflectionHelper.FindManager("CardManager") as CardManager;
+                if (cardManager == null) return null;
+                int n = draw ? cardManager.GetDrawPile().Count : cardManager.GetDiscardPile().Count;
+                return n == 1 ? "1 card" : $"{n} cards";
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Battle HUD buttons (piles, End Turn) speak only their label; the tooltip
+        /// explanation goes to the UI buffer instead of being read on every focus.
+        /// Returns null for everything else.
+        /// </summary>
+        internal static Core.Buffers.FocusReadout GetBattleHudButtonReadout(GameObject go)
+        {
+            bool inBattleHud = false;
+            for (var t = go.transform; t != null; t = t.parent)
+                if (t.name == "Battle Hud") { inBattleHud = true; break; }
+            if (!inBattleHud) return null;
+            string full = GetLocalizedTooltipButtonText(go);
+            if (string.IsNullOrEmpty(full)) return null;
+            // GetLocalizedTooltipButtonText = "label[, N cards]. body"
+            int dot = full.IndexOf(". ", StringComparison.Ordinal);
+            string summary = dot > 0 ? full.Substring(0, dot) : full;
+            var details = new List<string> { summary };
+            if (dot > 0) details.Add(full.Substring(dot + 2).Trim());
+            return new Core.Buffers.FocusReadout { Summary = summary, Details = details, FullText = full };
+        }
+
         internal static string GetLocalizedTooltipButtonText(GameObject go)
         {
             try
@@ -842,20 +884,18 @@ namespace MonsterTrainAccessibility.Screens
                 // Build result from button name and tooltip
                 var result = new StringBuilder();
 
-                // Use clean button name
+                // The tooltip title is the control's real label ("Draw Pile"); the
+                // object name ("Deck button") is only a fallback when it has none
                 string buttonName = UITextHelper.CleanGameObjectName(go.name);
-                if (!string.IsNullOrEmpty(buttonName))
-                {
-                    result.Append(buttonName);
-                }
-
-                // Add tooltip title if different from button name
-                if (!string.IsNullOrEmpty(tooltipTitle) && tooltipTitle != buttonName)
-                {
-                    if (result.Length > 0)
-                        result.Append(": ");
+                if (!string.IsNullOrEmpty(tooltipTitle))
                     result.Append(tooltipTitle);
-                }
+                else if (!string.IsNullOrEmpty(buttonName))
+                    result.Append(buttonName);
+
+                // Battle pile buttons: how many cards are in the pile
+                string pileCount = GetBattlePileCount(go);
+                if (pileCount != null)
+                    result.Append(", ").Append(pileCount);
 
                 // Add tooltip body
                 if (!string.IsNullOrEmpty(tooltipBody))

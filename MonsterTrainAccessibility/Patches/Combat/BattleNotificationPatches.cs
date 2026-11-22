@@ -87,6 +87,10 @@ namespace MonsterTrainAccessibility.Patches
                 string text = TextUtilities.StripRichTextTags(message).Trim().TrimEnd('!', '.');
                 if (string.IsNullOrEmpty(text))
                     return;
+                // "+50 gold" / "+1 ember" popups: the gold and ember lines already say it, with totals
+                if (System.Text.RegularExpressions.Regex.IsMatch(text, @"^[+\-]\s*\d+\s*(gold|ember)$",
+                        System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                    return;
                 MonsterTrainAccessibility.BattleHandler?.OnUnitNotification(__instance.GetName(), text, __instance.GetTeamType() == Team.Type.Heroes);
             }
             catch (Exception ex)

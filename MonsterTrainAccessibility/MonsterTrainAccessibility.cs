@@ -18,7 +18,7 @@ namespace MonsterTrainAccessibility
     {
         public const string GUID = "com.accessibility.monstertrain";
         public const string NAME = "Monster Train Accessibility";
-        public const string VERSION = "8.4.0";
+        public const string VERSION = "8.5.0";
 
         // Static reference for global access
         public static MonsterTrainAccessibility Instance { get; private set; }
@@ -148,6 +148,7 @@ namespace MonsterTrainAccessibility
             CreditsScreenPatch.TryPatch(_harmony);
             KeyMappingScreenPatch.TryPatch(_harmony);
             IntroScreensPatch.TryPatch(_harmony);
+            SettingsTabPatch.TryPatch(_harmony);
 
             // Combat event patches
             PlayerTurnStartPatch.TryPatch(_harmony);

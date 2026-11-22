@@ -27,7 +27,7 @@ namespace MonsterTrainAccessibility.Help.Contexts
                    "Ctrl plus Up and Down: Step through the focused item's details. " +
                    "Ctrl plus Left and Right: Switch review buffers. " +
                    "On the Statistics section: Covenant Rank, Score, Wins, and Win Streak buttons change the leaderboard sort. Clan buttons filter by clan. " +
-                   "Escape: Close the logbook.";
+                   "Q or Backspace: Close the logbook. Escape opens the pause menu.";
         }
     }
 }

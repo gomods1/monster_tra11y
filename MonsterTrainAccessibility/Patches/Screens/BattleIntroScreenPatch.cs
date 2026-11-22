@@ -33,11 +33,39 @@ namespace MonsterTrainAccessibility.Patches
                     {
                         MonsterTrainAccessibility.LogInfo("BattleIntroScreen methods not found - will use alternative detection");
                     }
+
+                    var toggle = AccessTools.Method(targetType, "HandleTrialToggleButton");
+                    if (toggle != null)
+                    {
+                        harmony.Patch(toggle, postfix: new HarmonyMethod(typeof(BattleIntroScreenPatch).GetMethod(nameof(TrialTogglePostfix))));
+                        MonsterTrainAccessibility.LogInfo("Patched BattleIntroScreen.HandleTrialToggleButton");
+                    }
                 }
             }
             catch (Exception ex)
             {
                 MonsterTrainAccessibility.LogError($"Failed to patch BattleIntroScreen: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// The trial was switched (F anywhere on the screen, or Enter on the switch):
+        /// say the new state. The focused switch's own text is refreshed silently so
+        /// the after-Enter re-read does not say it a second time.
+        /// </summary>
+        public static void TrialTogglePostfix(object __instance)
+        {
+            try
+            {
+                var field = AccessTools.Field(__instance.GetType(), "trialEnabled");
+                if (field == null) return;
+                bool on = (bool)field.GetValue(__instance);
+                MonsterTrainAccessibility.ScreenReader?.Speak(on ? "Trial on" : "Trial off", false);
+                MonsterTrainAccessibility.MenuHandler?.RefreshFocusBaseline();
+            }
+            catch (Exception ex)
+            {
+                MonsterTrainAccessibility.LogError($"Error in trial toggle patch: {ex.Message}");
             }
         }
 

@@ -196,8 +196,9 @@ namespace MonsterTrainAccessibility.Battle
             _onConfirm = null;
             _onCancel = null;
 
-            string floorName = Screens.BattleAccessibility.RoomIndexToFloorName(floor);
-            MonsterTrainAccessibility.ScreenReader?.Speak($"Playing on {floorName.ToLower()}", false);
+            // Nothing spoken here: the game may still refuse the play ("Units not
+            // playable in Pyre Chamber"), and a real play is announced by its own
+            // events (summoned on, takes damage...)
             MonsterTrainAccessibility.LogInfo($"Floor targeting confirmed: room index {floor}");
 
             callback?.Invoke(floor);
@@ -229,7 +230,8 @@ namespace MonsterTrainAccessibility.Battle
             string floorName = Screens.BattleAccessibility.RoomIndexToFloorName(SelectedFloor);
             string summary = GetFloorSummary(SelectedFloor);
             string floorInfo = string.IsNullOrEmpty(summary) ? floorName : $"{floorName}. {summary}";
-            string message = $"Select floor. Page Up/Down to change. Enter to confirm, Escape to cancel. {floorInfo}";
+            // The keys (Page Up/Down, Enter, Escape) are in F1 help; repeating them on every card play was noise
+            string message = $"Select floor. {floorInfo}";
             MonsterTrainAccessibility.ScreenReader?.Speak(message, false);
         }
 

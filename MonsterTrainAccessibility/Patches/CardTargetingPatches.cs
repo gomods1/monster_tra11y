@@ -106,6 +106,23 @@ namespace MonsterTrainAccessibility.Patches
         }
 
         /// <summary>
+        /// True when the picked-up card aims at a unit (spells like Torch), not at a
+        /// floor. The game focuses the tower for both; only room cards are floor targeting.
+        /// </summary>
+        public static bool HasCharacterTargets(object cardSelection)
+        {
+            try
+            {
+                var targets = GetPossibleTargets(cardSelection);
+                if (targets == null) return false;
+                for (int i = 0; i < targets.Count; i++)
+                    if (GetCharacterFromTarget(targets[i]) != null) return true;
+            }
+            catch { }
+            return false;
+        }
+
+        /// <summary>
         /// Called after SelectCardInternal - announces when targeting mode starts
         /// </summary>
         public static void SelectCardPostfix(object __instance, bool usingKeyboard, bool reselect)
@@ -147,11 +164,13 @@ namespace MonsterTrainAccessibility.Patches
                 _lastAnnouncedTargetIndex = selectedIndex;
 
                 string targetDesc = GetTargetDescription(targets, selectedIndex);
-                string countInfo = targets.Count > 1 ? $"{targets.Count} targets. " : "";
-                string currentInfo = !string.IsNullOrEmpty(targetDesc) ? $"Current: {targetDesc}" : "";
+                string countInfo = "";
+                string currentInfo = string.IsNullOrEmpty(targetDesc) ? ""
+                    : targets.Count > 1 ? $"{selectedIndex + 1} of {targets.Count}: {targetDesc}" : targetDesc;
 
                 string cardInfo = !string.IsNullOrEmpty(cardName) ? $"{cardName}. " : "";
-                string message = $"{cardInfo}Select target. {countInfo}Left/Right to change. Enter to confirm, Escape to cancel. {currentInfo}";
+                // The keys (Left/Right, Enter, Escape) are in F1 help; repeating them on every spell was noise
+                string message = $"{cardInfo}Select target. {countInfo}{currentInfo}";
 
                 MonsterTrainAccessibility.ScreenReader?.Speak(message, false);
                 MonsterTrainAccessibility.LogInfo($"Unit targeting started: {targets.Count} targets, selected={selectedIndex}");

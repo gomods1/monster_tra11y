@@ -90,9 +90,35 @@ namespace MonsterTrainAccessibility.Core
             try
             {
                 lock (_speechLock)
-                    File.AppendAllText(_speechPath, $"[{Time.frameCount} {Time.realtimeSinceStartup:F2}] {text}\n");
+                    File.AppendAllText(_speechPath, $"[{Time.frameCount} {Time.realtimeSinceStartup:F2}] {text}{Caller()}\n");
             }
             catch { }
+        }
+
+        /// <summary>"  &lt;- Class.Method" of the first frames outside the speech plumbing.</summary>
+        private static string Caller()
+        {
+            try
+            {
+                var frames = new System.Diagnostics.StackTrace(2, false).GetFrames();
+                if (frames == null) return "";
+                var names = new List<string>();
+                foreach (var f in frames)
+                {
+                    var m = f.GetMethod();
+                    var t = m?.DeclaringType;
+                    if (t == null) continue;
+                    string tn = t.Name;
+                    if (tn == "ScreenReaderOutput" || tn == "DebugBridge") continue;
+                    names.Add(tn + "." + m.Name);
+                    if (names.Count == 2) break;
+                }
+                return names.Count == 0 ? "" : "  <- " + string.Join(" < ", names.ToArray());
+            }
+            catch
+            {
+                return "";
+            }
         }
 
         private void Update()

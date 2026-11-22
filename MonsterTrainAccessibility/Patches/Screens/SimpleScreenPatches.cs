@@ -48,7 +48,7 @@ namespace MonsterTrainAccessibility.Patches
         {
             try
             {
-                MonsterTrainAccessibility.ScreenReader?.AnnounceScreen("Settings. Press Tab to switch between tabs.");
+                // Announced by SettingsTabPatch when the pause or settings dialog opens
             }
             catch (Exception ex)
             {
@@ -90,10 +90,7 @@ namespace MonsterTrainAccessibility.Patches
             {
                 ScreenStateTracker.SetScreen(Help.GameScreen.Compendium);
                 MonsterTrainAccessibility.ScreenReader?.AnnounceScreen(
-                    "Logbook. Sections: Checklist, Cards, Champion Upgrades, Artifacts, Card Frames, and Statistics. " +
-                    "Press Page Down or Enter to open the first section, Page Up and Page Down to switch sections, " +
-                    "Left and Right arrows to turn pages, F3 to read a summary of the current section, " +
-                    "F1 for help, Escape to close.");
+                    "Logbook. Press Page Down or Enter to open the first section, Q to close, F1 for help.");
             }
             catch (Exception ex)
             {
@@ -726,10 +723,15 @@ namespace MonsterTrainAccessibility.Patches
             }
         }
 
-        public static void LogosPostfix()
+        public static void LogosPostfix(object __instance)
         {
             try
             {
+                if (Core.DebugBridge.Enabled)
+                {
+                    SkipNextFrame(__instance);
+                    return;
+                }
                 MonsterTrainAccessibility.ScreenReader?.Speak("Monster Train is starting. Press any key to skip the intro.", false);
             }
             catch (Exception ex)
@@ -738,16 +740,50 @@ namespace MonsterTrainAccessibility.Patches
             }
         }
 
-        public static void FmvPostfix()
+        public static void FmvPostfix(object __instance)
         {
             try
             {
+                if (Core.DebugBridge.Enabled)
+                {
+                    // Only when the video actually started (Initialize can redirect
+                    // to the safe zone screen or the main menu instead)
+                    if (AccessTools.Field(__instance.GetType(), "_videoPlayer")?.GetValue(__instance) != null)
+                        SkipNextFrame(__instance);
+                    return;
+                }
                 MonsterTrainAccessibility.ScreenReader?.Speak("Intro video playing. Press any key to skip.", false);
                 Core.SceneDescriptions.PlayLaunch();
             }
             catch (Exception ex)
             {
                 MonsterTrainAccessibility.LogError($"Error in IntroFmvScreen patch: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Dev mode (debug bridge on): skip the logos and the intro video the way a
+        /// key press does, a frame later so the screen finishes initializing first.
+        /// </summary>
+        private static void SkipNextFrame(object screen)
+        {
+            var bridge = Core.DebugBridge.Instance;
+            if (bridge == null || screen == null) return;
+            bridge.StartCoroutine(SkipRoutine(screen));
+        }
+
+        private static System.Collections.IEnumerator SkipRoutine(object screen)
+        {
+            yield return null;
+            try
+            {
+                if (screen is UnityEngine.Object uo && uo == null) yield break;
+                AccessTools.Method(screen.GetType(), "GoToNextScreen")?.Invoke(screen, null);
+                MonsterTrainAccessibility.LogInfo($"Dev mode: skipped {screen.GetType().Name}");
+            }
+            catch (Exception ex)
+            {
+                MonsterTrainAccessibility.LogError($"Intro skip failed: {ex.Message}");
             }
         }
     }

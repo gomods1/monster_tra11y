@@ -51,6 +51,8 @@ namespace MonsterTrainAccessibility.Patches
         /// restore the screen state by hand - the floor review and the F1
         /// battle help are gated on GameScreen.Battle.
         /// </summary>
+        private static string CardsWord(int n) => n == 1 ? "1 card" : $"{n} cards";
+
         public static void ClosePostfix()
         {
             try
@@ -60,6 +62,9 @@ namespace MonsterTrainAccessibility.Patches
                 {
                     ScreenStateTracker.SetScreen(Help.GameScreen.Battle);
                 }
+                // Focus often returns to the pile button it left from, which the
+                // selection poll would not see as a change: say where the player is
+                MonsterTrainAccessibility.MenuHandler?.ForgetFocus();
             }
             catch (Exception ex)
             {
@@ -119,41 +124,43 @@ namespace MonsterTrainAccessibility.Patches
                 {
                     string modeLower = modeStr.ToLower();
                     if (modeLower.Contains("purge") || modeLower.Contains("remove"))
-                        announcement = $"Card Purge. Select a card to remove. {cardCount} cards.";
+                        announcement = $"Card Purge. Select a card to remove. {CardsWord(cardCount)}.";
                     else if (modeLower.Contains("upgrade") || modeLower.Contains("enhance") || modeLower.Contains("applyupgrade"))
                     {
                         // Try to get upgrade description from cardUpgradeData field
                         string upgradeDesc = GetUpgradeDescription(screen, screenType, bindingFlags);
                         if (!string.IsNullOrEmpty(upgradeDesc))
-                            announcement = $"Card Upgrade: {upgradeDesc}. Select a card to apply it to. {cardCount} cards.";
+                            announcement = $"Card Upgrade: {upgradeDesc}. Select a card to apply it to. {CardsWord(cardCount)}.";
                         else
-                            announcement = $"Card Upgrade. Select a card to enhance. {cardCount} cards.";
+                            announcement = $"Card Upgrade. Select a card to enhance. {CardsWord(cardCount)}.";
                     }
                     else if (modeLower.Contains("spellmerge"))
-                        announcement = $"Spell Merge. Select a spell to merge. {cardCount} cards.";
+                        announcement = $"Spell Merge. Select a spell to merge. {CardsWord(cardCount)}.";
                     else if (modeLower.Contains("duplication"))
-                        announcement = $"Card Duplication. Select a card to copy. {cardCount} cards.";
+                        announcement = $"Card Duplication. Select a card to copy. {CardsWord(cardCount)}.";
                     else if (modeLower.Contains("draw"))
-                        announcement = $"Draw Pile. {cardCount} cards.";
+                        announcement = $"Draw Pile. {CardsWord(cardCount)}.";
                     else if (modeLower.Contains("discard"))
-                        announcement = $"Discard Pile. {cardCount} cards.";
+                        announcement = $"Discard Pile. {CardsWord(cardCount)}.";
                     else if (modeLower.Contains("exhaust"))
-                        announcement = $"Exhausted Pile. {cardCount} cards.";
+                        announcement = $"Exhausted Pile. {CardsWord(cardCount)}.";
                     else if (modeLower.Contains("eaten"))
-                        announcement = $"Eaten Pile. {cardCount} cards.";
+                        announcement = $"Eaten Pile. {CardsWord(cardCount)}.";
                     else if (modeLower.Contains("showcase"))
-                        announcement = $"Starting deck preview. {cardCount} cards.";
+                        announcement = $"Starting deck preview. {CardsWord(cardCount)}.";
                     else if (modeLower.Contains("cardeffectselection"))
-                        announcement = $"Select a card. {cardCount} cards.";
+                        announcement = $"Select a card. {CardsWord(cardCount)}.";
                     else
-                        announcement = cardCount > 0 ? $"Deck. {cardCount} cards." : "Deck.";
+                        announcement = cardCount > 0 ? $"Deck. {CardsWord(cardCount)}." : "Deck.";
                 }
                 else
                 {
-                    announcement = cardCount > 0 ? $"Deck. {cardCount} cards." : "Deck.";
+                    announcement = cardCount > 0 ? $"Deck. {CardsWord(cardCount)}." : "Deck.";
                 }
 
-                announcement += " Arrow keys to browse cards. Press F1 for help.";
+                announcement += cardCount > 0
+                    ? " Arrow keys to browse cards. Press F1 for help."
+                    : " Press Escape to close.";
                 MonsterTrainAccessibility.ScreenReader?.Speak(announcement, false);
             }
             catch (Exception ex)

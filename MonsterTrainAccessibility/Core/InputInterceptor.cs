@@ -40,10 +40,11 @@ namespace MonsterTrainAccessibility.Core
 
             if (Input.anyKeyDown)
                 KeyInput.MarkKeyPressed();
-            if (KeyInput.GetKeyDown(KeyCode.UpArrow) || KeyInput.GetKeyDown(KeyCode.DownArrow) ||
-                KeyInput.GetKeyDown(KeyCode.LeftArrow) || KeyInput.GetKeyDown(KeyCode.RightArrow) ||
-                KeyInput.GetKeyDown(KeyCode.Tab))
-                KeyInput.MarkNavKeyPressed();
+            if (KeyInput.GetKeyDown(KeyCode.UpArrow)) KeyInput.MarkNavKeyPressed(KeyCode.UpArrow);
+            else if (KeyInput.GetKeyDown(KeyCode.DownArrow)) KeyInput.MarkNavKeyPressed(KeyCode.DownArrow);
+            else if (KeyInput.GetKeyDown(KeyCode.LeftArrow)) KeyInput.MarkNavKeyPressed(KeyCode.LeftArrow);
+            else if (KeyInput.GetKeyDown(KeyCode.RightArrow)) KeyInput.MarkNavKeyPressed(KeyCode.RightArrow);
+            else if (KeyInput.GetKeyDown(KeyCode.Tab)) KeyInput.MarkNavKeyPressed(KeyCode.Tab);
 
             // Check if game has focus
             if (!KeyInput.AppFocused)
